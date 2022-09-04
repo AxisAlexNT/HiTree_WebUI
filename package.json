@@ -80,13 +80,6 @@
       "buildResources": "assets",
       "output": "release/${version}"
     },
-    "mac": {
-      "artifactName": "${productName}_${version}.${ext}",
-      "target": [
-        "dmg"
-      ],
-      "category": "public.app-category.utilities"
-    },
     "win": {
       "target": [
         {
@@ -114,35 +107,7 @@
           ]
         },
         {
-          "target": "snap",
-          "arch": [
-            "x64",
-            "ia32"
-          ]
-        },
-        {
           "target": "zip",
-          "arch": [
-            "x64",
-            "ia32"
-          ]
-        },
-        {
-          "target": "deb",
-          "arch": [
-            "x64",
-            "ia32"
-          ]
-        },
-        {
-          "target": "rpm",
-          "arch": [
-            "x64",
-            "ia32"
-          ]
-        },
-        {
-          "target": "apk",
           "arch": [
             "x64",
             "ia32"
