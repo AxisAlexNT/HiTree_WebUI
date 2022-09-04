@@ -1,46 +1,23 @@
-# Hi-CT
+# Hi-CT_WebUI -- Web-based UI for HiCT interactive manual scaffolding tool
 
-This template should help get you started developing with Vue 3 in Vite.
+For more info about HiCT, please visit [HiCT repo page](https://github.com/ctlab/HiCT).
 
-## Recommended IDE Setup
+## Overview
+This repo contains sources for HiCT web-based user interface made with Vue3 and Bootstrap, packaged with Electron.
+Visit [releases page](https://github.com/ctlab/HiCT_WebUI/releases) to obtain binaries for your operating system.
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+### Supported features:
+* Opening of HiCT contact map files;
+* Drag/pan/zoom of contact map overview;
+* Contig range selection using Shift+Drag or single click;
+* Reverse and translocation of contig selection range;
+* Grouping contig selection range into scaffold and ungrouping scaffolds;
+* Linking FASTA for assembly;
+* Export of FASTA for assembly;
+* Export FASTA context of assembly for the selected region;
+* Import of AGP assembly description files (only without split contigs).
 
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
-
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
-
-1. Disable the built-in TypeScript Extension
-    1) Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-    2) Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vitejs.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Type-Check, Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+## Operation instructions:
+Make [HiCT server](https://github.com/ctlab/HiCT_Server) available at `http://localhost:5000` either by starting it locally or by using port forwarding from remote server. Put HiCT files into server's data directory (you can convert Coolers using [HiCT_Utils](https://github.com/ctlab/HiCT_Utils)). Start Electron-based Web UI by unzipping binary distribution and launching `.exe` file (Windows) or by launching `.AppImage` file (linux, make sure you've made `chmod +x` for it). 
+Click File -> Open and select HiCT file you want to interact with. Tiles should start loading on a contact map. Use single clicks or Shift+dragging at any time to perform range selection. Click tool buttons on the left side to perform actions with selection range.
+After you've done, you can either save state using File -> Save in HiCT format, or export assembly info using Assembly menu in navigation bar at the top of the window.
