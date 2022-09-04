@@ -1,0 +1,8 @@
+.element-outer {
+    border-radius: 10px;
+    border-width: 1px;
+    border-color: gray;
+    border-style: solid;
+    padding: 10px;
+    margin: 20px;
+}
