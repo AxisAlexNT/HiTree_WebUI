@@ -6,10 +6,7 @@
       @reloadTiles="reloadTiles"
     ></UpperFrame>
     <ToolBar :mapManager="mapManager"></ToolBar>
-    <ContactMap
-      v-bind:filename="filename"
-      v-bind:manager="mapManager"
-    ></ContactMap>
+    <ContactMap :filename="filename" :manager="mapManager"></ContactMap>
     <SideBar></SideBar>
   </div>
 </template>
@@ -23,7 +20,7 @@ import {
   ContactMapManager,
   // type ContactMapManagerOptions,
 } from "@/app/core/mapmanagers/ContactMapManager";
-import { reactive, ref, watch, type Ref } from "vue";
+import { ref, watch, type Ref } from "vue";
 import { NetworkManager } from "../core/net/NetworkManager";
 
 // Reactively use these refs only inside component

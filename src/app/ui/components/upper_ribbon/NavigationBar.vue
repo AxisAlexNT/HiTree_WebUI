@@ -78,10 +78,32 @@
             <a aria-current="page" class="nav-link active" href="#">Dev</a>
           </li>
           <!-- Connection settings -->
-          <li class="nav-item">
-            <a aria-current="page" class="nav-link active" href="#"
-              >Connection Settings</a
+          <li class="nav-item dropdown">
+            <a
+              aria-current="page"
+              class="nav-link active dropdown-toggle"
+              data-bs-toggle="dropdown"
+              href="#"
+              >Connection</a
             >
+            <ul class="dropdown-menu" id="connection-settings-menu-dropdown">
+              <li id="connection-settings-input-group" class="input-group m-3">
+                <input
+                  id="global-search-input"
+                  class="form-control m-0"
+                  placeholder="http://localhost:5000/"
+                  type="text"
+                  v-model="gatewayAddress"
+                />
+                <button
+                  class="btn btn-sm btn-outline-dark"
+                  id="set-gateway-btn"
+                  @click="onGatewayChanged"
+                >
+                  Set API gateway
+                </button>
+              </li>
+            </ul>
           </li>
           <!-- Report a bug -->
           <li class="nav-item">
@@ -118,11 +140,12 @@ import type { NetworkManager } from "@/app/core/net/NetworkManager.js";
 import OpenFileSelector from "@/app/ui/components/upper_ribbon/OpenFileSelector.vue";
 import FASTAFileSelector from "@/app/ui/components/upper_ribbon/FASTAFileSelector.vue";
 import AGPFileSelector from "@/app/ui/components/upper_ribbon/AGPFileSelector.vue";
-import { ref } from "vue";
+import { Ref, ref } from "vue";
 import { GetFastaForAssemblyRequest } from "@/app/core/net/api/request";
 const openingFile = ref(false);
 const openingFASTAFile = ref(false);
 const openingAGPFile = ref(false);
+const gatewayAddress: Ref<string> = ref("http://localhost:5000/");
 
 const emit = defineEmits<{
   (e: "selected", filename: string): void;
@@ -150,6 +173,10 @@ function onOpenFASTAFile() {
 
 function onFASTAFileDismissed() {
   openingFASTAFile.value = false;
+}
+
+function onGatewayChanged() {
+  props.networkManager.onHostChanged(gatewayAddress.value);
 }
 
 function onAGPFileDismissed() {
@@ -208,5 +235,13 @@ function onAssemblyRequest() {
   flex: none;
   order: 0;
   flex-grow: 0;
+}
+
+#connection-settings-menu-dropdown {
+  width: 400%;
+}
+
+#set-gateway-btn {
+  margin-right: 30px;
 }
 </style>
