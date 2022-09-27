@@ -30,15 +30,14 @@ class VersionedXYZContactMapSource extends XYZ {
     return (coord_zxy: number[]) => {
       const col = coord_zxy[1];
       const row = coord_zxy[2];
-      return `${unref(
-        this.layersManager.mapManager.networkManager.host
-      )}/get_tile?version=${this.sourceVersion}&level=${
-        +1 + this.zoomLevel
-      }&row=${row}
-        &col=
-        ${col}
-        &tile_size=
-        ${unref(this.layersManager.tileSize)}`;
+      return (
+        `${unref(this.layersManager.mapManager.networkManager.host)}` +
+        `/get_tile?version=${this.sourceVersion}` +
+        `&level=${1 + this.zoomLevel}` +
+        `&row=${row}` +
+        `&col=${col}` +
+        `&tile_size=${unref(this.layersManager.tileSize)}`
+      );
     };
   }
 }
