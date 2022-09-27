@@ -141,13 +141,19 @@ class GroupContigsIntoScaffoldRequestDTO extends HiCTAPIRequestDTO<GroupContigsI
 
 class SetNormalizationRequestDTO extends HiCTAPIRequestDTO<SetNormalizationRequest> {
   toDTO(): Record<string, unknown> {
-    return this.entity.options;
+    return this.entity.options.normalizationSettings as unknown as Record<
+      string,
+      unknown
+    >;
   }
 }
 
 class SetContrastRangeRequestDTO extends HiCTAPIRequestDTO<SetContrastRangeRequest> {
   toDTO(): Record<string, unknown> {
-    return this.entity.options;
+    return this.entity.options.contrastRangeSettings as unknown as Record<
+      string,
+      unknown
+    >;
   }
 }
 

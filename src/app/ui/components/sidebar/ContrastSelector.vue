@@ -15,6 +15,7 @@
     :max-value="signalMax"
     :range-margin="0"
     @input="updateContrast"
+    @mouseup="sendContrast"
   />
 </template>
 
@@ -43,13 +44,9 @@ function updateContrast(e: {
   max: number;
   minValue: number;
   maxValue: number;
-}) {
+}): void {
   lowerBound.value = e.minValue;
   upperBound.value = e.maxValue;
-  props.mapManager?.eventManager.onContrastChanged({
-    lowerSignalBound: lowerBound.value,
-    upperSignalBound: upperBound.value,
-  });
   if (debug) {
     console.log(
       "Slider update values called bMinV: ",
@@ -60,6 +57,13 @@ function updateContrast(e: {
       e
     );
   }
+}
+
+function sendContrast(): void {
+  props.mapManager?.eventManager.onContrastChanged({
+    lowerSignalBound: lowerBound.value,
+    upperSignalBound: upperBound.value,
+  });
 }
 </script>
 
