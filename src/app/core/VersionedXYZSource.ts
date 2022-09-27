@@ -1,9 +1,11 @@
 import XYZ, { type Options as XYZOptions } from "ol/source/XYZ";
 import { unref } from "vue";
+import { NormalizationType } from "./domain/common";
 import type { HiCViewAndLayersManager } from "./mapmanagers/HiCViewAndLayersManager";
 
 class VersionedXYZContactMapSource extends XYZ {
   protected sourceVersion: number;
+  protected normalizationType: NormalizationType = NormalizationType.LINEAR;
 
   constructor(
     protected readonly layersManager: HiCViewAndLayersManager,
@@ -12,6 +14,11 @@ class VersionedXYZContactMapSource extends XYZ {
   ) {
     super(xyzOptions);
     this.sourceVersion = 0;
+    this.do_reload();
+  }
+
+  public onNormalizationChanged(normalizationType: NormalizationType){
+    this.normalizationType = normalizationType;
     this.do_reload();
   }
 
@@ -41,7 +48,11 @@ class VersionedXYZContactMapSource extends XYZ {
         "&col=" +
         col +
         "&tile_size=" +
-        unref(this.layersManager.tileSize)
+        unref(this.layersManager.tileSize) 
+        +
+        "&normalization="
+        +
+        this.normalizationType
       );
     };
   }

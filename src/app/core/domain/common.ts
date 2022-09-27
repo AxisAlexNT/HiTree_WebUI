@@ -21,4 +21,11 @@ enum ContigHideType {
   FORCED_SHOWN = 3,
 }
 
-export { QueryLengthUnit, ContigDirection, ScaffoldDirection, ContigHideType };
+enum NormalizationType {
+  LINEAR = 0,
+  LOG2 = 1,
+  LOG10 = 2,
+  COOLER_BALANCE = 3,
+}
+
+export { QueryLengthUnit, ContigDirection, ScaffoldDirection, ContigHideType, NormalizationType };

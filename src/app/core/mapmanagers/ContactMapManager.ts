@@ -16,6 +16,7 @@ import {
   ReverseSelectionRangeRequest,
   UngroupContigsFromScaffoldRequest,
 } from "../net/api/request";
+import { NormalizationType } from "../domain/common";
 
 class ContactMapManager {
   public readonly map: Map;
@@ -132,6 +133,10 @@ class ContactMapManager {
 
     // this.options.contigBorderColor = contigBorderColor;
     // this.viewAndLayersManager.onContigBorderColorChanged(contigBorderColor);
+  }
+
+  public onNormalizationChanged(normalizationType: NormalizationType): void{
+    this.viewAndLayersManager.onNormalizationChanged(normalizationType);
   }
 
   public addOSM() {
