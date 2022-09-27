@@ -3,7 +3,9 @@
     <div id="upper-block">
       <div id="minimap"></div>
 
-      <div id="color-range"></div>
+      <div id="color-range">
+        <ContrastSelector :map-manager="props.mapManager" />
+      </div>
 
       <div id="saved-locations">
         <SavedLocations></SavedLocations>
@@ -22,9 +24,15 @@
 </template>
 
 <script setup lang="ts">
+import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
 import LayerComponent from "@/app/ui/components/sidebar/LayerComponent.vue";
 import SavedLocations from "@/app/ui/components/sidebar/SavedLocations.vue";
 import { ref, type Ref } from "vue";
+import ContrastSelector from "./ContrastSelector.vue";
+
+const props = defineProps<{
+  mapManager?: ContactMapManager;
+}>();
 
 class LayerDescriptor {
   name: string;

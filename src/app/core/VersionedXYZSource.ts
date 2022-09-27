@@ -1,11 +1,9 @@
 import XYZ, { type Options as XYZOptions } from "ol/source/XYZ";
 import { unref } from "vue";
-import { NormalizationType } from "./domain/common";
 import type { HiCViewAndLayersManager } from "./mapmanagers/HiCViewAndLayersManager";
 
 class VersionedXYZContactMapSource extends XYZ {
   protected sourceVersion: number;
-  protected normalizationType: NormalizationType = NormalizationType.LINEAR;
 
   constructor(
     protected readonly layersManager: HiCViewAndLayersManager,
@@ -14,11 +12,6 @@ class VersionedXYZContactMapSource extends XYZ {
   ) {
     super(xyzOptions);
     this.sourceVersion = 0;
-    this.do_reload();
-  }
-
-  public onNormalizationChanged(normalizationType: NormalizationType){
-    this.normalizationType = normalizationType;
     this.do_reload();
   }
 
@@ -37,23 +30,15 @@ class VersionedXYZContactMapSource extends XYZ {
     return (coord_zxy: number[]) => {
       const col = coord_zxy[1];
       const row = coord_zxy[2];
-      return (
-        unref(this.layersManager.mapManager.networkManager.host) +
-        "/get_tile?version=" +
-        this.sourceVersion +
-        "&level=" +
-        (1 + this.zoomLevel) +
-        "&row=" +
-        row +
-        "&col=" +
-        col +
-        "&tile_size=" +
-        unref(this.layersManager.tileSize) 
-        +
-        "&normalization="
-        +
-        this.normalizationType
-      );
+      return `${unref(
+        this.layersManager.mapManager.networkManager.host
+      )}/get_tile?version=${this.sourceVersion}&level=${
+        +1 + this.zoomLevel
+      }&row=${row}
+        &col=
+        ${col}
+        &tile_size=
+        ${unref(this.layersManager.tileSize)}`;
     };
   }
 }

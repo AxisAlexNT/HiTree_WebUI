@@ -33,15 +33,15 @@ const props = defineProps<{
 }>();
 
 function addScaffoldClicked() {
-  props.mapManager?.onAddScaffoldClicked();
+  props.mapManager?.eventManager.onAddScaffoldClicked();
 }
 
 function removeScaffoldClicked() {
-  props.mapManager?.onRemoveScaffoldClicked();
+  props.mapManager?.eventManager.onRemoveScaffoldClicked();
 }
 
 function exportFASTAForSelectionClicked() {
-  props.mapManager?.onExportFASTAForSelectionClicked();
+  props.mapManager?.eventManager.onExportFASTAForSelectionClicked();
 }
 </script>
 

@@ -13,6 +13,8 @@ import {
   ListAGPFilesRequest,
   LoadAGPRequest,
   GetFastaForSelectionRequest,
+  SetNormalizationRequest,
+  SetContrastRangeRequest,
 } from "../api/request";
 import { OutboundDTO } from "./dto";
 
@@ -43,6 +45,14 @@ abstract class HiCTAPIRequestDTO<
       case entity instanceof UngroupContigsFromScaffoldRequest:
         return new UngroupContigsFromScaffoldRequestDTO(
           entity as UngroupContigsFromScaffoldRequest
+        );
+      case entity instanceof SetNormalizationRequest:
+        return new SetNormalizationRequestDTO(
+          entity as SetNormalizationRequest
+        );
+      case entity instanceof SetContrastRangeRequest:
+        return new SetContrastRangeRequestDTO(
+          entity as SetContrastRangeRequest
         );
       case entity instanceof OpenFileRequest:
         return new OpenFileRequestDTO(entity as OpenFileRequest);
@@ -129,6 +139,18 @@ class GroupContigsIntoScaffoldRequestDTO extends HiCTAPIRequestDTO<GroupContigsI
   }
 }
 
+class SetNormalizationRequestDTO extends HiCTAPIRequestDTO<SetNormalizationRequest> {
+  toDTO(): Record<string, unknown> {
+    return this.entity.options;
+  }
+}
+
+class SetContrastRangeRequestDTO extends HiCTAPIRequestDTO<SetContrastRangeRequest> {
+  toDTO(): Record<string, unknown> {
+    return this.entity.options;
+  }
+}
+
 class UngroupContigsFromScaffoldRequestDTO extends HiCTAPIRequestDTO<UngroupContigsFromScaffoldRequest> {
   toDTO(): Record<string, unknown> {
     return {
@@ -187,4 +209,6 @@ export {
   GroupContigsIntoScaffoldRequestDTO,
   UngroupContigsFromScaffoldRequestDTO,
   ReverseSelectionRangeRequestDTO,
+  SetNormalizationRequestDTO,
+  SetContrastRangeRequestDTO,
 };

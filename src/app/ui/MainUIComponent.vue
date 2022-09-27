@@ -2,13 +2,12 @@
   <div>
     <UpperFrame
       :networkManager="networkManager"
+      :mapManager="mapManager"
       @selected="onFileSelected"
-      @reloadTiles="reloadTiles"
-      @normalizationChanged="onNormalizationChanged"
     ></UpperFrame>
     <ToolBar :mapManager="mapManager"></ToolBar>
     <ContactMap :filename="filename" :manager="mapManager"></ContactMap>
-    <SideBar></SideBar>
+    <SideBar :mapManager="mapManager"></SideBar>
   </div>
 </template>
 
@@ -23,7 +22,6 @@ import {
 } from "@/app/core/mapmanagers/ContactMapManager";
 import { ref, watch, type Ref } from "vue";
 import { NetworkManager } from "../core/net/NetworkManager";
-import { NormalizationType } from "../core/domain/common";
 
 // Reactively use these refs only inside component
 // Pass them to Map Manager on creation as values, not Refs as objects
@@ -99,14 +97,6 @@ function onFileSelected(newFilename: string) {
       displayNewMap();
     }
   }
-}
-
-function onNormalizationChanged(normalizationType: NormalizationType): void{
-  mapManager.value?.onNormalizationChanged(normalizationType);
-}
-
-function reloadTiles(): void {
-  mapManager.value?.reloadTiles();
 }
 </script>
 

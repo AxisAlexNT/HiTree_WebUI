@@ -4,7 +4,7 @@
       :networkManager="props.networkManager"
       @selected="onFileSelected"
     ></NavigationBar>
-    <HeaderRibbon @reloadTiles="reloadTiles" @normalizationChanged="onNormalizationChanged"></HeaderRibbon>
+    <HeaderRibbon :mapManager="props.mapManager"></HeaderRibbon>
   </div>
 </template>
 
@@ -12,27 +12,18 @@
 import NavigationBar from "@/app/ui/components/upper_ribbon/NavigationBar.vue";
 import HeaderRibbon from "@/app/ui/components/upper_ribbon/HeaderRibbon.vue";
 import type { NetworkManager } from "@/app/core/net/NetworkManager.js";
-import { NormalizationType } from "@/app/core/domain/common";
+import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
 const emit = defineEmits<{
   (e: "selected", filename: string): void;
-  (e: "reloadTiles"): void;
-  (e: "normalizationChanged", normalizationType: NormalizationType): void;
 }>();
 
 const props = defineProps<{
   networkManager: NetworkManager;
+  mapManager?: ContactMapManager;
 }>();
 
 function onFileSelected(filename: string): void {
   emit("selected", filename);
-}
-
-function reloadTiles(): void {
-  emit("reloadTiles");
-}
-
-function onNormalizationChanged(normalizationType: NormalizationType){
-  emit("normalizationChanged", normalizationType);
 }
 </script>
 

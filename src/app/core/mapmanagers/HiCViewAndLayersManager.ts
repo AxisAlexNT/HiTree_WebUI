@@ -29,6 +29,7 @@ import Fill from "ol/style/Fill";
 import { pointerMove, shiftKeyOnly, singleClick } from "ol/events/condition";
 import type { ContigDescriptor } from "../domain/ContigDescriptor";
 import { NormalizationType } from "../domain/common";
+import { NormalizationSettings } from "@/app/ui/components/ComponentCommon";
 
 interface LayerResolutionBorders {
   minResolutionInclusive: number;
@@ -516,16 +517,6 @@ class HiCViewAndLayersManager {
         dimension_holder: this.mapManager.getContigDimensionHolder(),
       })
     );
-  }
-
-  public onNormalizationChanged(normalizationType: NormalizationType): void{
-    this.layersHolder.hicDataLayers.forEach((layer) => {
-      const source = layer.getSource();
-      if (source instanceof VersionedXYZContactMapSource){
-        (source as VersionedXYZContactMapSource).onNormalizationChanged(normalizationType);
-      }
-    });
-    this.reloadTiles();
   }
 
   public initializeMapInteractions(): void {

@@ -1,3 +1,7 @@
+import {
+  ContrastRangeSettings,
+  NormalizationSettings,
+} from "@/app/ui/components/ComponentCommon";
 interface HiCTAPIRequest {
   requestPath: string;
 }
@@ -42,6 +46,26 @@ class GroupContigsIntoScaffoldRequest implements HiCTAPIRequest {
       readonly endContigId: number;
       readonly newScaffoldName?: string;
       readonly spacerLength?: number;
+    }
+  ) {}
+}
+
+class SetNormalizationRequest implements HiCTAPIRequest {
+  requestPath = "/set_normalization";
+
+  public constructor(
+    public readonly options: {
+      readonly normalizationSettings: NormalizationSettings;
+    }
+  ) {}
+}
+
+class SetContrastRangeRequest implements HiCTAPIRequest {
+  requestPath = "/set_contrast_range";
+
+  public constructor(
+    public readonly options: {
+      readonly contrastRangeSettings: ContrastRangeSettings;
     }
   ) {}
 }
@@ -128,4 +152,6 @@ export {
   ListAGPFilesRequest,
   LoadAGPRequest,
   GetFastaForSelectionRequest,
+  SetNormalizationRequest,
+  SetContrastRangeRequest,
 };

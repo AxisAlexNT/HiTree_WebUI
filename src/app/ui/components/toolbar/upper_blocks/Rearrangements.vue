@@ -3,14 +3,14 @@
     <button
       class="btn btn-outline-primary"
       type="button"
-      @click="props.mapManager?.onReverseSelectionClicked"
+      @click="props.mapManager?.eventManager.onReverseSelectionClicked"
     >
       <i class="bi bi-arrow-repeat"></i>
     </button>
     <button
       class="btn btn-outline-primary"
       type="button"
-      @click="props.mapManager?.onMoveSelectionClicked"
+      @click="props.mapManager?.eventManager.onMoveSelectionClicked"
     >
       <i class="bi bi-arrows-move"></i>
     </button>
