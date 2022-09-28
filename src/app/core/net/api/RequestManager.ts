@@ -2,9 +2,11 @@ import axios, { type AxiosRequestConfig, type AxiosResponse } from "axios";
 import type { AssemblyInfo } from "../../domain/AssemblyInfo";
 import { AssemblyInfoDTO, OpenFileResponseDTO } from "../dto/dto";
 import { HiCTAPIRequestDTO } from "../dto/requestDTO";
+import { CurrentSignalRangeResponseDTO } from "../dto/responseDTO";
 import type { OpenFileResponse } from "../netcommon";
 import type { NetworkManager } from "../NetworkManager";
 import {
+  GetCurrentSignalRangeRequest,
   GetFastaForAssemblyRequest,
   GetFastaForSelectionRequest,
   GroupContigsIntoScaffoldRequest,
@@ -19,6 +21,7 @@ import {
   UngroupContigsFromScaffoldRequest,
   type HiCTAPIRequest,
 } from "./request";
+import { CurrentSignalRangeResponse } from "./response";
 
 class RequestManager {
   constructor(public readonly networkManager: NetworkManager) {}
@@ -43,6 +46,16 @@ class RequestManager {
     )
       .then((response) => response.data)
       .then((json) => new OpenFileResponseDTO(json).toEntity());
+  }
+
+  public async getSignalRanges(
+    tileVersion: number
+  ): Promise<CurrentSignalRangeResponse> {
+    return this.sendRequest(
+      new GetCurrentSignalRangeRequest({ tileVersion: tileVersion })
+    )
+      .then((response) => response.data)
+      .then((json) => new CurrentSignalRangeResponseDTO(json).toEntity());
   }
 
   public async listFiles(): Promise<string[]> {

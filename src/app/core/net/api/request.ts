@@ -70,6 +70,16 @@ class SetContrastRangeRequest implements HiCTAPIRequest {
   ) {}
 }
 
+class GetCurrentSignalRangeRequest implements HiCTAPIRequest {
+  requestPath = "/get_current_signal_range";
+
+  public constructor(
+    public readonly options: {
+      readonly tileVersion: number;
+    }
+  ) {}
+}
+
 class UngroupContigsFromScaffoldRequest implements HiCTAPIRequest {
   requestPath = "/ungroup_contigs_from_scaffold";
 
@@ -154,4 +164,5 @@ export {
   GetFastaForSelectionRequest,
   SetNormalizationRequest,
   SetContrastRangeRequest,
+  GetCurrentSignalRangeRequest,
 };

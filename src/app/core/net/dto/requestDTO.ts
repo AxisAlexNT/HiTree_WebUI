@@ -15,6 +15,7 @@ import {
   GetFastaForSelectionRequest,
   SetNormalizationRequest,
   SetContrastRangeRequest,
+  GetCurrentSignalRangeRequest,
 } from "../api/request";
 import { OutboundDTO } from "./dto";
 
@@ -30,6 +31,10 @@ abstract class HiCTAPIRequestDTO<
 
   static toDTOClass(entity: HiCTAPIRequest) {
     switch (true) {
+      case entity instanceof GetCurrentSignalRangeRequest:
+        return new GetCurrentSignalRangeRequestDTO(
+          entity as GetCurrentSignalRangeRequest
+        );
       case entity instanceof ReverseSelectionRangeRequest:
         return new ReverseSelectionRangeRequestDTO(
           entity as ReverseSelectionRangeRequest
@@ -157,6 +162,12 @@ class SetContrastRangeRequestDTO extends HiCTAPIRequestDTO<SetContrastRangeReque
   }
 }
 
+class GetCurrentSignalRangeRequestDTO extends HiCTAPIRequestDTO<GetCurrentSignalRangeRequest> {
+  toDTO(): Record<string, unknown> {
+    return this.entity.options;
+  }
+}
+
 class UngroupContigsFromScaffoldRequestDTO extends HiCTAPIRequestDTO<UngroupContigsFromScaffoldRequest> {
   toDTO(): Record<string, unknown> {
     return {
@@ -217,4 +228,5 @@ export {
   ReverseSelectionRangeRequestDTO,
   SetNormalizationRequestDTO,
   SetContrastRangeRequestDTO,
+  GetCurrentSignalRangeRequestDTO,
 };

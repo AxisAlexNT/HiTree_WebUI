@@ -18,6 +18,7 @@ import {
 } from "../net/api/request";
 import { NormalizationType } from "../domain/common";
 import { CommonEventManager } from "./CommonEventManager";
+import { CurrentSignalRangeResponse } from "../net/api/response";
 
 class ContactMapManager {
   public readonly map: Map;
@@ -131,6 +132,12 @@ class ContactMapManager {
         source: new OSM(),
       })
     );
+  }
+
+  public addContrastSliderCallback(
+    callbackfn: (ranges: CurrentSignalRangeResponse) => void
+  ): void {
+    this.viewAndLayersManager.addContrastSliderCallback(callbackfn);
   }
 
   public deactivateTranslocation(): void {
