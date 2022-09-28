@@ -9,14 +9,6 @@ import OSM from "ol/source/OSM";
 import type { OpenFileResponse } from "../net/netcommon";
 import type { NetworkManager } from "../net/NetworkManager";
 import type { ContigDescriptor } from "../domain/ContigDescriptor";
-import {
-  GetFastaForSelectionRequest,
-  GroupContigsIntoScaffoldRequest,
-  MoveSelectionRangeRequest,
-  ReverseSelectionRangeRequest,
-  UngroupContigsFromScaffoldRequest,
-} from "../net/api/request";
-import { NormalizationType } from "../domain/common";
 import { CommonEventManager } from "./CommonEventManager";
 import { CurrentSignalRangeResponse } from "../net/api/response";
 

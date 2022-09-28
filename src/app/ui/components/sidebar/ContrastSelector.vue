@@ -54,11 +54,12 @@
 </template>
 
 <script setup lang="ts">
-import MultiRangeSlider from "multi-range-slider-vue";
 import "@/app/ui/components/sidebar/contrast-slider.css";
 import { Ref, ref, watch } from "vue";
 import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
 import { CurrentSignalRangeResponse } from "@/app/core/net/api/response";
+// @ts-expect-error "The module has no typescript bindings provided"
+import MultiRangeSlider from "multi-range-slider-vue";
 
 const debug = false;
 

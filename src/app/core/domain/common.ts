@@ -21,4 +21,4 @@ enum ContigHideType {
   FORCED_SHOWN = 3,
 }
 
-export { QueryLengthUnit, ContigDirection, ScaffoldDirection, ContigHideType, NormalizationType };
+export { QueryLengthUnit, ContigDirection, ScaffoldDirection, ContigHideType };

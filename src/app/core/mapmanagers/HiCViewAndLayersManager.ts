@@ -28,8 +28,6 @@ import {
 import Fill from "ol/style/Fill";
 import { pointerMove, shiftKeyOnly, singleClick } from "ol/events/condition";
 import type { ContigDescriptor } from "../domain/ContigDescriptor";
-import { NormalizationType } from "../domain/common";
-import { NormalizationSettings } from "@/app/ui/components/ComponentCommon";
 import { CurrentSignalRangeResponse } from "../net/api/response";
 
 interface LayerResolutionBorders {
@@ -597,7 +595,7 @@ class HiCViewAndLayersManager {
     this.selectionInteractions.translocationArrowSelectionInteraction
       .getFeatures()
       .on("add", () => {
-        this.mapManager.onClickInTranslocationMode();
+        this.mapManager.eventManager.onClickInTranslocationMode();
         this.selectionInteractions.translocationArrowSelectionInteraction
           .getFeatures()
           .clear();

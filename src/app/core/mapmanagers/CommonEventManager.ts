@@ -2,7 +2,6 @@ import {
   ContrastRangeSettings,
   NormalizationSettings,
 } from "@/app/ui/components/ComponentCommon";
-import { NormalizationType } from "../domain/common";
 import { ContigDescriptor } from "../domain/ContigDescriptor";
 import {
   GroupContigsIntoScaffoldRequest,
