@@ -227,7 +227,7 @@ class ScaffoldBordersTrack2D extends Track2DSymmetric {
         fillColor: "rgba(100, 100, 0, 0.3)",
         borderColor: "rgba(255, 255, 0, 1)",
         width: 4,
-        zIndex: 10,
+        zIndex: 12,
       }
     );
   }
