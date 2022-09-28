@@ -20,7 +20,16 @@
                   >Open...</a
                 >
               </li>
-              <li><a class="dropdown-item" href="#">Save as...</a></li>
+              <li>
+                <a class="dropdown-item" href="#" @click="onSaveClicked"
+                  >Save</a
+                >
+                <div
+                  v-if="saving"
+                  class="spinner-border ms-auto"
+                  role="status"
+                ></div>
+              </li>
               <li><a class="dropdown-item" href="#">Close</a></li>
             </ul>
           </li>
@@ -145,6 +154,7 @@ import { GetFastaForAssemblyRequest } from "@/app/core/net/api/request";
 const openingFile = ref(false);
 const openingFASTAFile = ref(false);
 const openingAGPFile = ref(false);
+const saving = ref(false);
 const gatewayAddress: Ref<string> = ref("http://localhost:5000/");
 
 const emit = defineEmits<{
@@ -165,6 +175,13 @@ function onLoadAGP() {
 
 function onFileDismissed() {
   openingFile.value = false;
+}
+
+function onSaveClicked(): void {
+  saving.value = true;
+  props.networkManager.requestManager.save().finally(() => {
+    saving.value = false;
+  });
 }
 
 function onOpenFASTAFile() {

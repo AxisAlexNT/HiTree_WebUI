@@ -35,7 +35,10 @@ class ContactMapManager {
     const contigDescriptors: ContigDescriptor[] =
       options.response.assemblyInfo.contigDescriptors;
     this.contigDimensionHolder = new ContigDimensionHolder(contigDescriptors);
-    this.scaffoldHolder = new ScaffoldHolder(this.contigDimensionHolder);
+    this.scaffoldHolder = new ScaffoldHolder(
+      this.contigDimensionHolder,
+      options.response.assemblyInfo.scaffoldDescriptors
+    );
 
     this.eventManager = new CommonEventManager(this);
 

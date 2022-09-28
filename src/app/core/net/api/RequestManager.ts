@@ -18,6 +18,7 @@ import {
   MoveSelectionRangeRequest,
   OpenFileRequest,
   ReverseSelectionRangeRequest,
+  SaveFileRequest,
   UngroupContigsFromScaffoldRequest,
   type HiCTAPIRequest,
 } from "./request";
@@ -81,6 +82,12 @@ class RequestManager {
   public async listAGPFiles(): Promise<string[]> {
     const response = await this.sendRequest(new ListAGPFilesRequest());
     return response.data as string[];
+  }
+
+  public async save(): Promise<void> {
+    return this.sendRequest(new SaveFileRequest({})).then(() => {
+      return;
+    });
   }
 
   public async loadAGP(request: LoadAGPRequest): Promise<void> {

@@ -16,6 +16,7 @@ import {
   SetNormalizationRequest,
   SetContrastRangeRequest,
   GetCurrentSignalRangeRequest,
+  SaveFileRequest,
 } from "../api/request";
 import { OutboundDTO } from "./dto";
 
@@ -61,6 +62,8 @@ abstract class HiCTAPIRequestDTO<
         );
       case entity instanceof OpenFileRequest:
         return new OpenFileRequestDTO(entity as OpenFileRequest);
+      case entity instanceof SaveFileRequest:
+        return new SaveFileRequestDTO(entity as SaveFileRequest);
       case entity instanceof ListFilesRequest:
         return new ListFilesRequestDTO(entity);
       case entity instanceof ListFASTAFilesRequest:
@@ -115,6 +118,14 @@ class OpenFileRequestDTO extends HiCTAPIRequestDTO<OpenFileRequest> {
     return {
       filename: this.entity.options.filename,
       fastaFilename: this.entity.options.fastaFilename,
+    };
+  }
+}
+
+class SaveFileRequestDTO extends HiCTAPIRequestDTO<SaveFileRequest> {
+  toDTO(): Record<string, unknown> {
+    return {
+      filename: this.entity.options.filename,
     };
   }
 }
@@ -229,4 +240,5 @@ export {
   SetNormalizationRequestDTO,
   SetContrastRangeRequestDTO,
   GetCurrentSignalRangeRequestDTO,
+  SaveFileRequestDTO,
 };

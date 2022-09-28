@@ -31,15 +31,15 @@ class VersionedXYZContactMapSource extends XYZ {
         if (data !== undefined && data.image !== undefined) {
           // image.src = URL.createObjectURL(data.image);
           image.src = "data:image/png;base64," + data.image;
-          console.log("Data.ranges is ", data.ranges);
-          console.log(
-            "Constructed ranges DTO: ",
-            new CurrentSignalRangeResponseDTO(data.ranges)
-          );
-          console.log(
-            "Constructed ranges entity: ",
-            new CurrentSignalRangeResponseDTO(data.ranges).toEntity()
-          );
+          // console.log("Data.ranges is ", data.ranges);
+          // console.log(
+          //   "Constructed ranges DTO: ",
+          //   new CurrentSignalRangeResponseDTO(data.ranges)
+          // );
+          // console.log(
+          //   "Constructed ranges entity: ",
+          //   new CurrentSignalRangeResponseDTO(data.ranges).toEntity()
+          // );
           layersManager.callbackFns.contrastSliderRangesCallbacks.forEach(
             (callbackFn) => {
               callbackFn(
