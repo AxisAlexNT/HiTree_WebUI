@@ -27,7 +27,8 @@ class VersionedXYZContactMapSource extends XYZ {
         const data = this.response;
         if (data !== undefined && data.image !== undefined) {
           // image.src = URL.createObjectURL(data.image);
-          image.src = "data:image/png;base64," + data.image;
+          // image.src = "data:image/png;base64," + data.image;
+          image.src = data.image;
           // console.log("Data.ranges is ", data.ranges);
           // console.log(
           //   "Constructed ranges DTO: ",

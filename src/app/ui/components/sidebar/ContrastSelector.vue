@@ -5,7 +5,8 @@
     Selected: [{{ lowerBound }}, {{ upperBound }}]
   </div>
   <div id="contrast-slider-div">
-    <!-- <label for="contrast-slider"> Contrast: </label> -->
+    <label id="contrast-slider-label" class="h6" for="contrast-slider"><strong>Contrast range:</strong></label>
+    <!-- <h5><strong>Contrast range:</strong></h5> -->
     <MultiRangeSlider
       id="contrast-slider"
       :base-class-name="baseClassName"
@@ -160,6 +161,7 @@ function updateWithRanges(ranges: CurrentSignalRangeResponse) {
     console.log("ranges arrived: ", ranges);
   }
   signalMax.value = ranges.globalMaxSignal;
+  signalMin.value = ranges.globalMinSignal;
 }
 </script>
 
@@ -171,6 +173,15 @@ function updateWithRanges(ranges: CurrentSignalRangeResponse) {
   margin-right: 0px;
   width: 100%;
   text-align: left;
+}
+
+#contrast-slider-label {
+  margin-bottom: -20px;
+  margin-top: 20px;
+}
+
+#contrast-slider{
+  margin-top: -10px;
 }
 
 .number-input {

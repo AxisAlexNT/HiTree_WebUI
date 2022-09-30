@@ -138,7 +138,6 @@ function applySettings(): void {
     preLogBase: applyPreLog.value ? preLogBase.value : -1,
     postLogBase: applyPostLog.value ? postLogBase.value : -1,
   });
-  console.log("On normalization changed finished");
 }
 </script>
 
