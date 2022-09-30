@@ -11,11 +11,11 @@
       :base-class-name="baseClassName"
       :min="signalMin"
       :max="signalMax"
-      :step="(signalMax - signalMin) / 100.0"
+      :step="stepLength"
       :ruler="false"
       :label="false"
-      :min-value="signalMin"
-      :max-value="signalMax"
+      :min-value="lowerBound"
+      :max-value="upperBound"
       :range-margin="0"
       @mouseup="sendContrast"
       @input="updateContrast"
@@ -29,9 +29,9 @@
           class="form-check-input number-input"
           type="number"
           id="lower-bound-input"
-          min="{{signalMin}}"
-          max="{{signalMax}}"
-          step="{{(signalMax - signalMin) / 100.0}}"
+          :min="signalMin"
+          :max="signalMax"
+          :step="stepLength"
           v-model.number="lowerBound"
         />
       </div>
@@ -43,9 +43,9 @@
           class="form-check-input number-input"
           type="number"
           id="upper-bound-input"
-          min="{{signalMin}}"
-          max="{{signalMax}}"
-          step="{{(signalMax - signalMin) / 100.0}}"
+          :min="signalMin"
+          :max="signalMax"
+          :step="stepLength"
           v-model.number="upperBound"
         />
       </div>
@@ -74,6 +74,34 @@ const signalMax: Ref<number> = ref(1);
 const baseClassName = "contrast-slider";
 const lowerBound: Ref<number> = ref(signalMin.value);
 const upperBound: Ref<number> = ref(signalMax.value);
+const stepResolution: Ref<number> = ref(1000);
+const stepLength: Ref<number> = ref(
+  (signalMax.value - signalMin.value) / stepResolution.value
+);
+
+function recalculateStepLength(): void {
+  stepLength.value = (signalMax.value - signalMin.value) / stepResolution.value;
+}
+
+watch(() => stepLength.value, recalculateStepLength);
+watch(() => signalMin.value, recalculateStepLength);
+watch(() => signalMax.value, recalculateStepLength);
+
+// const sliderParams: {
+//   min: Ref<number>;
+//   max: Ref<number>;
+//   min_value: Ref<number>;
+//   max_value: Ref<number>;
+//   step: Ref<number>;
+// } = {
+//   min: signalMin,
+//   max: signalMax,
+//   min_value: lowerBound,
+//   max_value: upperBound,
+//   step: stepLength,
+// };
+
+// console.log("Slider params:", sliderParams);
 
 watch(
   () => props.mapManager,

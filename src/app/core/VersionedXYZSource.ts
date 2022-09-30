@@ -1,7 +1,4 @@
 import { ImageTile } from "ol";
-import { Projection } from "ol/proj";
-import ReprojTile from "ol/reproj/Tile";
-import { TileSourceEvent } from "ol/source/Tile";
 import TileState from "ol/TileState";
 import XYZ, { type Options as XYZOptions } from "ol/source/XYZ";
 import { unref } from "vue";
