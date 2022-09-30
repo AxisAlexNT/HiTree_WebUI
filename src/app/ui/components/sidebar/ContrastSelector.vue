@@ -80,6 +80,9 @@ const stepLength: Ref<number> = ref(
   (signalMax.value - signalMin.value) / stepResolution.value
 );
 
+const signalsMins: Ref<number[]> = ref([0]);
+const signalsMaxs: Ref<number[]> = ref([1]);
+
 function recalculateStepLength(): void {
   stepLength.value = (signalMax.value - signalMin.value) / stepResolution.value;
 }

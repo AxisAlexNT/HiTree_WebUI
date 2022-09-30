@@ -1,8 +1,11 @@
+import assert from "assert";
 import axios, { type AxiosRequestConfig, type AxiosResponse } from "axios";
+import { ImageTile, Tile } from "ol";
+import TileState from "ol/TileState";
 import type { AssemblyInfo } from "../../domain/AssemblyInfo";
 import { AssemblyInfoDTO, OpenFileResponseDTO } from "../dto/dto";
 import { HiCTAPIRequestDTO } from "../dto/requestDTO";
-import { CurrentSignalRangeResponseDTO } from "../dto/responseDTO";
+import { CurrentSignalRangeResponseDTO, TilePOSTResponseDTO } from "../dto/responseDTO";
 import type { OpenFileResponse } from "../netcommon";
 import type { NetworkManager } from "../NetworkManager";
 import {
@@ -22,7 +25,7 @@ import {
   UngroupContigsFromScaffoldRequest,
   type HiCTAPIRequest,
 } from "./request";
-import { CurrentSignalRangeResponse } from "./response";
+import { CurrentSignalRangeResponse, TilePOSTResponse } from "./response";
 
 class RequestManager {
   constructor(public readonly networkManager: NetworkManager) {}
@@ -159,6 +162,20 @@ class RequestManager {
       .then((response) => response.data)
       .then((json) => new AssemblyInfoDTO(json).toEntity());
   }
+
+  /*
+  public async loadTilePOSTFunction(tile: Tile, requestPath: string): Promise<void> {
+    assert(tile instanceof ImageTile, "TileLoadPOSTRequest is only applicable for loading ImageTiles");
+    return axios.get("requestPath").then(
+      (response) => {
+        return new TilePOSTResponseDTO(response.data).toEntity()
+      }
+    ).then((resp) => {
+      const imageTile: ImageTile = tile as ImageTile;
+      const image: HTMLImageElement | HTMLVideoElement =
+        imageTile.getImage() as HTMLImageElement | HTMLVideoElement;
+    }).catch(() => tile.setState(TileState.ERROR));
+  }*/
 }
 
 export { RequestManager };
