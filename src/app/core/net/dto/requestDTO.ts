@@ -17,6 +17,7 @@ import {
   SetContrastRangeRequest,
   GetCurrentSignalRangeRequest,
   SaveFileRequest,
+  GetAGPForAssemblyRequest,
 } from "../api/request";
 import { OutboundDTO } from "./dto";
 
@@ -79,6 +80,10 @@ abstract class HiCTAPIRequestDTO<
       case entity instanceof GetFastaForAssemblyRequest:
         return new GetFastaForAssemblyRequestDTO(
           entity as GetFastaForAssemblyRequest
+        );
+      case entity instanceof GetAGPForAssemblyRequest:
+        return new GetAGPForAssemblyRequestDTO(
+          entity as GetAGPForAssemblyRequest
         );
       case entity instanceof GetFastaForSelectionRequest:
         return new GetFastaForSelectionRequestDTO(
@@ -216,6 +221,11 @@ class GetFastaForAssemblyRequestDTO extends HiCTAPIRequestDTO<GetFastaForAssembl
     return {};
   }
 }
+class GetAGPForAssemblyRequestDTO extends HiCTAPIRequestDTO<GetFastaForAssemblyRequest> {
+  toDTO(): Record<string, unknown> {
+    return {};
+  }
+}
 
 class GetFastaForSelectionRequestDTO extends HiCTAPIRequestDTO<GetFastaForSelectionRequest> {
   toDTO(): Record<string, unknown> {
@@ -234,6 +244,7 @@ export {
   ListFilesRequestDTO,
   CloseFileRequestDTO,
   GetFastaForAssemblyRequestDTO,
+  GetAGPForAssemblyRequestDTO,
   GroupContigsIntoScaffoldRequestDTO,
   UngroupContigsFromScaffoldRequestDTO,
   ReverseSelectionRangeRequestDTO,

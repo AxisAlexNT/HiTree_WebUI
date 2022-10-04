@@ -48,6 +48,10 @@ class GetFastaForAssemblyRequest implements HiCTAPIRequest {
   requestPath = "/get_fasta_for_assembly";
 }
 
+class GetAGPForAssemblyRequest implements HiCTAPIRequest {
+  requestPath = "/get_agp_for_assembly";
+}
+
 class GroupContigsIntoScaffoldRequest implements HiCTAPIRequest {
   requestPath = "/group_contigs_into_scaffold";
 
@@ -162,6 +166,7 @@ export {
   type HiCTAPIRequest,
   CloseFileRequest,
   GetFastaForAssemblyRequest,
+  GetAGPForAssemblyRequest,
   OpenFileRequest,
   ListFilesRequest,
   GroupContigsIntoScaffoldRequest,

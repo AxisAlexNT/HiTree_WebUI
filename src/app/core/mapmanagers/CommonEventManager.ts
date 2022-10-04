@@ -102,6 +102,7 @@ class CommonEventManager {
         this.mapManager.scaffoldHolder.updateScaffoldData(
           asmInfo.scaffoldDescriptors
         );
+        this.resetSelection();
         this.mapManager.reloadVisuals();
       });
   }
@@ -138,6 +139,7 @@ class CommonEventManager {
         this.mapManager.scaffoldHolder.updateScaffoldData(
           asmInfo.scaffoldDescriptors
         );
+        this.resetSelection();
         this.mapManager.reloadVisuals();
       });
   }
@@ -174,6 +176,7 @@ class CommonEventManager {
         this.mapManager.scaffoldHolder.updateScaffoldData(
           asmInfo.scaffoldDescriptors
         );
+        this.resetSelection();
         this.mapManager.reloadVisuals();
       });
   }
@@ -271,6 +274,7 @@ class CommonEventManager {
           asmInfo.scaffoldDescriptors
         );
         this.onMoveSelectionClicked();
+        this.resetSelection();
         this.mapManager.reloadVisuals();
       });
   }
@@ -315,10 +319,17 @@ class CommonEventManager {
         const blob = new Blob([data as BlobPart], { type: "text/plain" });
         const link = document.createElement("a");
         link.href = window.URL.createObjectURL(blob);
-        link.download = `(${fromBpX}bp-${toBpX}bp).(${fromBpY}bp-${toBpY}bp).fasta`;
+        link.download = `selection_(${fromBpX}bp-${toBpX}bp).(${fromBpY}bp-${toBpY}bp).fasta`;
         link.click();
       });
     return;
+  }
+
+  public resetSelection(): void {
+    this.mapManager.viewAndLayersManager.selectionInteractions.contigSelectExtent.setExtent(
+      undefined
+    );
+    this.mapManager.viewAndLayersManager.selectionInteractions.contigSelectExtent.changed();
   }
 }
 
