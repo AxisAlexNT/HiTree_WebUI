@@ -143,7 +143,7 @@ const layers: Ref<Array<LayerDescriptor>> = ref([
   gap: 12px;
 
   width: 232px;
-  height: 121px;
+  height: 160px;
 
   /* Global/09. White */
   background: #ffffff;

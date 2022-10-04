@@ -7,4 +7,11 @@ class CurrentSignalRangeResponse {
   ) {}
 }
 
-export { CurrentSignalRangeResponse };
+class TilePOSTResponse {
+  public constructor(
+      public readonly image_base64_source: string,
+      public readonly ranges: CurrentSignalRangeResponse,
+  ){}
+}
+
+export { CurrentSignalRangeResponse, TilePOSTResponse };

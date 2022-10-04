@@ -2,6 +2,8 @@ import {
   ContrastRangeSettings,
   NormalizationSettings,
 } from "@/app/ui/components/ComponentCommon";
+import assert from "assert";
+import { ImageTile, Tile } from "ol";
 interface HiCTAPIRequest {
   requestPath: string;
 }
@@ -162,6 +164,19 @@ class LoadAGPRequest implements HiCTAPIRequest {
   ) {}
 }
 
+// class TileLoadPOSTRequest implements HiCTAPIRequest {
+//   requestPath = "/get_tile";
+
+//   public constructor(
+//     public readonly options: {
+//       readonly tile: Tile;
+//       readonly requestSrc: string;
+//     }
+//   ){
+//     assert(this.options.tile instanceof ImageTile, "TileLoadPOSTRequest is only applicable for loading ImageTiles");
+//   }
+// }
+
 export {
   type HiCTAPIRequest,
   CloseFileRequest,
@@ -182,4 +197,5 @@ export {
   SetContrastRangeRequest,
   GetCurrentSignalRangeRequest,
   SaveFileRequest,
+  // TileLoadPOSTRequest,
 };
