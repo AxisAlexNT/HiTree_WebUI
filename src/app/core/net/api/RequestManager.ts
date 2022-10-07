@@ -9,6 +9,7 @@ import { CurrentSignalRangeResponseDTO, TilePOSTResponseDTO } from "../dto/respo
 import type { OpenFileResponse } from "../netcommon";
 import type { NetworkManager } from "../NetworkManager";
 import {
+  GetAGPForAssemblyRequest,
   GetCurrentSignalRangeRequest,
   GetFastaForAssemblyRequest,
   GetFastaForSelectionRequest,
@@ -118,6 +119,16 @@ class RequestManager {
       .then((response) => response.data)
       .catch((err) => {
         throw new Error("Cannot download FASTA for assembly: " + err);
+      });
+  }
+
+  public async getAGPForAssembly(
+    request: GetAGPForAssemblyRequest
+  ): Promise<unknown> {
+    return this.sendRequest(request, { responseType: "arraybuffer" })
+      .then((response) => response.data)
+      .catch((err) => {
+        throw new Error("Cannot download AGP for assembly: " + err);
       });
   }
 

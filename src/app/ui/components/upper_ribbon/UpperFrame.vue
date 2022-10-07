@@ -2,6 +2,7 @@
   <div class="upper-frame">
     <NavigationBar
       :networkManager="props.networkManager"
+      :mapManager="props.mapManager"
       @selected="onFileSelected"
     ></NavigationBar>
     <HeaderRibbon :mapManager="props.mapManager"></HeaderRibbon>

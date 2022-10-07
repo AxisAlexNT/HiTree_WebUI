@@ -68,16 +68,29 @@
                 >
               </li>
               <li>
-                <a class="dropdown-item" href="#" @click="onAssemblyRequest"
+                <a
+                  class="dropdown-item"
+                  href="#"
+                  @click="onAssemblyFASTARequest"
                   >Export assembly</a
                 >
               </li>
               <li>
-                <a class="dropdown-item" href="#">Export FASTA for selection</a>
+                <a
+                  class="dropdown-item"
+                  href="#"
+                  @click="onSelectionFASTARequest"
+                  >Export FASTA for selection</a
+                >
               </li>
               <li>
                 <a class="dropdown-item" href="#" @click="onLoadAGP"
                   >Load AGP</a
+                >
+              </li>
+              <li>
+                <a class="dropdown-item" href="#" @click="onAssemblyAGPRequest"
+                  >Export to AGP</a
                 >
               </li>
             </ul>
@@ -150,7 +163,11 @@ import OpenFileSelector from "@/app/ui/components/upper_ribbon/OpenFileSelector.
 import FASTAFileSelector from "@/app/ui/components/upper_ribbon/FASTAFileSelector.vue";
 import AGPFileSelector from "@/app/ui/components/upper_ribbon/AGPFileSelector.vue";
 import { Ref, ref } from "vue";
-import { GetFastaForAssemblyRequest } from "@/app/core/net/api/request";
+import {
+  GetAGPForAssemblyRequest,
+  GetFastaForAssemblyRequest,
+} from "@/app/core/net/api/request";
+import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
 const openingFile = ref(false);
 const openingFASTAFile = ref(false);
 const openingAGPFile = ref(false);
@@ -163,6 +180,7 @@ const emit = defineEmits<{
 
 const props = defineProps<{
   networkManager: NetworkManager;
+  mapManager?: ContactMapManager;
 }>();
 
 function onOpenFile() {
@@ -215,14 +233,32 @@ function onAGPFileSelected() {
   openingFASTAFile.value = false;
 }
 
-function onAssemblyRequest() {
+function onAssemblyFASTARequest() {
   props.networkManager.requestManager
     .getFASTAForAssembly(new GetFastaForAssemblyRequest())
     .then((data) => {
+      // eslint-disable-next-line
       const blob = new Blob([data as BlobPart], { type: "text/plain" });
       const link = document.createElement("a");
       link.href = window.URL.createObjectURL(blob);
       link.download = `assembly.fasta`;
+      link.click();
+    });
+}
+
+function onSelectionFASTARequest() {
+  props.mapManager?.eventManager.onExportFASTAForSelectionClicked();
+}
+
+function onAssemblyAGPRequest() {
+  props.networkManager.requestManager
+    .getAGPForAssembly(new GetAGPForAssemblyRequest())
+    .then((data) => {
+      // eslint-disable-next-line
+      const blob = new Blob([data as BlobPart], { type: "text/plain" });
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = `assembly.agp`;
       link.click();
     });
 }
