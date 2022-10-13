@@ -13,6 +13,11 @@ import {
   ListAGPFilesRequest,
   LoadAGPRequest,
   GetFastaForSelectionRequest,
+  SetNormalizationRequest,
+  SetContrastRangeRequest,
+  GetCurrentSignalRangeRequest,
+  SaveFileRequest,
+  GetAGPForAssemblyRequest,
 } from "../api/request";
 import { OutboundDTO } from "./dto";
 
@@ -28,6 +33,10 @@ abstract class HiCTAPIRequestDTO<
 
   static toDTOClass(entity: HiCTAPIRequest) {
     switch (true) {
+      case entity instanceof GetCurrentSignalRangeRequest:
+        return new GetCurrentSignalRangeRequestDTO(
+          entity as GetCurrentSignalRangeRequest
+        );
       case entity instanceof ReverseSelectionRangeRequest:
         return new ReverseSelectionRangeRequestDTO(
           entity as ReverseSelectionRangeRequest
@@ -44,8 +53,18 @@ abstract class HiCTAPIRequestDTO<
         return new UngroupContigsFromScaffoldRequestDTO(
           entity as UngroupContigsFromScaffoldRequest
         );
+      case entity instanceof SetNormalizationRequest:
+        return new SetNormalizationRequestDTO(
+          entity as SetNormalizationRequest
+        );
+      case entity instanceof SetContrastRangeRequest:
+        return new SetContrastRangeRequestDTO(
+          entity as SetContrastRangeRequest
+        );
       case entity instanceof OpenFileRequest:
         return new OpenFileRequestDTO(entity as OpenFileRequest);
+      case entity instanceof SaveFileRequest:
+        return new SaveFileRequestDTO(entity as SaveFileRequest);
       case entity instanceof ListFilesRequest:
         return new ListFilesRequestDTO(entity);
       case entity instanceof ListFASTAFilesRequest:
@@ -61,6 +80,10 @@ abstract class HiCTAPIRequestDTO<
       case entity instanceof GetFastaForAssemblyRequest:
         return new GetFastaForAssemblyRequestDTO(
           entity as GetFastaForAssemblyRequest
+        );
+      case entity instanceof GetAGPForAssemblyRequest:
+        return new GetAGPForAssemblyRequestDTO(
+          entity as GetAGPForAssemblyRequest
         );
       case entity instanceof GetFastaForSelectionRequest:
         return new GetFastaForSelectionRequestDTO(
@@ -103,6 +126,14 @@ class OpenFileRequestDTO extends HiCTAPIRequestDTO<OpenFileRequest> {
     };
   }
 }
+
+class SaveFileRequestDTO extends HiCTAPIRequestDTO<SaveFileRequest> {
+  toDTO(): Record<string, unknown> {
+    return {
+      filename: this.entity.options.filename,
+    };
+  }
+}
 class LinkFASTARequestDTO extends HiCTAPIRequestDTO<LinkFASTARequest> {
   toDTO(): Record<string, unknown> {
     return {
@@ -126,6 +157,30 @@ class GroupContigsIntoScaffoldRequestDTO extends HiCTAPIRequestDTO<GroupContigsI
       scaffoldName: this.entity.options.newScaffoldName,
       spacerLength: this.entity.options.spacerLength,
     };
+  }
+}
+
+class SetNormalizationRequestDTO extends HiCTAPIRequestDTO<SetNormalizationRequest> {
+  toDTO(): Record<string, unknown> {
+    return this.entity.options.normalizationSettings as unknown as Record<
+      string,
+      unknown
+    >;
+  }
+}
+
+class SetContrastRangeRequestDTO extends HiCTAPIRequestDTO<SetContrastRangeRequest> {
+  toDTO(): Record<string, unknown> {
+    return this.entity.options.contrastRangeSettings as unknown as Record<
+      string,
+      unknown
+    >;
+  }
+}
+
+class GetCurrentSignalRangeRequestDTO extends HiCTAPIRequestDTO<GetCurrentSignalRangeRequest> {
+  toDTO(): Record<string, unknown> {
+    return this.entity.options;
   }
 }
 
@@ -166,6 +221,11 @@ class GetFastaForAssemblyRequestDTO extends HiCTAPIRequestDTO<GetFastaForAssembl
     return {};
   }
 }
+class GetAGPForAssemblyRequestDTO extends HiCTAPIRequestDTO<GetFastaForAssemblyRequest> {
+  toDTO(): Record<string, unknown> {
+    return {};
+  }
+}
 
 class GetFastaForSelectionRequestDTO extends HiCTAPIRequestDTO<GetFastaForSelectionRequest> {
   toDTO(): Record<string, unknown> {
@@ -184,7 +244,12 @@ export {
   ListFilesRequestDTO,
   CloseFileRequestDTO,
   GetFastaForAssemblyRequestDTO,
+  GetAGPForAssemblyRequestDTO,
   GroupContigsIntoScaffoldRequestDTO,
   UngroupContigsFromScaffoldRequestDTO,
   ReverseSelectionRangeRequestDTO,
+  SetNormalizationRequestDTO,
+  SetContrastRangeRequestDTO,
+  GetCurrentSignalRangeRequestDTO,
+  SaveFileRequestDTO,
 };

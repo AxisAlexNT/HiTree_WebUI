@@ -1,6 +1,9 @@
+import { ImageTile } from "ol";
+import TileState from "ol/TileState";
 import XYZ, { type Options as XYZOptions } from "ol/source/XYZ";
 import { unref } from "vue";
 import type { HiCViewAndLayersManager } from "./mapmanagers/HiCViewAndLayersManager";
+import { CurrentSignalRangeResponseDTO } from "./net/dto/responseDTO";
 
 class VersionedXYZContactMapSource extends XYZ {
   protected sourceVersion: number;
@@ -12,6 +15,46 @@ class VersionedXYZContactMapSource extends XYZ {
   ) {
     super(xyzOptions);
     this.sourceVersion = 0;
+    this.setTileLoadFunction((tile, src) => {
+      console.assert(tile instanceof ImageTile);
+      const imageTile: ImageTile = tile as ImageTile;
+      const image: HTMLImageElement | HTMLVideoElement =
+        imageTile.getImage() as HTMLImageElement | HTMLVideoElement;
+      const xhr = new XMLHttpRequest();
+      xhr.responseType = "json";
+      xhr.addEventListener("loadend", function (evt) {
+        // console.log("Got XHR Response: ", this.response);
+        const data = this.response;
+        if (data !== undefined && data.image !== undefined) {
+          // image.src = URL.createObjectURL(data.image);
+          // image.src = "data:image/png;base64," + data.image;
+          image.src = data.image;
+          // console.log("Data.ranges is ", data.ranges);
+          // console.log(
+          //   "Constructed ranges DTO: ",
+          //   new CurrentSignalRangeResponseDTO(data.ranges)
+          // );
+          // console.log(
+          //   "Constructed ranges entity: ",
+          //   new CurrentSignalRangeResponseDTO(data.ranges).toEntity()
+          // );
+          layersManager.callbackFns.contrastSliderRangesCallbacks.forEach(
+            (callbackFn) => {
+              callbackFn(
+                new CurrentSignalRangeResponseDTO(data.ranges).toEntity()
+              );
+            }
+          );
+        } else if (this.status != 204) {
+          tile.setState(TileState.ERROR);
+        }
+      });
+      xhr.addEventListener("error", function () {
+        tile.setState(TileState.ERROR);
+      });
+      xhr.open("GET", src);
+      xhr.send();
+    });
     this.do_reload();
   }
 
@@ -31,20 +74,36 @@ class VersionedXYZContactMapSource extends XYZ {
       const col = coord_zxy[1];
       const row = coord_zxy[2];
       return (
-        unref(this.layersManager.mapManager.networkManager.host) +
-        "/get_tile?version=" +
-        this.sourceVersion +
-        "&level=" +
-        (1 + this.zoomLevel) +
-        "&row=" +
-        row +
-        "&col=" +
-        col +
-        "&tile_size=" +
-        unref(this.layersManager.tileSize)
+        `${unref(this.layersManager.mapManager.networkManager.host)}` +
+        `/get_tile?version=${this.sourceVersion}` +
+        `&level=${1 + this.zoomLevel}` +
+        `&row=${row}` +
+        `&col=${col}` +
+        `&tile_size=${unref(this.layersManager.tileSize)}`
       );
     };
   }
+
+  // public getTile(
+  //   z: number,
+  //   x: number,
+  //   y: number,
+  //   pixelRatio: number,
+  //   projection: Projection
+  // ): ImageTile | ReprojTile {
+  //   this.layersManager.callbackFns.contrastSliderCallbacks.forEach(
+  //     (fnCallback) => {
+  //       console.log(
+  //         "Calling callbackFn: ",
+  //         fnCallback,
+  //         " with tile version ",
+  //         this.sourceVersion
+  //       );
+  //       fnCallback(this.sourceVersion);
+  //     }
+  //   );
+  //   return super.getTile(z, x, y, pixelRatio, projection);
+  // }
 }
 
 export { VersionedXYZContactMapSource };

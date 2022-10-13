@@ -1,3 +1,9 @@
+import {
+  ContrastRangeSettings,
+  NormalizationSettings,
+} from "@/app/ui/components/ComponentCommon";
+import assert from "assert";
+import { ImageTile, Tile } from "ol";
 interface HiCTAPIRequest {
   requestPath: string;
 }
@@ -9,6 +15,17 @@ class OpenFileRequest implements HiCTAPIRequest {
     public readonly options: {
       readonly filename: string;
       readonly fastaFilename?: string | undefined;
+    }
+  ) {}
+}
+
+class SaveFileRequest implements HiCTAPIRequest {
+  requestPath = "/save";
+
+  public constructor(
+    public readonly options: {
+      readonly filename?: string;
+      // readonly fastaFilename?: string | undefined;
     }
   ) {}
 }
@@ -33,6 +50,10 @@ class GetFastaForAssemblyRequest implements HiCTAPIRequest {
   requestPath = "/get_fasta_for_assembly";
 }
 
+class GetAGPForAssemblyRequest implements HiCTAPIRequest {
+  requestPath = "/get_agp_for_assembly";
+}
+
 class GroupContigsIntoScaffoldRequest implements HiCTAPIRequest {
   requestPath = "/group_contigs_into_scaffold";
 
@@ -42,6 +63,36 @@ class GroupContigsIntoScaffoldRequest implements HiCTAPIRequest {
       readonly endContigId: number;
       readonly newScaffoldName?: string;
       readonly spacerLength?: number;
+    }
+  ) {}
+}
+
+class SetNormalizationRequest implements HiCTAPIRequest {
+  requestPath = "/set_normalization";
+
+  public constructor(
+    public readonly options: {
+      readonly normalizationSettings: NormalizationSettings;
+    }
+  ) {}
+}
+
+class SetContrastRangeRequest implements HiCTAPIRequest {
+  requestPath = "/set_contrast_range";
+
+  public constructor(
+    public readonly options: {
+      readonly contrastRangeSettings: ContrastRangeSettings;
+    }
+  ) {}
+}
+
+class GetCurrentSignalRangeRequest implements HiCTAPIRequest {
+  requestPath = "/get_current_signal_range";
+
+  public constructor(
+    public readonly options: {
+      readonly tileVersion: number;
     }
   ) {}
 }
@@ -113,10 +164,24 @@ class LoadAGPRequest implements HiCTAPIRequest {
   ) {}
 }
 
+// class TileLoadPOSTRequest implements HiCTAPIRequest {
+//   requestPath = "/get_tile";
+
+//   public constructor(
+//     public readonly options: {
+//       readonly tile: Tile;
+//       readonly requestSrc: string;
+//     }
+//   ){
+//     assert(this.options.tile instanceof ImageTile, "TileLoadPOSTRequest is only applicable for loading ImageTiles");
+//   }
+// }
+
 export {
   type HiCTAPIRequest,
   CloseFileRequest,
   GetFastaForAssemblyRequest,
+  GetAGPForAssemblyRequest,
   OpenFileRequest,
   ListFilesRequest,
   GroupContigsIntoScaffoldRequest,
@@ -128,4 +193,9 @@ export {
   ListAGPFilesRequest,
   LoadAGPRequest,
   GetFastaForSelectionRequest,
+  SetNormalizationRequest,
+  SetContrastRangeRequest,
+  GetCurrentSignalRangeRequest,
+  SaveFileRequest,
+  // TileLoadPOSTRequest,
 };

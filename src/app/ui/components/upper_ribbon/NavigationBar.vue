@@ -20,7 +20,16 @@
                   >Open...</a
                 >
               </li>
-              <li><a class="dropdown-item" href="#">Save as...</a></li>
+              <li>
+                <a class="dropdown-item" href="#" @click="onSaveClicked"
+                  >Save</a
+                >
+                <div
+                  v-if="saving"
+                  class="spinner-border ms-auto"
+                  role="status"
+                ></div>
+              </li>
               <li><a class="dropdown-item" href="#">Close</a></li>
             </ul>
           </li>
@@ -59,16 +68,29 @@
                 >
               </li>
               <li>
-                <a class="dropdown-item" href="#" @click="onAssemblyRequest"
+                <a
+                  class="dropdown-item"
+                  href="#"
+                  @click="onAssemblyFASTARequest"
                   >Export assembly</a
                 >
               </li>
               <li>
-                <a class="dropdown-item" href="#">Export FASTA for selection</a>
+                <a
+                  class="dropdown-item"
+                  href="#"
+                  @click="onSelectionFASTARequest"
+                  >Export FASTA for selection</a
+                >
               </li>
               <li>
                 <a class="dropdown-item" href="#" @click="onLoadAGP"
                   >Load AGP</a
+                >
+              </li>
+              <li>
+                <a class="dropdown-item" href="#" @click="onAssemblyAGPRequest"
+                  >Export to AGP</a
                 >
               </li>
             </ul>
@@ -78,10 +100,32 @@
             <a aria-current="page" class="nav-link active" href="#">Dev</a>
           </li>
           <!-- Connection settings -->
-          <li class="nav-item">
-            <a aria-current="page" class="nav-link active" href="#"
-              >Connection Settings</a
+          <li class="nav-item dropdown">
+            <a
+              aria-current="page"
+              class="nav-link active dropdown-toggle"
+              data-bs-toggle="dropdown"
+              href="#"
+              >Connection</a
             >
+            <ul class="dropdown-menu" id="connection-settings-menu-dropdown">
+              <li id="connection-settings-input-group" class="input-group m-3">
+                <input
+                  id="global-search-input"
+                  class="form-control m-0"
+                  placeholder="http://localhost:5000/"
+                  type="text"
+                  v-model="gatewayAddress"
+                />
+                <button
+                  class="btn btn-sm btn-outline-dark"
+                  id="set-gateway-btn"
+                  @click="onGatewayChanged"
+                >
+                  Set API gateway
+                </button>
+              </li>
+            </ul>
           </li>
           <!-- Report a bug -->
           <li class="nav-item">
@@ -118,11 +162,17 @@ import type { NetworkManager } from "@/app/core/net/NetworkManager.js";
 import OpenFileSelector from "@/app/ui/components/upper_ribbon/OpenFileSelector.vue";
 import FASTAFileSelector from "@/app/ui/components/upper_ribbon/FASTAFileSelector.vue";
 import AGPFileSelector from "@/app/ui/components/upper_ribbon/AGPFileSelector.vue";
-import { ref } from "vue";
-import { GetFastaForAssemblyRequest } from "@/app/core/net/api/request";
+import { Ref, ref } from "vue";
+import {
+  GetAGPForAssemblyRequest,
+  GetFastaForAssemblyRequest,
+} from "@/app/core/net/api/request";
+import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
 const openingFile = ref(false);
 const openingFASTAFile = ref(false);
 const openingAGPFile = ref(false);
+const saving = ref(false);
+const gatewayAddress: Ref<string> = ref("http://localhost:5000/");
 
 const emit = defineEmits<{
   (e: "selected", filename: string): void;
@@ -130,6 +180,7 @@ const emit = defineEmits<{
 
 const props = defineProps<{
   networkManager: NetworkManager;
+  mapManager?: ContactMapManager;
 }>();
 
 function onOpenFile() {
@@ -144,12 +195,23 @@ function onFileDismissed() {
   openingFile.value = false;
 }
 
+function onSaveClicked(): void {
+  saving.value = true;
+  props.networkManager.requestManager.save().finally(() => {
+    saving.value = false;
+  });
+}
+
 function onOpenFASTAFile() {
   openingFASTAFile.value = true;
 }
 
 function onFASTAFileDismissed() {
   openingFASTAFile.value = false;
+}
+
+function onGatewayChanged() {
+  props.networkManager.onHostChanged(gatewayAddress.value);
 }
 
 function onAGPFileDismissed() {
@@ -171,14 +233,32 @@ function onAGPFileSelected() {
   openingFASTAFile.value = false;
 }
 
-function onAssemblyRequest() {
+function onAssemblyFASTARequest() {
   props.networkManager.requestManager
     .getFASTAForAssembly(new GetFastaForAssemblyRequest())
     .then((data) => {
+      // eslint-disable-next-line
       const blob = new Blob([data as BlobPart], { type: "text/plain" });
       const link = document.createElement("a");
       link.href = window.URL.createObjectURL(blob);
       link.download = `assembly.fasta`;
+      link.click();
+    });
+}
+
+function onSelectionFASTARequest() {
+  props.mapManager?.eventManager.onExportFASTAForSelectionClicked();
+}
+
+function onAssemblyAGPRequest() {
+  props.networkManager.requestManager
+    .getAGPForAssembly(new GetAGPForAssemblyRequest())
+    .then((data) => {
+      // eslint-disable-next-line
+      const blob = new Blob([data as BlobPart], { type: "text/plain" });
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = `assembly.agp`;
       link.click();
     });
 }
@@ -208,5 +288,13 @@ function onAssemblyRequest() {
   flex: none;
   order: 0;
   flex-grow: 0;
+}
+
+#connection-settings-menu-dropdown {
+  width: 400%;
+}
+
+#set-gateway-btn {
+  margin-right: 30px;
 }
 </style>

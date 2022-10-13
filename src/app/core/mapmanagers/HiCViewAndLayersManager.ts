@@ -28,6 +28,7 @@ import {
 import Fill from "ol/style/Fill";
 import { pointerMove, shiftKeyOnly, singleClick } from "ol/events/condition";
 import type { ContigDescriptor } from "../domain/ContigDescriptor";
+import { CurrentSignalRangeResponse } from "../net/api/response";
 
 interface LayerResolutionBorders {
   minResolutionInclusive: number;
@@ -142,6 +143,14 @@ class HiCViewAndLayersManager {
     readonly translocationArrowHoverInteraction: Select;
     readonly translocationArrowSelectionInteraction: Select;
     readonly contigSelectExtent: Extent;
+  };
+
+  public readonly callbackFns: {
+    readonly contrastSliderRangesCallbacks: ((
+      ranges: CurrentSignalRangeResponse
+    ) => void)[];
+  } = {
+    contrastSliderRangesCallbacks: [],
   };
 
   constructor(
@@ -327,6 +336,12 @@ class HiCViewAndLayersManager {
   public onTileSizeChanged(tileSize: number): void {
     this.tileSize = tileSize;
     this.reloadTiles();
+  }
+
+  public addContrastSliderCallback(
+    callbackfn: (ranges: CurrentSignalRangeResponse) => void
+  ): void {
+    this.callbackFns.contrastSliderRangesCallbacks.push(callbackfn);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -580,7 +595,7 @@ class HiCViewAndLayersManager {
     this.selectionInteractions.translocationArrowSelectionInteraction
       .getFeatures()
       .on("add", () => {
-        this.mapManager.onClickInTranslocationMode();
+        this.mapManager.eventManager.onClickInTranslocationMode();
         this.selectionInteractions.translocationArrowSelectionInteraction
           .getFeatures()
           .clear();

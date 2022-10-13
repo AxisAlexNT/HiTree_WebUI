@@ -41,10 +41,13 @@
         </select>
       </div>
       <div class="mb-3">
-        <select class="form-select form-select-sm">
-          <option selected value="0">Normalization None</option>
-          <option value="1">Normalization Cooler</option>
-        </select>
+        <!-- <select class="form-select form-select-sm" v-model="normalizationTypeInt" @change="onNormalizationChanged">
+          <option selected value="0">Normalization None (Linear)</option>
+          <option value="1">Normalization Log2</option>
+          <option value="2">Normalization Log10</option>
+          <option value="3">Normalization Cooler</option>
+        </select> -->
+        <NormalizationSelector :map-manager="props.mapManager" />
       </div>
     </div>
     <div id="right-header-block" class="input-group">
@@ -52,7 +55,7 @@
         id="reload-tiles-button"
         class="btn-sm btn-outline-primary"
         type="button"
-        @click="$emit('reloadTiles')"
+        @click="props.mapManager?.reloadTiles()"
       >
         Reload tiles
       </button>
@@ -68,10 +71,45 @@
 </template>
 
 <script setup lang="ts">
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const emit = defineEmits<{
-  (e: "reloadTiles"): void;
+import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
+import NormalizationSelector from "./NormalizationSelector.vue";
+
+const props = defineProps<{
+  mapManager?: ContactMapManager;
 }>();
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// const emit = defineEmits<{
+//   (e: "reloadTiles"): void;
+//   // (e: "normalizationChanged", normalizationType: NormalizationType): void;
+// }>();
+
+// const normalizationTypeInt: Ref<number> = ref(0);
+
+/*
+function onNormalizationChanged() {
+  let normalizationType: NormalizationType;
+  switch (Number(unref(normalizationTypeInt))) {
+    case 0:
+      normalizationType = NormalizationType.LINEAR;
+      break;
+    case 1:
+      normalizationType = NormalizationType.LOG2;
+      break;
+    case 2:
+      normalizationType = NormalizationType.LOG10;
+      break;
+    case 3:
+      normalizationType = NormalizationType.COOLER_BALANCE;
+      break;
+    default:
+      throw new Error(
+        `Unknown Normalization Type requested: ${normalizationTypeInt.value}`
+      );
+  }
+  emit("normalizationChanged", normalizationType);
+}
+*/
 </script>
 
 <style scoped>

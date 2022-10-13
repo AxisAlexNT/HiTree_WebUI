@@ -1,10 +1,16 @@
+import assert from "assert";
 import axios, { type AxiosRequestConfig, type AxiosResponse } from "axios";
+import { ImageTile, Tile } from "ol";
+import TileState from "ol/TileState";
 import type { AssemblyInfo } from "../../domain/AssemblyInfo";
 import { AssemblyInfoDTO, OpenFileResponseDTO } from "../dto/dto";
 import { HiCTAPIRequestDTO } from "../dto/requestDTO";
+import { CurrentSignalRangeResponseDTO, TilePOSTResponseDTO } from "../dto/responseDTO";
 import type { OpenFileResponse } from "../netcommon";
 import type { NetworkManager } from "../NetworkManager";
 import {
+  GetAGPForAssemblyRequest,
+  GetCurrentSignalRangeRequest,
   GetFastaForAssemblyRequest,
   GetFastaForSelectionRequest,
   GroupContigsIntoScaffoldRequest,
@@ -16,9 +22,11 @@ import {
   MoveSelectionRangeRequest,
   OpenFileRequest,
   ReverseSelectionRangeRequest,
+  SaveFileRequest,
   UngroupContigsFromScaffoldRequest,
   type HiCTAPIRequest,
 } from "./request";
+import { CurrentSignalRangeResponse, TilePOSTResponse } from "./response";
 
 class RequestManager {
   constructor(public readonly networkManager: NetworkManager) {}
@@ -43,6 +51,16 @@ class RequestManager {
     )
       .then((response) => response.data)
       .then((json) => new OpenFileResponseDTO(json).toEntity());
+  }
+
+  public async getSignalRanges(
+    tileVersion: number
+  ): Promise<CurrentSignalRangeResponse> {
+    return this.sendRequest(
+      new GetCurrentSignalRangeRequest({ tileVersion: tileVersion })
+    )
+      .then((response) => response.data)
+      .then((json) => new CurrentSignalRangeResponseDTO(json).toEntity());
   }
 
   public async listFiles(): Promise<string[]> {
@@ -70,6 +88,12 @@ class RequestManager {
     return response.data as string[];
   }
 
+  public async save(): Promise<void> {
+    return this.sendRequest(new SaveFileRequest({})).then(() => {
+      return;
+    });
+  }
+
   public async loadAGP(request: LoadAGPRequest): Promise<void> {
     return this.sendRequest(request)
       .then((response) => response.data)
@@ -95,6 +119,16 @@ class RequestManager {
       .then((response) => response.data)
       .catch((err) => {
         throw new Error("Cannot download FASTA for assembly: " + err);
+      });
+  }
+
+  public async getAGPForAssembly(
+    request: GetAGPForAssemblyRequest
+  ): Promise<unknown> {
+    return this.sendRequest(request, { responseType: "arraybuffer" })
+      .then((response) => response.data)
+      .catch((err) => {
+        throw new Error("Cannot download AGP for assembly: " + err);
       });
   }
 
@@ -139,6 +173,20 @@ class RequestManager {
       .then((response) => response.data)
       .then((json) => new AssemblyInfoDTO(json).toEntity());
   }
+
+  /*
+  public async loadTilePOSTFunction(tile: Tile, requestPath: string): Promise<void> {
+    assert(tile instanceof ImageTile, "TileLoadPOSTRequest is only applicable for loading ImageTiles");
+    return axios.get("requestPath").then(
+      (response) => {
+        return new TilePOSTResponseDTO(response.data).toEntity()
+      }
+    ).then((resp) => {
+      const imageTile: ImageTile = tile as ImageTile;
+      const image: HTMLImageElement | HTMLVideoElement =
+        imageTile.getImage() as HTMLImageElement | HTMLVideoElement;
+    }).catch(() => tile.setState(TileState.ERROR));
+  }*/
 }
 
 export { RequestManager };

@@ -1,0 +1,194 @@
+.contrast-slider * {
+  box-sizing: border-box;
+  padding: 0px;
+  margin: 0px;
+}
+.contrast-slider {
+  width: 100% !important;
+  display: flex;
+  position: relative;
+  border: none !important; /*solid 1px gray;*/
+  /*border-radius: 10px;*/
+  padding: 20px 10px;
+  box-shadow: none !important; /* 1px 1px 4px black;*/
+  flex-direction: column;
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Old versions of Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge,*/
+}
+.contrast-slider .bar {
+  display: flex;
+}
+.contrast-slider .bar-left {
+  width: 25%;
+  background-color: rgba(255, 255, 255, 1);
+  border-radius: 10px 0px 0px 10px;
+  box-shadow: inset 0px 0px 5px black;
+  padding: 4px 0px;
+}
+.contrast-slider .bar-right {
+  width: 25%;
+  background-color:rgba(0, 255, 0, 1);
+  border-radius: 0px 10px 10px 0px;
+  /* box-shadow: inset 0px 0px 5px black; */
+}
+.contrast-slider .bar-inner {
+  /* background-color: red !important; */
+  background: rgb(255, 255, 255) !important;
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(0, 255, 0, 1) 100%
+  ) !important;
+  display: flex;
+  flex-grow: 1;
+  flex-shrink: 1;
+  justify-content: space-between;
+  position: relative;
+  border-top: solid 1px black;
+  border-bottom: solid 1px black;
+  justify-content: space-between;
+  /* box-shadow: inset 0px 0px 5px black; */
+}
+.contrast-slider .bar-inner-left {
+  width: 50%;
+}
+.contrast-slider .bar-inner-right {
+  width: 50%;
+}
+.contrast-slider .thumb {
+  background-color: red;
+  position: relative;
+  z-index: 1;
+  cursor: pointer;
+}
+.contrast-slider .thumb::before {
+  content: "";
+  background-color: white;
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: solid 1px black;
+  box-shadow: 0px 0px 3px black, inset 0px 0px 5px gray;
+  border-radius: 50%;
+  z-index: 1;
+  margin: -8px;
+  cursor: pointer;
+}
+.contrast-slider .input-type-range:focus + .thumb::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  width: 11px;
+  height: 11px;
+  z-index: 2;
+  border-radius: 50%;
+  border: dotted 1px black;
+  box-shadow: 0px 0px 5px white, inset 0px 0px 10px black;
+}
+.contrast-slider .caption {
+  position: absolute;
+  bottom: 35px;
+  width: 2px;
+  height: 2px;
+  left: 1px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: visible;
+  display: none;
+}
+.contrast-slider .thumb .caption * {
+  position: absolute;
+  min-width: 30px;
+  height: 30px;
+  font-size: 75%;
+  text-align: center;
+  line-height: 30px;
+  background-color: blue;
+  border-radius: 15px;
+  color: white;
+  box-shadow: 0px 0px 5px black;
+  padding: 0px 5px;
+  white-space: nowrap;
+}
+.contrast-slider .thumb:active .caption {
+  display: flex;
+}
+.contrast-slider .input-type-range:focus + .thumb .caption {
+  display: flex;
+}
+.contrast-slider .input-type-range {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.contrast-slider .ruler {
+  margin: 10px 0px -5px 0px;
+  display: flex;
+  /* display: none; */
+  overflow: hidden;
+}
+.contrast-slider .ruler .ruler-rule {
+  border-left: solid 1px;
+  border-bottom: solid 1px;
+  display: flex;
+  flex-grow: 1;
+  flex-shrink: 1;
+  padding: 5px 0px;
+}
+.contrast-slider .ruler .ruler-rule:last-child {
+  border-right: solid 1px;
+}
+
+.contrast-slider .sub-ruler {
+  margin: -2px 0px -5px 0px;
+  display: flex; /*
+  display: none; */
+}
+.contrast-slider .sub-ruler .ruler-sub-rule {
+  border-left: solid 1px;
+  border-bottom: solid 1px;
+  display: flex;
+  flex-grow: 1;
+  flex-shrink: 1;
+  padding: 3px 0px;
+}
+.contrast-slider .sub-ruler .ruler-sub-rule:last-child {
+  border-right: solid 1px;
+}
+
+.contrast-slider .labels {
+  display: flex;
+  justify-content: space-between;
+  padding: 0px;
+  margin-top: 10px;
+  margin-bottom: -20px;
+  /* display: none; */
+}
+.contrast-slider .label {
+  font-size: 80%;
+  display: flex;
+  width: 1px;
+  justify-content: center;
+}
+.contrast-slider .label:first-child {
+  justify-content: start;
+}
+.contrast-slider .label:last-child {
+  justify-content: end;
+}
+.contrast-slider.zero-ranage-margin .thumb-left {
+  right: 12px;
+}
+.contrast-slider.zero-ranage-margin .thumb-right {
+  left: 8px;
+}

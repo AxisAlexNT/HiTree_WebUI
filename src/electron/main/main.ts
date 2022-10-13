@@ -28,11 +28,12 @@ console.log("isDev is " + isDev);
 function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1440,
-    height: 1024,
+    width: 1456,
+    height: 1100,
     webPreferences: {
       preload: preloadURLFormatted,
     },
+    autoHideMenuBar: true,
   });
 
   // and load the index.html of the app.

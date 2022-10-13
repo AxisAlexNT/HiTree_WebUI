@@ -2,15 +2,12 @@
   <div>
     <UpperFrame
       :networkManager="networkManager"
+      :mapManager="mapManager"
       @selected="onFileSelected"
-      @reloadTiles="reloadTiles"
     ></UpperFrame>
     <ToolBar :mapManager="mapManager"></ToolBar>
-    <ContactMap
-      v-bind:filename="filename"
-      v-bind:manager="mapManager"
-    ></ContactMap>
-    <SideBar></SideBar>
+    <ContactMap :filename="filename" :manager="mapManager"></ContactMap>
+    <SideBar :mapManager="mapManager"></SideBar>
   </div>
 </template>
 
@@ -23,7 +20,7 @@ import {
   ContactMapManager,
   // type ContactMapManagerOptions,
 } from "@/app/core/mapmanagers/ContactMapManager";
-import { reactive, ref, watch, type Ref } from "vue";
+import { ref, watch, type Ref } from "vue";
 import { NetworkManager } from "../core/net/NetworkManager";
 
 // Reactively use these refs only inside component
@@ -101,80 +98,6 @@ function onFileSelected(newFilename: string) {
     }
   }
 }
-
-function reloadTiles(): void {
-  mapManager.value?.reloadTiles();
-}
-
-/*
-function rotateContig(): void {
-  if (contigToRotate.value) {
-    const query_payload = {
-      filename: filename,
-      contigToRotate: contigToRotate,
-    };
-    axios
-      .post(host.value + "/reverse", query_payload)
-      .then((response) => {
-        const contig_info = response.data["contig_info"];
-        contig_dimension_holder.updateContigData(contig_info);
-        reloadTiles();
-      })
-      .catch(responseErrorHandler);
-  }
-}
-
-function moveContig(): void {
-  if (
-    (contigToMove.value || contigToMove.value === 0) &&
-    (moveTargetIndex.value || moveTargetIndex.value === 0)
-  ) {
-    const query_payload = {
-      filename: filename,
-      contigToMove: contigToMove,
-      targetIndex: moveTargetIndex,
-    };
-    axios
-      .post(host.value + "/move", query_payload)
-      .then((response) => {
-        const contig_info = response.data["contig_info"];
-        contig_dimension_holder.updateContigData(contig_info);
-        reloadTiles();
-      })
-      .catch(responseErrorHandler);
-  }
-}
-
-function save() {
-  if (filename) {
-    const query_payload = { filename: filename };
-    axios
-      .post(host.value + "/save", query_payload)
-      .then((response) => {
-        const contig_info = response.data["contig_info"];
-        contig_dimension_holder.updateContigData(contig_info);
-        reloadTiles();
-      })
-      .catch(responseErrorHandler);
-  }
-}
-
-function getAssembly() {
-  axios
-    .post(host.value + "/get_fasta_for_assembly", {
-      data: { fasta_filename: fasta_filename },
-      responseType: "arraybuffer",
-    })
-    .then((response) => {
-      const blob = new Blob([response.data], { type: "text/plain" });
-      const link = document.createElement("a");
-      link.href = window.URL.createObjectURL(blob);
-      link.download = filename + ".assembly.fasta.txt";
-      link.click();
-    })
-    .catch(responseErrorHandler);
-}
-*/
 </script>
 
 <style scoped></style>
