@@ -6,6 +6,7 @@
       @selected="onFileSelected"
     ></UpperFrame>
     <ToolBar :mapManager="mapManager"></ToolBar>
+    <IGVTracks />
     <ContactMap :filename="filename" :manager="mapManager"></ContactMap>
     <SideBar :mapManager="mapManager"></SideBar>
   </div>
@@ -22,6 +23,7 @@ import {
 } from "@/app/core/mapmanagers/ContactMapManager";
 import { ref, watch, type Ref } from "vue";
 import { NetworkManager } from "../core/net/NetworkManager";
+import IGVTracks from "./components/tracks/IGVTracks.vue";
 
 // Reactively use these refs only inside component
 // Pass them to Map Manager on creation as values, not Refs as objects

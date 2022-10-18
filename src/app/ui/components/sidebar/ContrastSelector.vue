@@ -6,13 +6,15 @@
     Selected: [{{ lowerBound }}, {{ upperBound }}]
   </div>
   <div id="contrast-slider-div">
-    <label id="contrast-slider-label" class="h6" for="contrast-slider"><strong>Contrast range:</strong></label>
+    <label id="contrast-slider-label" class="h6" for="contrast-slider"
+      ><strong>Contrast range:</strong></label
+    >
     <!-- <h5><strong>Contrast range:</strong></h5> -->
     <MultiRangeSlider
       id="contrast-slider"
       :base-class-name="baseClassName"
-      :min="signalsMins[1+currentZoomLevel] ?? 0"
-      :max="signalsMaxs[1+currentZoomLevel] ?? 1"
+      :min="signalsMins[1 + currentZoomLevel] ?? 0"
+      :max="signalsMaxs[1 + currentZoomLevel] ?? 1"
       :step="stepLength"
       :ruler="false"
       :label="false"
@@ -31,8 +33,8 @@
           class="form-check-input number-input"
           type="number"
           id="lower-bound-input"
-          :min="signalsMins[1+currentZoomLevel] ?? 0"
-          :max="signalsMaxs[1+currentZoomLevel] ?? 1"
+          :min="signalsMins[1 + currentZoomLevel] ?? 0"
+          :max="signalsMaxs[1 + currentZoomLevel] ?? 1"
           :step="stepLength"
           v-model.number="lowerBound"
         />
@@ -45,8 +47,8 @@
           class="form-check-input number-input"
           type="number"
           id="upper-bound-input"
-          :min="signalsMins[1+currentZoomLevel] ?? 0"
-          :max="signalsMaxs[1+currentZoomLevel] ?? 1"
+          :min="signalsMins[1 + currentZoomLevel] ?? 0"
+          :max="signalsMaxs[1 + currentZoomLevel] ?? 1"
           :step="stepLength"
           v-model.number="upperBound"
         />
@@ -116,7 +118,11 @@ watch(
     // console.log("MapManager changed from: ", oldManager, "to: ", newManager);
     newManager?.addContrastSliderCallback(updateWithRanges);
     newManager?.viewAndLayersManager.resolutionChangedAsyncSubscribers.push(
-      () => onZoomLevelChanged(newManager?.viewAndLayersManager?.currentViewState.resolutionDesciptor.imageSizeIndex ?? 0)
+      () =>
+        onZoomLevelChanged(
+          newManager?.viewAndLayersManager?.currentViewState.resolutionDesciptor
+            .imageSizeIndex ?? 0
+        )
     );
   }
 );
@@ -173,48 +179,87 @@ function updateWithRanges(ranges: CurrentSignalRangeResponse) {
   signalsMins.value = ranges.minSignalAtLevel;
 }
 
-async function onZoomLevelChanged(newIndex: number): Promise<void>{
-  if ((!newIndex && newIndex !== 0) || (newIndex == currentZoomLevel.value)){
+async function onZoomLevelChanged(newIndex: number): Promise<void> {
+  if ((!newIndex && newIndex !== 0) || newIndex == currentZoomLevel.value) {
     return;
   }
-  const currentSignalsMins: Array<number|undefined> = unref(signalsMins.value);
-  const currentSignalsMaxs: Array<number|undefined> = unref(signalsMins.value);
-  if (!isFinite(currentSignalsMins[1+newIndex]??NaN) || !isFinite(currentSignalsMaxs[1+newIndex]??NaN)){
-    if (debug){
-      console.log(`Not updating contrast ratio because signalsMins.value[1+newIndex] where newIndex is ${newIndex} is not finite: ${signalsMins.value}[${newIndex}] === ${signalsMins.value[1+newIndex]}`);
-      console.log(`Not updating contrast ratio because signalsMaxs.value[1+newIndex] where newIndex is ${newIndex} is not finite: ${signalsMaxs.value}[${newIndex}] === ${signalsMaxs.value[1+newIndex]}`);
+  const currentSignalsMins: Array<number | undefined> = unref(
+    signalsMins.value
+  );
+  const currentSignalsMaxs: Array<number | undefined> = unref(
+    signalsMins.value
+  );
+  if (
+    !isFinite(currentSignalsMins[1 + newIndex] ?? NaN) ||
+    !isFinite(currentSignalsMaxs[1 + newIndex] ?? NaN)
+  ) {
+    if (debug) {
+      console.log(
+        `Not updating contrast ratio because signalsMins.value[1+newIndex] where newIndex is ${newIndex} is not finite: ${
+          signalsMins.value
+        }[${newIndex}] === ${signalsMins.value[1 + newIndex]}`
+      );
+      console.log(
+        `Not updating contrast ratio because signalsMaxs.value[1+newIndex] where newIndex is ${newIndex} is not finite: ${
+          signalsMaxs.value
+        }[${newIndex}] === ${signalsMaxs.value[1 + newIndex]}`
+      );
       console.log("SignalsMins value is ", currentSignalsMins);
       console.log("SignalsMaxs value is ", currentSignalsMaxs);
     }
     return;
   }
-  if (debug){
-    console.log("Current zoom level is ", currentZoomLevel, " moving to level ", newIndex);
+  if (debug) {
+    console.log(
+      "Current zoom level is ",
+      currentZoomLevel,
+      " moving to level ",
+      newIndex
+    );
     console.log("SignalsMins: ", signalsMins, " Maxs: ", signalsMaxs);
   }
   const oldRange = Math.max(1e-8, signalMax.value - signalMin.value);
   const ratioLower = (lowerBound.value - signalMin.value) / oldRange;
   const ratioUpper = (upperBound.value - signalMin.value) / oldRange;
-  if (debug){
-    console.log(`Contrast slider: OLD: min=${signalMin.value} max=${signalMax.value} range=${oldRange} lowerBound=${lowerBound.value} upperBound=${upperBound.value} lBratio=${ratioLower} uBratio=${ratioUpper}`);
+  if (debug) {
+    console.log(
+      `Contrast slider: OLD: min=${signalMin.value} max=${signalMax.value} range=${oldRange} lowerBound=${lowerBound.value} upperBound=${upperBound.value} lBratio=${ratioLower} uBratio=${ratioUpper}`
+    );
   }
-  signalMin.value = signalsMins.value[(1+newIndex) ?? 0];
-  signalMax.value = signalsMaxs.value[(1+newIndex) ?? 0];
-  if (!isFinite(signalMin.value)){
-    if (debug){
-      console.log("Minimum value for slider is not finite: ", signalMin.value, "=", signalsMins.value, "[", 1+newIndex, "]=", signalsMins.value[1+newIndex]);
+  signalMin.value = signalsMins.value[1 + newIndex ?? 0];
+  signalMax.value = signalsMaxs.value[1 + newIndex ?? 0];
+  if (!isFinite(signalMin.value)) {
+    if (debug) {
+      console.log(
+        "Minimum value for slider is not finite: ",
+        signalMin.value,
+        "=",
+        signalsMins.value,
+        "[",
+        1 + newIndex,
+        "]=",
+        signalsMins.value[1 + newIndex]
+      );
     }
     signalMin.value = 0;
   }
-  if (!isFinite(signalMax.value)){
+  if (!isFinite(signalMax.value)) {
     console.log("Maximum value for slider is not finite: ", signalMin.value);
     signalMax.value = 1;
   }
   const newRange = Math.max(0, signalMax.value - signalMin.value);
-  lowerBound.value = Math.max(lowerBound.value, signalMin.value + newRange*ratioLower);
-  upperBound.value = Math.min(upperBound.value, signalMin.value + newRange*ratioUpper);
-  if (debug){
-    console.log(`Contrast slider: NEW: min=${signalMin.value} max=${signalMax.value} range=${newRange} lowerBound=${lowerBound.value} upperBound=${upperBound.value}`);
+  lowerBound.value = Math.max(
+    lowerBound.value,
+    signalMin.value + newRange * ratioLower
+  );
+  upperBound.value = Math.min(
+    upperBound.value,
+    signalMin.value + newRange * ratioUpper
+  );
+  if (debug) {
+    console.log(
+      `Contrast slider: NEW: min=${signalMin.value} max=${signalMax.value} range=${newRange} lowerBound=${lowerBound.value} upperBound=${upperBound.value}`
+    );
   }
   currentZoomLevel.value = newIndex;
 }
@@ -232,15 +277,17 @@ async function onZoomLevelChanged(newIndex: number): Promise<void>{
 
 #contrast-slider-label {
   margin-bottom: -20px;
-  margin-top: 20px;
+  /* margin-top: 20px;*/
+  height: 16pt;
 }
 
-#contrast-slider{
+#contrast-slider {
   margin-top: -10px;
 }
 
 .number-input {
   width: 100px;
+  height: 16pt;
   margin-left: 10px;
 }
 </style>
