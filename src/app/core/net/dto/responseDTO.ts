@@ -32,14 +32,15 @@ class CurrentSignalRangeResponseDTO extends InboundDTO<CurrentSignalRangeRespons
   }
 }
 
-class TilePOSTResponseDTO extends InboundDTO<TilePOSTResponse>{
+class TilePOSTResponseDTO extends InboundDTO<TilePOSTResponse> {
   public toEntity(): TilePOSTResponse {
     return new TilePOSTResponse(
       this.json.image as string,
-      new CurrentSignalRangeResponseDTO(this.json.ranges as Record<string, unknown>).toEntity()
+      new CurrentSignalRangeResponseDTO(
+        this.json.ranges as Record<string, unknown>
+      ).toEntity()
     );
   }
-
 }
 
 export { CurrentSignalRangeResponseDTO, TilePOSTResponseDTO };

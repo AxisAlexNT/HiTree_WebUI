@@ -1,11 +1,21 @@
 {
-  "include": ["src/electron/**/*", "src/**/*.vue", "src/**/*", "env.d.ts"],
+  "include": [
+    "src/electron/**/*",
+    "src/**/*.vue",
+    "src/**/*",
+    "env.d.ts",
+  ],
+  "exclude": [
+    "node_modules",
+  ],
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     },
-    "target": "esnext",
+    "target": "ESNext",
     "useDefineForClassFields": true,
     "module": "CommonJS",
     "moduleResolution": "node",
@@ -15,14 +25,26 @@
     "resolveJsonModule": true,
     "isolatedModules": false,
     "esModuleInterop": true,
-    "lib": ["esnext", "dom"],
+    "lib": [
+      "ESNext",
+      "dom"
+    ],
     "skipLibCheck": true,
     "outDir": "dist/electron",
-    "allowJs": true
+    "allowJs": true,
+    "checkJs": false,
+    "allowSyntheticDefaultImports": true,
+    "declaration": true,
   },
   "references": [
     {
       "path": "./tsconfig.node.json"
     }
-  ]
+  ],
+  "typeAcquisition": {
+    "enable": true
+  },
+  "vueCompilerOptions": {
+    "experimentalDisableTemplateSupport": true
+  },
 }

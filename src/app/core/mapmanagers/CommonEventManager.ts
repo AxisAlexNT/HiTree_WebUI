@@ -326,10 +326,12 @@ class CommonEventManager {
   }
 
   public resetSelection(): void {
-    this.mapManager.viewAndLayersManager.selectionInteractions.contigSelectExtent.setExtent(
-      undefined
-    );
-    this.mapManager.viewAndLayersManager.selectionInteractions.contigSelectExtent.changed();
+    const extentInteraction =
+      this.mapManager.viewAndLayersManager.selectionInteractions
+        .contigSelectExtent;
+    // @ts-expect-error "Extent should be reset"
+    extentInteraction.setExtent(undefined);
+    extentInteraction.changed();
   }
 }
 

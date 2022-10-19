@@ -2,8 +2,10 @@
   <div class="toolbar-outer">
     <div class="toolbar-upper">
       <FirstBlock></FirstBlock>
-      <Rearrangements :map-manager="props.mapManager"></Rearrangements>
-      <Scaffolding :map-manager="props.mapManager"></Scaffolding>
+      <RearrangementButtons
+        :map-manager="props.mapManager"
+      ></RearrangementButtons>
+      <ScaffoldingButtons :map-manager="props.mapManager"></ScaffoldingButtons>
       <ThirdBlock></ThirdBlock>
     </div>
     <div class="toolbar-bottom">
@@ -16,9 +18,9 @@
 import FirstBlock from "@/app/ui/components/toolbar/upper_blocks/FirstBlock.vue";
 import ThirdBlock from "@/app/ui/components/toolbar/upper_blocks/ThirdBlock.vue";
 import BottomButtons from "@/app/ui/components/toolbar/bottom_blocks/BottomButtons.vue";
-import Rearrangements from "./upper_blocks/Rearrangements.vue";
-import Scaffolding from "./upper_blocks/Scaffolding.vue";
 import type { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
+import RearrangementButtons from "./upper_blocks/RearrangementButtons.vue";
+import ScaffoldingButtons from "./upper_blocks/ScaffoldingButtons.vue";
 
 const props = defineProps<{
   readonly mapManager?: ContactMapManager | undefined;

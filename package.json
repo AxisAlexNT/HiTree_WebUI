@@ -34,13 +34,14 @@
     "igv": "^2.13.3"
   },
   "devDependencies": {
-    "@rushstack/eslint-patch": "^1.1.0",
+    "@rushstack/eslint-patch": "^1.2.0",
     "@types/node": "^16.11.43",
     "@vitejs/plugin-vue": "^3.1.2",
     "@vitejs/plugin-vue-jsx": "^2.0.1",
     "@vue/eslint-config-prettier": "^7.0.0",
     "@vue/eslint-config-typescript": "^11.0.2",
     "@vue/tsconfig": "^0.1.3",
+    "@typescript-eslint/typescript-estree": "^5.40.1",
     "concurrently": "^7.4.0",
     "cross-env": "^7.0.3",
     "electron": "^20.1.1",

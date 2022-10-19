@@ -5,7 +5,10 @@ import TileState from "ol/TileState";
 import type { AssemblyInfo } from "../../domain/AssemblyInfo";
 import { AssemblyInfoDTO, OpenFileResponseDTO } from "../dto/dto";
 import { HiCTAPIRequestDTO } from "../dto/requestDTO";
-import { CurrentSignalRangeResponseDTO, TilePOSTResponseDTO } from "../dto/responseDTO";
+import {
+  CurrentSignalRangeResponseDTO,
+  TilePOSTResponseDTO,
+} from "../dto/responseDTO";
 import type { OpenFileResponse } from "../netcommon";
 import type { NetworkManager } from "../NetworkManager";
 import {
