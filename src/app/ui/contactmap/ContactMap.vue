@@ -12,8 +12,12 @@ import "ol/ol.css";
 .hic-contact-map {
   position: absolute;
   width: 1019px;
-  height: 846px;
+  height: 730px;
   left: 189px;
-  top: 178px;
+  margin-left: 60px;
+  left: 10%;
+  top: 238px;
+  /* width: 100%; */
+  /* height: 100%; */
 }
 </style>

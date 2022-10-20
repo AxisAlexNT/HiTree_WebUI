@@ -275,7 +275,8 @@ function onAssemblyAGPRequest() {
   align-items: center;
   padding: 8px 16px;
 
-  width: 1440px;
+  /* width: 1440px; */
+  width: 100%;
   height: 56px;
 
   /* Global/07. Light */

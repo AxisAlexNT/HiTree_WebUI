@@ -39,7 +39,8 @@ function onFileSelected(filename: string): void {
   padding: 0px;
 
   position: absolute;
-  width: 1440px;
+  /* width: 1840px; */
+  width: 100%;
   height: 109px;
   left: 0px;
   top: 0px;

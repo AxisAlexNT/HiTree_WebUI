@@ -124,7 +124,7 @@ function onNormalizationChanged() {
   padding: 12px 16px;
   gap: 16px;
 
-  width: 1440px;
+  width: 100%;
   height: 53px;
 
   /* Global/02. Secondary */

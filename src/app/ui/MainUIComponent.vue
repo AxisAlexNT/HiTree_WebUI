@@ -1,29 +1,20 @@
 <template>
-  <div>
-    <UpperFrame
-      :networkManager="networkManager"
-      :mapManager="mapManager"
-      @selected="onFileSelected"
-    ></UpperFrame>
-    <ToolBar :mapManager="mapManager"></ToolBar>
-    <IGVTracks />
-    <ContactMap :filename="filename" :manager="mapManager"></ContactMap>
-    <SideBar :mapManager="mapManager"></SideBar>
+  <div class="main-ui-component">
+    <UpperFrame :networkManager="networkManager" :mapManager="mapManager" @selected="onFileSelected"></UpperFrame>
+    <WorkspaceComponent :mapManager="mapManager" :filename="filename"></WorkspaceComponent>
   </div>
 </template>
 
 <script setup lang="ts">
 import UpperFrame from "@/app/ui/components/upper_ribbon/UpperFrame.vue";
-import ToolBar from "@/app/ui/components/toolbar/ToolBar.vue";
-import ContactMap from "@/app/ui/contactmap/ContactMap.vue";
-import SideBar from "@/app/ui/components/sidebar/SideBar.vue";
 import {
   ContactMapManager,
   // type ContactMapManagerOptions,
 } from "@/app/core/mapmanagers/ContactMapManager";
 import { ref, watch, type Ref } from "vue";
-import { NetworkManager } from "../core/net/NetworkManager";
-import IGVTracks from "./components/tracks/IGVTracks.vue";
+import { NetworkManager } from "@/app/core/net/NetworkManager";
+
+import WorkspaceComponent from "@/app/ui/components/workspace/WorkspaceComponent.vue";
 
 // Reactively use these refs only inside component
 // Pass them to Map Manager on creation as values, not Refs as objects
@@ -46,9 +37,9 @@ function displayNewMap() {
   if (!fname) {
     throw new Error(
       "Cannot open non-specified files: filename=" +
-        fname +
-        " fastaFilename=" +
-        ffname
+      fname +
+      " fastaFilename=" +
+      ffname
     );
   }
   networkManager.requestManager
@@ -102,4 +93,9 @@ function onFileSelected(newFilename: string) {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.main-ui-component {
+  width: 100%;
+  height: 100%;
+}
+</style>

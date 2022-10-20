@@ -27,10 +27,47 @@ const options = {
 onMounted(() => {
   const igvDiv = document.getElementById("vertical-igv-track-div");
   console.log("mounted() with igvDiv", igvDiv);
-  igv.createBrowser(igvDiv, options).then(function (browser) {
-    console.log("Created IGV browser in div", igvDiv);
-  });
+  // igv.createBrowser(igvDiv, options).then(function (browser) {
+  //   console.log("Created IGV browser in div", igvDiv);
+  // });
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+#horizontal-igv-track-div {
+  /* horizontal rulers */
+
+  /* Auto layout */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px;
+  gap: 8px;
+
+  position: absolute;
+  width: 1020px;
+  height: 128px;
+  left: 188px;
+  top: 109px;
+  background-color: black;
+}
+
+#vertical-igv-track-div {
+  /* vertical rulers */
+
+  /* Auto layout */
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  padding: 0px;
+  gap: 8px;
+
+  position: absolute;
+  /* width: 129px; */
+  width: 10%;
+  height: 847px;
+  left: 60px;
+  top: 177px;
+  background-color: black;
+}
+</style>

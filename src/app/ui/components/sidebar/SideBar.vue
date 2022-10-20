@@ -66,7 +66,8 @@ const layers: Ref<Array<LayerDescriptor>> = ref([
   position: absolute;
   width: 232px;
   height: 915px;
-  left: 1208px;
+  /* left: 1208px; */
+  right: 0px;
   top: 109px;
 
   /* Global/07. Light */
