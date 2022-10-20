@@ -7,5 +7,6 @@
 <style scoped>
 #horizontal-igv-track-div {
   background-color: blue;
+  width: 100%;
 }
 </style>

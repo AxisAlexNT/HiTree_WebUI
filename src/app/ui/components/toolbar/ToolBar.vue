@@ -32,18 +32,13 @@ const props = defineProps<{
   /* Auto layout */
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   align-items: center;
+  /* justify-content: space-between;  c  */
   padding: 16px 4px;
   gap: 6px;
 
-  /*position: absolute;*/
-  position: absolute;
-  float: left;
   width: 60px;
-  height: 915px;
-  left: 0px;
-  top: 109px;
+  /* height: 100%; TODO: сделать иначе  */
 
   /* Global/07. Light */
   background: #f8f9fa;
@@ -63,15 +58,9 @@ const props = defineProps<{
   gap: 24px;
 
   width: 44px;
-  height: 356px;
-
-  /* Inside auto layout */
-  flex: none;
-  order: 0;
-  flex-grow: 0;
 }
 
 .toolbar-bottom {
-  margin-bottom: 16px;
+  background-color: green;
 }
 </style>

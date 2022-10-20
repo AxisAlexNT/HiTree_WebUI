@@ -16,4 +16,8 @@ const props = defineProps<{
 }>();
 </script>
 
-<style scoped></style>
+<style scoped>
+.track-workspace {
+  background-color: aqua;
+}
+</style>

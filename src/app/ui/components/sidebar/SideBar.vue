@@ -58,20 +58,16 @@ const layers: Ref<Array<LayerDescriptor>> = ref([
   /* Auto layout */
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  padding: 30px 0px 0px;
   gap: 1px;
 
-  position: absolute;
   width: 232px;
-  height: 915px;
-  /* left: 1208px; */
+
   right: 0px;
   top: 109px;
 
   /* Global/07. Light */
   background: #f8f9fa;
+  background-color: green;
 
   /* Shadows/02. Regular */
   box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.15);
@@ -83,12 +79,7 @@ const layers: Ref<Array<LayerDescriptor>> = ref([
   /* Auto layout */
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 0px;
   gap: 4px;
-
-  width: 232px;
-  height: 731px;
 
   /* Inside auto layout */
   flex: none;
@@ -122,15 +113,8 @@ const layers: Ref<Array<LayerDescriptor>> = ref([
 }
 
 #minimap {
-  /* map */
-
-  width: 232px;
-  height: 232px;
-
-  /* Inside auto layout */
-  flex: none;
-  order: 0;
-  flex-grow: 0;
+  height: 20px;
+  background-color: grey;
 }
 
 #color-range {
@@ -139,12 +123,8 @@ const layers: Ref<Array<LayerDescriptor>> = ref([
   /* Auto layout */
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   padding: 16px;
   gap: 12px;
-
-  width: 232px;
-  height: 160px;
 
   /* Global/09. White */
   background: #ffffff;
@@ -164,22 +144,13 @@ const layers: Ref<Array<LayerDescriptor>> = ref([
   /* Auto layout */
   display: flex;
   flex-direction: column;
-  align-items: center;
   padding: 16px 0px;
   gap: 8px;
-
-  width: 232px;
-  height: 370px;
 
   /* Global/09. White */
   background: #ffffff;
 
   /* Shadows/01. Small */
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.075);
-
-  /* Inside auto layout */
-  flex: none;
-  order: 2;
-  flex-grow: 0;
 }
 </style>

@@ -40,17 +40,11 @@
   /* Auto layout */
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   padding: 0px 16px;
   gap: 10px;
 
-  width: 80%;
+  /* width: 80%; */
   height: 40px;
-
-  /* Inside auto layout */
-  flex: none;
-  order: 0;
-  flex-grow: 0;
 }
 
 .save-btn-div {

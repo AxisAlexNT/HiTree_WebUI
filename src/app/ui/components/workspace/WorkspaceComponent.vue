@@ -1,7 +1,10 @@
 <template>
   <div class="workspace-component">
     <ToolBar :mapManager="props.mapManager"></ToolBar>
-    <InteractiveWorkspace :map-manager="props.mapManager" :filename="filename"></InteractiveWorkspace>
+    <InteractiveWorkspace
+      :map-manager="props.mapManager"
+      :filename="filename"
+    ></InteractiveWorkspace>
     <SideBar :mapManager="props.mapManager"></SideBar>
   </div>
 </template>
@@ -21,7 +24,7 @@ const props = defineProps<{
 <style scoped>
 .workspace-component {
   display: flex;
-  flex-flow: column;
-  height: 100%;
+  background-color: orange;
+  height: calc(100% - 109px);
 }
 </style>

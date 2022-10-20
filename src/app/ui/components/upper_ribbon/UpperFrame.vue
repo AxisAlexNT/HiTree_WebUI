@@ -38,10 +38,11 @@ function onFileSelected(filename: string): void {
   align-items: flex-start;
   padding: 0px;
 
-  position: absolute;
+  /* position: absolute; */
   /* width: 1840px; */
   width: 100%;
-  height: 109px;
+  /* TODO: Константа глобальная */
+  height: 109px; 
   left: 0px;
   top: 0px;
 }

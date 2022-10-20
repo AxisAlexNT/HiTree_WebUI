@@ -13,21 +13,8 @@
 
 <style scoped>
 .block-of-buttons {
-  /* bottom block */
-
-  /* Auto layout */
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  padding: 0px;
   gap: 4px;
-
-  width: 44px;
-  height: 62px;
-
-  /* Inside auto layout */
-  flex: none;
-  order: 1;
-  flex-grow: 0;
 }
 </style>

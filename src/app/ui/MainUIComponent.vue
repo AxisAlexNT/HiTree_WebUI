@@ -1,7 +1,14 @@
 <template>
   <div class="main-ui-component">
-    <UpperFrame :networkManager="networkManager" :mapManager="mapManager" @selected="onFileSelected"></UpperFrame>
-    <WorkspaceComponent :mapManager="mapManager" :filename="filename"></WorkspaceComponent>
+    <UpperFrame
+      :networkManager="networkManager"
+      :mapManager="mapManager"
+      @selected="onFileSelected"
+    ></UpperFrame>
+    <WorkspaceComponent
+      :mapManager="mapManager"
+      :filename="filename"
+    ></WorkspaceComponent>
   </div>
 </template>
 
@@ -37,9 +44,9 @@ function displayNewMap() {
   if (!fname) {
     throw new Error(
       "Cannot open non-specified files: filename=" +
-      fname +
-      " fastaFilename=" +
-      ffname
+        fname +
+        " fastaFilename=" +
+        ffname
     );
   }
   networkManager.requestManager
@@ -96,6 +103,6 @@ function onFileSelected(newFilename: string) {
 <style scoped>
 .main-ui-component {
   width: 100%;
-  height: 100%;
+  height: 100vh;
 }
 </style>
