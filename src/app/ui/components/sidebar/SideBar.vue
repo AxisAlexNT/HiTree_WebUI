@@ -67,7 +67,7 @@ const layers: Ref<Array<LayerDescriptor>> = ref([
 
   /* Global/07. Light */
   background: #f8f9fa;
-  background-color: green;
+  /* background-color: green; */
 
   /* Shadows/02. Regular */
   box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.15);
@@ -113,7 +113,7 @@ const layers: Ref<Array<LayerDescriptor>> = ref([
 }
 
 #minimap {
-  height: 20px;
+  height: 200px;
   background-color: grey;
 }
 

@@ -60,7 +60,7 @@ const props = defineProps<{
   width: 44px;
 }
 
-.toolbar-bottom {
+/* .toolbar-bottom {
   background-color: green;
-}
+} */
 </style>

@@ -31,7 +31,9 @@
     "ol": "^6.15.1",
     "vue": "^3.2.41",
     "multi-range-slider-vue": "^1.1.4",
-    "igv": "^2.13.3"
+    "igv": "^2.13.3",
+    "mobx": "^6.6.2",
+    "mobx-vue-lite": "^0.3.1"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.2.0",

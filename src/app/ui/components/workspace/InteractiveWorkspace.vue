@@ -1,19 +1,17 @@
 <template>
   <div class="interactive-workspace">
-    <div class="interactive-workspace_tracknames">1</div>
-    <div class="interactive-workspace_horizontal">2</div>
-    <div class="interactive-workspace_vertical">3</div>
-    <div class="interactive-workspace_content">
-      <div class="test"></div>
+    <div class="interactive-workspace_tracknames">
+      <TrackNames></TrackNames>
     </div>
-    <!-- <TrackWorkspace
-      :map-manager="props.mapManager"
-      :filename="props.filename"
-    ></TrackWorkspace>
-    <ContactMapWorkspace
-      :map-manager="props.mapManager"
-      :filename="props.filename"
-    ></ContactMapWorkspace> -->
+    <div class="interactive-workspace_horizontal">
+      <HorizontalIGVTrack></HorizontalIGVTrack>
+    </div>
+    <div class="interactive-workspace_vertical">
+      <VerticalIGVTrack></VerticalIGVTrack>
+    </div>
+    <div class="interactive-workspace_content">
+      <ContactMap></ContactMap>
+    </div>
   </div>
 </template>
 
@@ -22,8 +20,10 @@ import {
   ContactMapManager,
   // type ContactMapManagerOptions,
 } from "@/app/core/mapmanagers/ContactMapManager";
-import TrackWorkspace from "@/app/ui/components/workspace/TrackWorkspace.vue";
-import ContactMapWorkspace from "@/app/ui/components/workspace/ContactMapWorkspace.vue";
+import TrackNames from "./TrackNames.vue";
+import HorizontalIGVTrack from "../tracks/HorizontalIGVTrack.vue";
+import ContactMap from "../../contactmap/ContactMap.vue";
+import VerticalIGVTrack from "../tracks/VerticalIGVTrack.vue";
 
 const props = defineProps<{
   mapManager: ContactMapManager | undefined;
@@ -42,6 +42,7 @@ const props = defineProps<{
     "vertical content";
 }
 
+/*
 .interactive-workspace_tracknames {
   grid-area: tracknames;
   background-color: red;
@@ -58,6 +59,7 @@ const props = defineProps<{
   grid-area: content;
   background-color: magenta;
 }
+*/
 
 .test {
   width: 100%;

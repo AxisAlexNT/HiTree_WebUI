@@ -24,7 +24,7 @@ const props = defineProps<{
 <style scoped>
 .workspace-component {
   display: flex;
-  background-color: orange;
+  /* background-color: orange; */
   height: calc(100% - 109px);
 }
 </style>
