@@ -1,14 +1,5 @@
 <template>
-  <div id="vertical-igv-track-div">
-    <figure class="text-center vertical">
-      <blockquote class="blockquote">
-        <p>Very soon horizontal IGV tracks will be here.</p>
-      </blockquote>
-      <figcaption class="blockquote-footer">
-        Someone famous in the <cite title="HiCT Development Team">HiCT Development Team</cite>
-      </figcaption>
-    </figure>
-  </div>
+  <div id="vertical-igv-track-div"></div>
 </template>
 
 <script setup lang="ts"></script>
@@ -17,12 +8,6 @@
 #vertical-igv-track-div {
   width: 100%;
   height: 100%;
-  /* background-color: lime; */
   border: 1px solid black;
-}
-
-.vertical {
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
 }
 </style>
