@@ -32,10 +32,27 @@ const igvOptions = {
   ],
 };
 
+// watch(
+//   () => document.getElementById("horizontal-igv-track-div"),
+//   (newDiv) => {
+//     console.log("New div is", newDiv);
+//     if (newDiv) {
+//       igv.createBrowser(newDiv, igvOptions).then(function () {
+//         console.log("Created Horizontal IGV browser");
+//       });
+//     }
+//   }
+// );
+
 onMounted(() => {
-  igv.createBrowser("horizontal-igv-track-div", igvOptions).then(function () {
-    console.log("Created Horizontal IGV browser");
-  });
+  const newDiv = document.getElementById("horizontal-igv-track-div");
+
+  if (newDiv) {
+    console.log("New div is", newDiv);
+    // igv.createBrowser(newDiv, igvOptions).then(function () {
+    //  console.log("Created Horizontal IGV browser");
+    // });
+  }
 });
 </script>
 

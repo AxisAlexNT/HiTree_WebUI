@@ -45,7 +45,7 @@ class VersionedXYZContactMapSource extends XYZ {
               );
             }
           );
-        } else if (this.status != 204) {
+        } else if (this.status >= 400) {
           tile.setState(TileState.ERROR);
         }
       });
