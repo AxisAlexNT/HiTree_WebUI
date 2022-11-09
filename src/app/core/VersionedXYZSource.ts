@@ -7,6 +7,7 @@ import { CurrentSignalRangeResponseDTO } from "./net/dto/responseDTO";
 
 class VersionedXYZContactMapSource extends XYZ {
   protected sourceVersion: number;
+  // protected lastResponse?: Record<string, unknown>;
 
   constructor(
     protected readonly layersManager: HiCViewAndLayersManager,
@@ -28,6 +29,8 @@ class VersionedXYZContactMapSource extends XYZ {
         if (data !== undefined && data.image !== undefined) {
           // image.src = URL.createObjectURL(data.image);
           // image.src = "data:image/png;base64," + data.image;
+          //this.lastResponse = this.response;
+          tile["lastResponse"] = data;
           image.src = data.image;
           // console.log("Data.ranges is ", data.ranges);
           // console.log(
@@ -45,12 +48,16 @@ class VersionedXYZContactMapSource extends XYZ {
               );
             }
           );
-        } else if (this.status != 204) {
+        } else if (this.status >= 400) {
           tile.setState(TileState.ERROR);
+        } else {
+          image.src = tile["lastResponse"].image;
         }
       });
       xhr.addEventListener("error", function () {
-        tile.setState(TileState.ERROR);
+        if (this.status >= 400) {
+          tile.setState(TileState.ERROR);
+        }
       });
       xhr.open("GET", src);
       xhr.send();
