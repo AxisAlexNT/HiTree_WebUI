@@ -8,6 +8,7 @@ import { CurrentSignalRangeResponseDTO } from "./net/dto/responseDTO";
 class VersionedXYZContactMapSource extends XYZ {
   protected sourceVersion: number;
   // protected lastResponse?: Record<string, unknown>;
+  protected tileImageSrcCache: Map<string, string>;
 
   constructor(
     protected readonly layersManager: HiCViewAndLayersManager,
@@ -16,6 +17,7 @@ class VersionedXYZContactMapSource extends XYZ {
   ) {
     super(xyzOptions);
     this.sourceVersion = 0;
+    this.tileImageSrcCache = new Map();
     this.setTileLoadFunction(this.customTileLoadFunction(this));
     this.do_reload();
   }
@@ -24,28 +26,33 @@ class VersionedXYZContactMapSource extends XYZ {
    * do_reload
    */
   public do_reload() {
-    // this.tileCache.expireCache({});
-    // this.tileCache.clear();
     this.clearTileCache();
     ++this.sourceVersion;
     this.setTileUrlFunction(this.create_tile_url_function());
     this.changed();
   }
 
-  public clearTileCache() {
+  public clearTileCache(clearHashMap?: boolean | undefined | null) {
     this.tileCache.expireCache({});
     this.tileCache.clear();
+    if (clearHashMap) {
+      this.tileImageSrcCache.clear();
+    }
   }
 
   public customTileLoadFunction(xyzSource: VersionedXYZContactMapSource) {
+    const layersManager = this.layersManager;
     return (tile: Tile, src: string) => {
-      console.log("CustomTileLoadFunction");
+      // tile.setState(TileState.LOADING);
       const xhr = new XMLHttpRequest();
       xhr.responseType = "json";
-      const layersManager = this.layersManager;
-      xhr.addEventListener("loadend", function (evt) {
-        console.log("Got XHR: ", this, "tile was", tile);
+      xhr.addEventListener("loadend", function () {
         const data = this.response;
+
+        const imageTile: ImageTile = tile as ImageTile;
+        const image: HTMLImageElement =
+          imageTile.getImage() as HTMLImageElement;
+
         if (
           data !== null &&
           data !== undefined &&
@@ -53,12 +60,11 @@ class VersionedXYZContactMapSource extends XYZ {
           this.status === 200
         ) {
           console.assert(tile instanceof ImageTile);
-          // xyzSource.clearTileCache();
-          const imageTile: ImageTile = tile as ImageTile;
-          const image: HTMLImageElement =
-            imageTile.getImage() as HTMLImageElement;
-          console.log("Image was", image);
           image.src = data.image;
+          xyzSource.tileImageSrcCache.set(
+            tile.getTileCoord().toString(),
+            image.src
+          );
           layersManager.callbackFns.contrastSliderRangesCallbacks.forEach(
             (callbackFn) => {
               callbackFn(
@@ -66,24 +72,27 @@ class VersionedXYZContactMapSource extends XYZ {
               );
             }
           );
-          console.log("Image now", image);
+          tile.setState(TileState.LOADED);
         } else {
           if (this.status >= 400) {
             console.log("Error: Tile load status >= 400 for", tile);
             // tile.setState(TileState.ERROR);
+            tile.setState(TileState.EMPTY);
+            return;
           }
-          // eslint-disable-next-line no-self-assign
-          // image.src = image.src;
-          // imageTile.setImage(image);
+          const oldImageSrc = xyzSource.tileImageSrcCache.get(
+            tile.getTileCoord().toString()
+          );
+          if (oldImageSrc) {
+            image.src = oldImageSrc;
+          } else {
+            throw new Error(
+              "Image source is not found in cache for " +
+                tile.getTileCoord().toString()
+            );
+          }
+          tile.setState(TileState.LOADED);
         }
-        console.log(
-          "XHR now: ",
-          this,
-          "tile now",
-          tile,
-          "tilee.image now",
-          (tile as ImageTile).getImage()
-        );
       });
       xhr.addEventListener("error", function () {
         console.log("onError listener xhr", this);
@@ -91,6 +100,43 @@ class VersionedXYZContactMapSource extends XYZ {
           console.log("onError listener xhr: set Error", this);
           // tile.setState(TileState.ERROR);
         }
+      });
+      xhr.addEventListener("loadstart", () => {
+        tile.setState(TileState.LOADING);
+      });
+      xhr.addEventListener("abort", () => {
+        tile.setState(TileState.EMPTY);
+        console.log("xhr request was aborted: ", this);
+        const oldImageSrc = xyzSource.tileImageSrcCache.get(
+          tile.getTileCoord().toString()
+        );
+        if (oldImageSrc) {
+          ((tile as ImageTile).getImage() as HTMLImageElement).src =
+            oldImageSrc;
+        } else {
+          throw new Error(
+            "Image source is not found in cache for " +
+              tile.getTileCoord().toString()
+          );
+        }
+        tile.setState(TileState.LOADED);
+      });
+      xhr.addEventListener("timeout", () => {
+        tile.setState(TileState.EMPTY);
+        console.log("xhr request was timed out: ", this);
+        const oldImageSrc = xyzSource.tileImageSrcCache.get(
+          tile.getTileCoord().toString()
+        );
+        if (oldImageSrc) {
+          ((tile as ImageTile).getImage() as HTMLImageElement).src =
+            oldImageSrc;
+        } else {
+          throw new Error(
+            "Image source is not found in cache for " +
+              tile.getTileCoord().toString()
+          );
+        }
+        tile.setState(TileState.LOADED);
       });
       xhr.open("GET", src);
       xhr.send();
@@ -111,27 +157,6 @@ class VersionedXYZContactMapSource extends XYZ {
       );
     };
   }
-
-  // public getTile(
-  //   z: number,
-  //   x: number,
-  //   y: number,
-  //   pixelRatio: number,
-  //   projection: Projection
-  // ): ImageTile | ReprojTile {
-  //   this.layersManager.callbackFns.contrastSliderCallbacks.forEach(
-  //     (fnCallback) => {
-  //       console.log(
-  //         "Calling callbackFn: ",
-  //         fnCallback,
-  //         " with tile version ",
-  //         this.sourceVersion
-  //       );
-  //       fnCallback(this.sourceVersion);
-  //     }
-  //   );
-  //   return super.getTile(z, x, y, pixelRatio, projection);
-  // }
 }
 
 export { VersionedXYZContactMapSource };
