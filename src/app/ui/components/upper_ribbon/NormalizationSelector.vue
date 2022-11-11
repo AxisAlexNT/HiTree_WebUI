@@ -127,9 +127,9 @@ const postLogBase: Ref<number> = ref(10);
 function resetAttributes(): void {
   applyPreLog.value = false;
   preLogBase.value = 10;
-  applyPostLog.value = false;
+  applyPostLog.value = true;
   postLogBase.value = 10;
-  applyCoolerWeights.value = true;
+  applyCoolerWeights.value = false;
 }
 
 function applySettings(): void {
