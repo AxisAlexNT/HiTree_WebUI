@@ -9,6 +9,7 @@ class VersionedXYZContactMapSource extends XYZ {
   protected sourceVersion: number;
   // protected lastResponse?: Record<string, unknown>;
   protected tileImageSrcCache: Map<string, string>;
+  protected isCachingEnabled: boolean;
 
   constructor(
     protected readonly layersManager: HiCViewAndLayersManager,
@@ -17,6 +18,7 @@ class VersionedXYZContactMapSource extends XYZ {
   ) {
     super(xyzOptions);
     this.sourceVersion = 0;
+    this.isCachingEnabled = false;
     this.tileImageSrcCache = new Map();
     this.setTileLoadFunction(this.customTileLoadFunction(this));
     this.do_reload();
@@ -26,7 +28,7 @@ class VersionedXYZContactMapSource extends XYZ {
    * do_reload
    */
   public do_reload() {
-    this.clearTileCache();
+    this.clearTileCache(true);
     ++this.sourceVersion;
     this.setTileUrlFunction(this.create_tile_url_function());
     this.changed();
@@ -35,7 +37,7 @@ class VersionedXYZContactMapSource extends XYZ {
   public clearTileCache(clearHashMap?: boolean | undefined | null) {
     this.tileCache.expireCache({});
     this.tileCache.clear();
-    if (clearHashMap) {
+    if (clearHashMap && this.isCachingEnabled) {
       this.tileImageSrcCache.clear();
     }
   }
@@ -43,7 +45,6 @@ class VersionedXYZContactMapSource extends XYZ {
   public customTileLoadFunction(xyzSource: VersionedXYZContactMapSource) {
     const layersManager = this.layersManager;
     return (tile: Tile, src: string) => {
-      // tile.setState(TileState.LOADING);
       const xhr = new XMLHttpRequest();
       xhr.responseType = "json";
       xhr.addEventListener("loadend", function () {
@@ -61,10 +62,12 @@ class VersionedXYZContactMapSource extends XYZ {
         ) {
           console.assert(tile instanceof ImageTile);
           image.src = data.image;
-          xyzSource.tileImageSrcCache.set(
-            tile.getTileCoord().toString(),
-            image.src
-          );
+          if (xyzSource.isCachingEnabled) {
+            xyzSource.tileImageSrcCache.set(
+              tile.getTileCoord().toString(),
+              image.src
+            );
+          }
           layersManager.callbackFns.contrastSliderRangesCallbacks.forEach(
             (callbackFn) => {
               callbackFn(
@@ -80,18 +83,18 @@ class VersionedXYZContactMapSource extends XYZ {
             tile.setState(TileState.EMPTY);
             return;
           }
-          const oldImageSrc = xyzSource.tileImageSrcCache.get(
-            tile.getTileCoord().toString()
-          );
-          if (oldImageSrc) {
-            image.src = oldImageSrc;
-          } else {
-            throw new Error(
-              "Image source is not found in cache for " +
-                tile.getTileCoord().toString()
+          if (xyzSource.isCachingEnabled) {
+            const oldImageSrc = xyzSource.tileImageSrcCache.get(
+              tile.getTileCoord().toString()
             );
+            if (oldImageSrc) {
+              image.src = oldImageSrc;
+              tile.setState(TileState.LOADED);
+              return;
+            }
           }
-          tile.setState(TileState.LOADED);
+          tile.setState(TileState.EMPTY);
+          return;
         }
       });
       xhr.addEventListener("error", function () {
