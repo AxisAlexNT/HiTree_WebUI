@@ -1,4 +1,4 @@
-import { ImageTile } from "ol";
+import { ImageTile, Tile } from "ol";
 import TileState from "ol/TileState";
 import XYZ, { type Options as XYZOptions } from "ol/source/XYZ";
 import { unref } from "vue";
@@ -16,52 +16,7 @@ class VersionedXYZContactMapSource extends XYZ {
   ) {
     super(xyzOptions);
     this.sourceVersion = 0;
-    this.setTileLoadFunction((tile, src) => {
-      console.assert(tile instanceof ImageTile);
-      const imageTile: ImageTile = tile as ImageTile;
-      const image: HTMLImageElement | HTMLVideoElement =
-        imageTile.getImage() as HTMLImageElement | HTMLVideoElement;
-      const xhr = new XMLHttpRequest();
-      xhr.responseType = "json";
-      xhr.addEventListener("loadend", function (evt) {
-        // console.log("Got XHR Response: ", this.response);
-        const data = this.response;
-        if (data !== undefined && data.image !== undefined) {
-          // image.src = URL.createObjectURL(data.image);
-          // image.src = "data:image/png;base64," + data.image;
-          //this.lastResponse = this.response;
-          tile["lastResponse"] = data;
-          image.src = data.image;
-          // console.log("Data.ranges is ", data.ranges);
-          // console.log(
-          //   "Constructed ranges DTO: ",
-          //   new CurrentSignalRangeResponseDTO(data.ranges)
-          // );
-          // console.log(
-          //   "Constructed ranges entity: ",
-          //   new CurrentSignalRangeResponseDTO(data.ranges).toEntity()
-          // );
-          layersManager.callbackFns.contrastSliderRangesCallbacks.forEach(
-            (callbackFn) => {
-              callbackFn(
-                new CurrentSignalRangeResponseDTO(data.ranges).toEntity()
-              );
-            }
-          );
-        } else if (this.status >= 400) {
-          tile.setState(TileState.ERROR);
-        } else {
-          image.src = tile["lastResponse"].image;
-        }
-      });
-      xhr.addEventListener("error", function () {
-        if (this.status >= 400) {
-          tile.setState(TileState.ERROR);
-        }
-      });
-      xhr.open("GET", src);
-      xhr.send();
-    });
+    this.setTileLoadFunction(this.customTileLoadFunction(this));
     this.do_reload();
   }
 
@@ -69,11 +24,77 @@ class VersionedXYZContactMapSource extends XYZ {
    * do_reload
    */
   public do_reload() {
-    this.tileCache.expireCache({});
-    this.tileCache.clear();
+    // this.tileCache.expireCache({});
+    // this.tileCache.clear();
+    this.clearTileCache();
     ++this.sourceVersion;
     this.setTileUrlFunction(this.create_tile_url_function());
     this.changed();
+  }
+
+  public clearTileCache() {
+    this.tileCache.expireCache({});
+    this.tileCache.clear();
+  }
+
+  public customTileLoadFunction(xyzSource: VersionedXYZContactMapSource) {
+    return (tile: Tile, src: string) => {
+      console.log("CustomTileLoadFunction");
+      const xhr = new XMLHttpRequest();
+      xhr.responseType = "json";
+      const layersManager = this.layersManager;
+      xhr.addEventListener("loadend", function (evt) {
+        console.log("Got XHR: ", this, "tile was", tile);
+        const data = this.response;
+        if (
+          data !== null &&
+          data !== undefined &&
+          data.image !== undefined &&
+          this.status === 200
+        ) {
+          console.assert(tile instanceof ImageTile);
+          // xyzSource.clearTileCache();
+          const imageTile: ImageTile = tile as ImageTile;
+          const image: HTMLImageElement =
+            imageTile.getImage() as HTMLImageElement;
+          console.log("Image was", image);
+          image.src = data.image;
+          layersManager.callbackFns.contrastSliderRangesCallbacks.forEach(
+            (callbackFn) => {
+              callbackFn(
+                new CurrentSignalRangeResponseDTO(data.ranges).toEntity()
+              );
+            }
+          );
+          console.log("Image now", image);
+        } else {
+          if (this.status >= 400) {
+            console.log("Error: Tile load status >= 400 for", tile);
+            // tile.setState(TileState.ERROR);
+          }
+          // eslint-disable-next-line no-self-assign
+          // image.src = image.src;
+          // imageTile.setImage(image);
+        }
+        console.log(
+          "XHR now: ",
+          this,
+          "tile now",
+          tile,
+          "tilee.image now",
+          (tile as ImageTile).getImage()
+        );
+      });
+      xhr.addEventListener("error", function () {
+        console.log("onError listener xhr", this);
+        if (this.status >= 400) {
+          console.log("onError listener xhr: set Error", this);
+          // tile.setState(TileState.ERROR);
+        }
+      });
+      xhr.open("GET", src);
+      xhr.send();
+    };
   }
 
   protected create_tile_url_function() {
