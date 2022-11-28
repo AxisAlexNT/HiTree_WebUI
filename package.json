@@ -20,7 +20,8 @@
     "app:dev": "tsc && concurrently vite \" electron .\" \"tsc -w\"",
     "app:build": "npm run build && tsc && electron-builder",
     "app:multibuild": "npm run build && tsc && electron-builder -wl --ia32 --x64",
-    "app:preview": "npm run build && tsc && electron ."
+    "app:preview": "npm run build && tsc && electron .",
+    "release": "electron-builder"
   },
   "dependencies": {
     "@popperjs/core": "^2.11.6",
@@ -90,7 +91,13 @@
       "output": "release/${version}"
     },
     "win": {
-      "publish": ["github"],
+      "publish": [
+        {
+          "provider": "github",
+          "protocol": "https",
+          "releaseType": "draft"
+        }
+      ],
       "target": [
         {
           "target": "zip",
