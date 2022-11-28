@@ -20,15 +20,13 @@ jobs:
         os: [ubuntu-latest, windows-latest]
 
     steps:
-      runs-on: ubuntu-latest
-      steps:
-      - uses: actions/checkout@v2       
-      - uses: actions/setup-node@master
-        with:
-          node-version: 16
-      - name: install dependencies
-        run: npm install
-      - name: publish
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run publish
+    - uses: actions/checkout@v2       
+    - uses: actions/setup-node@master
+      with:
+        node-version: 16
+    - name: install dependencies
+      run: npm install
+    - name: publish
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: npm run publish
