@@ -4,6 +4,10 @@
   "private": true,
   "author": "Aleksandr Serdiukov, Anton Zamyatin and CT Lab ITMO University team",
   "main": "dist/electron/electron/main/main.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ctlab/HiCT_WebUI.git"
+  },
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check build-only && tsc",
@@ -86,6 +90,7 @@
       "output": "release/${version}"
     },
     "win": {
+      "publish": ["github"],
       "target": [
         {
           "target": "zip",
@@ -103,6 +108,7 @@
       "artifactName": "${productName}_${version}.${ext}"
     },
     "linux": {
+      "publish": ["github"],
       "target": [
         {
           "target": "AppImage",
