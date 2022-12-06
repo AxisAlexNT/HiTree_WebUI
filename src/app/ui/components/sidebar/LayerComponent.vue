@@ -12,7 +12,36 @@
         class="bi bi-eye-slash visibility-btn"
         @click="updateVisibility"
       ></i>
-      <div v-bind:style="colorSelectorStyleObject"></div>
+      <!--      <verte-->
+      <!--        class="color-picker"-->
+      <!--        v-bind:style="colorSelectorStyleObject"-->
+      <!--        picker="square"-->
+      <!--        model="rgb"-->
+      <!--        v-model="currentColor"-->
+      <!--      ></verte>-->
+      <div class="color-picker">
+        <select
+          v-bind:style="colorSelectorStyleObject"
+          name="machineColorWay"
+          v-model="currentColor"
+        >
+          <option
+            v-for="item in [
+              '#00000000',
+              '#ff0000',
+              '#ffff00',
+              '#00ffff',
+              '#ff00ff',
+            ]"
+            :key="item"
+            v-bind:class="{ active: item === currentColor }"
+            v-bind:value="item"
+            @click="updateBackgroundColor(item)"
+          >
+            {{ currentColor }}
+          </option>
+        </select>
+      </div>
       <div class="tri-square border-style-btn" @click="updateBorderStyle">
         <i v-if="bordersStyle === 0" class="bi bi-square"></i>
         <i v-if="bordersStyle === 1" class="bi bi-arrow-down-left"></i>
@@ -24,12 +53,22 @@
 </template>
 
 <script setup lang="ts">
-import { type Ref, ref } from "vue";
+import Verte from "verte";
+import "verte/dist/verte.css";
+import { type Ref, ref, watch } from "vue";
+import { BorderStyle } from "@/app/core/tracks/Track2DSymmetric";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const props = defineProps({
   layerName: String,
 });
+
+const emit = defineEmits<{
+  (e: `onColorChanged`, layerName: string, newColor: string): void;
+  (e: `onBorderStyleChanged`, layerName: string, borderStyle: BorderStyle): void;
+}>();
+
+const currentColor: Ref<string> = ref("#ffaaff");
 
 const bordersStyle: Ref<number> = ref(0);
 const visible: Ref<boolean> = ref(true);
@@ -38,7 +77,7 @@ const colorSelectorStyleObject: Ref<Record<string, string>> = ref({
   height: "16px",
 
   /* Global/05. Warning */
-  background: "#FFC107",
+  background: currentColor.value, // "#FFC107",
 
   /* Inside auto layout */
   flex: "none",
@@ -53,12 +92,20 @@ const colorSelectorStyleObject: Ref<Record<string, string>> = ref({
   "border-radius": "2px",
 });
 
+function updateVisibility() {
+  visible.value = !visible.value;
+  emit("onBorderStyleChanged", props.layerName as string, visible.value ? bordersStyle.value : BorderStyle.NONE);
+}
+function updateBackgroundColor(newColor: string) {
+  currentColor.value = newColor;
+  emit("onColorChanged", props.layerName as string, newColor);
+}
 function updateBorderStyle() {
   bordersStyle.value += 1;
   bordersStyle.value %= 3;
-}
-function updateVisibility() {
-  visible.value = !visible.value;
+
+  emit("onBorderStyleChanged", props.layerName as string, bordersStyle.value);
+  // (Object.values(BorderStyle) as Array<BorderStyle>)[bordersStyle.value]
 }
 function editLayer() {
   alert("Edit layer?");

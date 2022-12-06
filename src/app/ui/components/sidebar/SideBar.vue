@@ -18,6 +18,8 @@
         v-for="layer in layers"
         v-bind:key="layer.name"
         v-bind:layer-name="layer.name"
+        @onColorChanged="onColorChanged"
+        @onBorderStyleChanged="onBorderStyleChanged"
       ></LayerComponent>
     </div>
   </aside>
@@ -29,6 +31,8 @@ import LayerComponent from "@/app/ui/components/sidebar/LayerComponent.vue";
 import SavedLocations from "@/app/ui/components/sidebar/SavedLocations.vue";
 import { ref, type Ref } from "vue";
 import ContrastSelector from "./ContrastSelector.vue";
+import { CommonEventManager } from "@/app/core/mapmanagers/CommonEventManager";
+import { BorderStyle } from "@/app/core/tracks/Track2DSymmetric";
 
 const props = defineProps<{
   mapManager?: ContactMapManager;
@@ -49,6 +53,43 @@ const layers: Ref<Array<LayerDescriptor>> = ref([
   new LayerDescriptor("Scaffolds"),
   new LayerDescriptor("Something"),
 ]);
+
+function onColorChanged(layerName: string, newColor: string) {
+  switch (layerName) {
+    case "Contigs":
+      getEventManager()?.onContigBorderColorChanged(newColor);
+      break;
+    case "Scaffolds":
+      getEventManager()?.onScanffoldBorderColorChanged(newColor);
+      break;
+    default:
+      alert(`Method for ${layerName} is undefined`);
+      console.error(`Method for ${layerName} is undefined`);
+  }
+
+  // getEventManager()?.onContigBorderColorChanged(layerName, newColor);
+  // getEventManager()[invoke](layerName, newColor);
+}
+
+function onBorderStyleChanged(layerName: string, style: BorderStyle) {
+  switch (layerName) {
+    case "Contigs":
+      getEventManager()?.onContigBorderStyleChanged(style);
+      break;
+    case "Scaffolds":
+      getEventManager()?.onScanffoldBorderStyleChanged(style);
+      break;
+    default:
+      alert(`Method for ${layerName} is undefined`);
+      console.error(`Method for ${layerName} is undefined`);
+  }
+}
+
+function getEventManager(): CommonEventManager | undefined {
+  return props.mapManager != undefined
+    ? new CommonEventManager(props.mapManager)
+    : undefined;
+}
 </script>
 
 <style scoped>

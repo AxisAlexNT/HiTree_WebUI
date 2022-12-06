@@ -125,7 +125,31 @@ class BasePairsTrack2DSymmetric extends Track2DSymmetric {
   }
 }
 
-class ContigBordersTrack2D extends Track2DSymmetric {
+abstract class WithRing extends Track2DSymmetric {
+  protected borderStyle: BorderStyle = BorderStyle.FULL;
+  public setStyleType(style: BorderStyle): void {
+    this.borderStyle = style;
+  }
+  protected updateRing(
+    topLeft: Array<number>,
+    topRight: Array<number>,
+    botRight: Array<number>,
+    botLeft: Array<number>
+  ): Array<Array<number>> {
+    switch (this.borderStyle) {
+      case BorderStyle.NONE:
+        return [];
+      case BorderStyle.FULL:
+        return [topLeft, topRight, botRight, botLeft];
+      case BorderStyle.TOP:
+        return [botRight, botLeft, topLeft];
+      case BorderStyle.BOTTOM:
+        return [topLeft, topRight, botRight];
+    }
+  }
+}
+
+class ContigBordersTrack2D extends WithRing {
   public constructor(public readonly mapManager: ContactMapManager) {
     super(
       {
@@ -178,13 +202,20 @@ class ContigBordersTrack2D extends Track2DSymmetric {
               );
             }
 
-            const ring = [
+            // const ring = [
+            //   [fromPx, -fromPx],
+            //   [fromPx, -toPx],
+            //   [toPx, -toPx],
+            //   [toPx, -fromPx],
+            //   [fromPx, -fromPx],
+            // ];
+
+            const ring = this.updateRing(
               [fromPx, -fromPx],
               [fromPx, -toPx],
               [toPx, -toPx],
-              [toPx, -fromPx],
-              [fromPx, -fromPx],
-            ];
+              [toPx, -fromPx]
+            );
 
             for (const c of ring) {
               c[0] *= pixelResolution;
@@ -215,7 +246,7 @@ class ContigBordersTrack2D extends Track2DSymmetric {
   }
 }
 
-class ScaffoldBordersTrack2D extends Track2DSymmetric {
+class ScaffoldBordersTrack2D extends WithRing {
   public constructor(public readonly mapManager: ContactMapManager) {
     super(
       {
@@ -275,13 +306,20 @@ class ScaffoldBordersTrack2D extends Track2DSymmetric {
               );
             }
 
-            const ring = [
+            // const ring = [
+            //   [fromPx, -fromPx],
+            //   [fromPx, -toPx],
+            //   [toPx, -toPx],
+            //   [toPx, -fromPx],
+            //   [fromPx, -fromPx],
+            // ];
+
+            const ring = this.updateRing(
               [fromPx, -fromPx],
               [fromPx, -toPx],
               [toPx, -toPx],
-              [toPx, -fromPx],
-              [fromPx, -fromPx],
-            ];
+              [toPx, -fromPx]
+            );
 
             for (const c of ring) {
               c[0] *= pixelResolution;
@@ -507,6 +545,13 @@ class TranslocationArrowsTrack2D extends Track2DSymmetric {
   }
 }
 
+enum BorderStyle {
+  FULL,
+  BOTTOM,
+  TOP,
+  NONE,
+}
+
 export {
   Track2DSymmetric,
   ContigBordersTrack2D,
@@ -516,4 +561,5 @@ export {
   BasePairsTrack2DSymmetric,
   ScaffoldBordersTrack2D,
   TranslocationArrowsTrack2D,
+  BorderStyle,
 };

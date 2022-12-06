@@ -346,7 +346,12 @@ class HiCViewAndLayersManager {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public onContigBorderColorChanged(contigBorderColor: string): void {
-    throw new Error("Contig border color change is not yet implemented");
+    // throw new Error("Contig border color change is not yet implemented");
+    this.reloadTiles();
+  }
+
+  public onScanffoldBorderColorChanged(contigBorderColor: string): void {
+    // throw new Error("Contig border color change is not yet implemented");
     this.reloadTiles();
   }
 
