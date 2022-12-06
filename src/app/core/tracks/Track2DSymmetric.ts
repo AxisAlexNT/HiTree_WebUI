@@ -2,7 +2,13 @@ import type ContigDimensionHolder from "@/app/core/mapmanagers/ContigDimensionHo
 import type { Color } from "ol/color";
 import type { ColorLike } from "ol/colorlike";
 import Feature from "ol/Feature";
-import { MultiPolygon, Polygon, type Geometry } from "ol/geom";
+import {
+  MultiPolygon,
+  Polygon,
+  type Geometry,
+  LineString,
+  SimpleGeometry,
+} from "ol/geom";
 import Fill from "ol/style/Fill";
 import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
@@ -130,21 +136,37 @@ abstract class WithRing extends Track2DSymmetric {
   public setStyleType(style: BorderStyle): void {
     this.borderStyle = style;
   }
-  protected updateRing(
+  protected drawPolygon(
     topLeft: Array<number>,
     topRight: Array<number>,
     botRight: Array<number>,
-    botLeft: Array<number>
-  ): Array<Array<number>> {
+    botLeft: Array<number>,
+    pixelResolution: number
+  ): SimpleGeometry {
+    const ring: Array<Array<number>> = (() => {
+      switch (this.borderStyle) {
+        case BorderStyle.FULL:
+          return [topLeft, topRight, botRight, botLeft];
+        case BorderStyle.TOP:
+          return [botRight, botLeft, topLeft];
+        case BorderStyle.BOTTOM:
+          return [topLeft, topRight, botRight];
+        case BorderStyle.NONE:
+          return [];
+      }
+    })();
+
+    for (const c of ring) {
+      c[0] *= pixelResolution;
+      c[1] *= pixelResolution;
+    }
     switch (this.borderStyle) {
-      case BorderStyle.NONE:
-        return [];
       case BorderStyle.FULL:
-        return [topLeft, topRight, botRight, botLeft];
-      case BorderStyle.TOP:
-        return [botRight, botLeft, topLeft];
+      case BorderStyle.NONE:
+        return new Polygon([ring]);
       case BorderStyle.BOTTOM:
-        return [topLeft, topRight, botRight];
+      case BorderStyle.TOP:
+        return new LineString(ring);
     }
   }
 }
@@ -210,19 +232,25 @@ class ContigBordersTrack2D extends WithRing {
             //   [fromPx, -fromPx],
             // ];
 
-            const ring = this.updateRing(
+            // const ring = this.updateRing(
+            //   [fromPx, -fromPx],
+            //   [fromPx, -toPx],
+            //   [toPx, -toPx],
+            //   [toPx, -fromPx]
+            // );
+            //
+            // for (const c of ring) {
+            //   c[0] *= pixelResolution;
+            //   c[1] *= pixelResolution;
+            // }
+
+            const contig_bounding_box = this.drawPolygon(
               [fromPx, -fromPx],
               [fromPx, -toPx],
               [toPx, -toPx],
-              [toPx, -fromPx]
+              [toPx, -fromPx],
+              pixelResolution
             );
-
-            for (const c of ring) {
-              c[0] *= pixelResolution;
-              c[1] *= pixelResolution;
-            }
-
-            const contig_bounding_box = new Polygon([ring]);
 
             const polygonFeature = new Feature({
               name: `ContigBorder-${cd.contigName}-bp${resolution}`,
@@ -314,19 +342,25 @@ class ScaffoldBordersTrack2D extends WithRing {
             //   [fromPx, -fromPx],
             // ];
 
-            const ring = this.updateRing(
+            // const ring = this.updateRing(
+            //   [fromPx, -fromPx],
+            //   [fromPx, -toPx],
+            //   [toPx, -toPx],
+            //   [toPx, -fromPx]
+            // );
+            //
+            // for (const c of ring) {
+            //   c[0] *= pixelResolution;
+            //   c[1] *= pixelResolution;
+            // }
+
+            const scaffold_bounding_box = this.drawPolygon(
               [fromPx, -fromPx],
               [fromPx, -toPx],
               [toPx, -toPx],
-              [toPx, -fromPx]
+              [toPx, -fromPx],
+              pixelResolution
             );
-
-            for (const c of ring) {
-              c[0] *= pixelResolution;
-              c[1] *= pixelResolution;
-            }
-
-            const scaffold_bounding_box = new Polygon([ring]);
 
             const polygonFeature = new Feature({
               name: `ScaffoldBorder-${scaffoldDescriptor.scaffoldName}-bp${bpResolution}`,
