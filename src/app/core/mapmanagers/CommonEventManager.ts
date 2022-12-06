@@ -39,50 +39,21 @@ class CommonEventManager {
   }
 
   public onContigBorderColorChanged(newColor: string): void {
-    this.mapManager.viewAndLayersManager.track2DHolder.contigBordersTrack.options.borderColor =
-      newColor;
-    // this.mapManager.viewAndLayersManager.track2DHolder.contigBordersTrack.options.fillColor =
-    //   newColor;
-
-    this.mapManager.viewAndLayersManager.track2DHolder.contigBordersTrack.style =
-      this.mapManager.viewAndLayersManager.track2DHolder.contigBordersTrack.generateStyleFunction()();
-
-    // throw new Error("Not yet implemented");
-
-    // this.mapManager.options.contigBorderColor = newColor;
     this.mapManager.viewAndLayersManager.onContigBorderColorChanged(newColor);
-    this.reloadTracks();
   }
 
   public onScanffoldBorderColorChanged(newColor: string): void {
-    this.mapManager.viewAndLayersManager.track2DHolder.scaffoldBordersTrack.options.borderColor =
-      newColor;
-
-    this.mapManager.viewAndLayersManager.track2DHolder.scaffoldBordersTrack.style =
-      this.mapManager.viewAndLayersManager.track2DHolder.scaffoldBordersTrack.generateStyleFunction()();
-
-    this.mapManager.viewAndLayersManager.onScanffoldBorderColorChanged(newColor);
-    this.reloadTracks();
+    this.mapManager.viewAndLayersManager.onScanffoldBorderColorChanged(
+      newColor
+    );
   }
 
   public onContigBorderStyleChanged(style: BorderStyle): void {
-    this.mapManager.viewAndLayersManager.track2DHolder.contigBordersTrack.setStyleType(style);
-
-    this.mapManager.viewAndLayersManager.track2DHolder.contigBordersTrack.style =
-      this.mapManager.viewAndLayersManager.track2DHolder.contigBordersTrack.generateStyleFunction()();
-
-    this.mapManager.viewAndLayersManager.onContigBorderColorChanged("???");
-    this.reloadTracks();
+    this.mapManager.viewAndLayersManager.onContigBorderStyleChanged(style);
   }
 
   public onScanffoldBorderStyleChanged(style: BorderStyle): void {
-    this.mapManager.viewAndLayersManager.track2DHolder.scaffoldBordersTrack.setStyleType(style);
-
-    this.mapManager.viewAndLayersManager.track2DHolder.scaffoldBordersTrack.style =
-      this.mapManager.viewAndLayersManager.track2DHolder.scaffoldBordersTrack.generateStyleFunction()();
-
-    this.mapManager.viewAndLayersManager.onScanffoldBorderColorChanged("???");
-    this.reloadTracks();
+    this.mapManager.viewAndLayersManager.onScanffoldBorderStyleChanged(style);
   }
 
   public onNormalizationChanged(
@@ -144,7 +115,7 @@ class CommonEventManager {
           asmInfo.scaffoldDescriptors
         );
         this.resetSelection();
-        this.mapManager.reloadVisuals();
+        this.reloadTracks();
       });
   }
 
@@ -181,7 +152,7 @@ class CommonEventManager {
           asmInfo.scaffoldDescriptors
         );
         this.resetSelection();
-        this.mapManager.reloadVisuals();
+        this.reloadTracks();
       });
   }
 

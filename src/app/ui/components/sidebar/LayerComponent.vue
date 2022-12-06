@@ -12,14 +12,15 @@
         class="bi bi-eye-slash visibility-btn"
         @click="updateVisibility"
       ></i>
-      <!--      <verte-->
-      <!--        class="color-picker"-->
-      <!--        v-bind:style="colorSelectorStyleObject"-->
-      <!--        picker="square"-->
-      <!--        model="rgb"-->
-      <!--        v-model="currentColor"-->
-      <!--      ></verte>-->
-      <div class="color-picker">
+      <!-- <verte
+             class="color-picker"
+             v-bind:style="colorSelectorStyleObject"
+             picker="square"
+             model="rgb"
+             v-model="currentColor"
+           ></verte> -->
+
+      <!-- <div class="color-picker">
         <select
           v-bind:style="colorSelectorStyleObject"
           name="machineColorWay"
@@ -41,7 +42,10 @@
             {{ currentColor }}
           </option>
         </select>
-      </div>
+      </div> -->
+      <ColorPickerRectangle
+        @onColorChanged="updateBackgroundColor"
+      ></ColorPickerRectangle>
       <div class="tri-square border-style-btn" @click="updateBorderStyle">
         <i v-if="bordersStyle === 0" class="bi bi-square"></i>
         <i v-if="bordersStyle === 1" class="bi bi-arrow-down-left"></i>
@@ -53,10 +57,9 @@
 </template>
 
 <script setup lang="ts">
-import Verte from "verte";
-import "verte/dist/verte.css";
-import { type Ref, ref, watch } from "vue";
+import { type Ref, ref } from "vue";
 import { BorderStyle } from "@/app/core/tracks/Track2DSymmetric";
+import ColorPickerRectangle from "./ColorPickerRectangle.vue";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const props = defineProps({
@@ -64,37 +67,26 @@ const props = defineProps({
 });
 
 const emit = defineEmits<{
-  (e: `onColorChanged`, layerName: string, newColor: string): void;
-  (e: `onBorderStyleChanged`, layerName: string, borderStyle: BorderStyle): void;
+  (e: "onColorChanged", layerName: string, newColor: string): void;
+  (
+    e: "onBorderStyleChanged",
+    layerName: string,
+    borderStyle: BorderStyle
+  ): void;
 }>();
 
 const currentColor: Ref<string> = ref("#ffaaff");
 
 const bordersStyle: Ref<number> = ref(0);
 const visible: Ref<boolean> = ref(true);
-const colorSelectorStyleObject: Ref<Record<string, string>> = ref({
-  width: "16px",
-  height: "16px",
-
-  /* Global/05. Warning */
-  background: currentColor.value, // "#FFC107",
-
-  /* Inside auto layout */
-  flex: "none",
-  order: "1",
-  "flex-grow": "0",
-
-  display: "flex",
-  "justify-content": "center",
-  "align-items": "center",
-
-  border: "1px black solid",
-  "border-radius": "2px",
-});
 
 function updateVisibility() {
   visible.value = !visible.value;
-  emit("onBorderStyleChanged", props.layerName as string, visible.value ? bordersStyle.value : BorderStyle.NONE);
+  emit(
+    "onBorderStyleChanged",
+    props.layerName as string,
+    visible.value ? bordersStyle.value : BorderStyle.NONE
+  );
 }
 function updateBackgroundColor(newColor: string) {
   currentColor.value = newColor;

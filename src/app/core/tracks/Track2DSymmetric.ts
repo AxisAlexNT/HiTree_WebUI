@@ -181,7 +181,7 @@ class ContigBordersTrack2D extends WithRing {
       mapManager.getContigDimensionHolder(),
       {
         borderColor: "rgba(100, 64, 255, 1.0)",
-        fillColor: "rgba(0, 127, 127, 0.15)",
+        fillColor: "rgba(0, 127, 127, 0.0)",
         width: 2,
         zIndex: 11,
       }
@@ -283,7 +283,7 @@ class ScaffoldBordersTrack2D extends WithRing {
       },
       mapManager.getContigDimensionHolder(),
       {
-        fillColor: "rgba(100, 100, 0, 0.3)",
+        fillColor: "rgba(100, 100, 0, 0.0)",
         borderColor: "rgba(255, 255, 0, 1)",
         width: 4,
         zIndex: 12,
