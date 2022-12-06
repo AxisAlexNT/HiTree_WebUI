@@ -115,7 +115,7 @@ class CommonEventManager {
           asmInfo.scaffoldDescriptors
         );
         this.resetSelection();
-        this.mapManager.reloadVisuals();
+        this.reloadTracks();
       });
   }
 
@@ -152,7 +152,7 @@ class CommonEventManager {
           asmInfo.scaffoldDescriptors
         );
         this.resetSelection();
-        this.mapManager.reloadVisuals();
+        this.reloadTracks();
       });
   }
 
