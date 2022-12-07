@@ -3,7 +3,6 @@ import { Extent, Select } from "ol/interaction";
 import { Projection } from "ol/proj";
 import type Layer from "ol/layer/Layer";
 import type { ContactMapManager } from "./ContactMapManager";
-import Units from "ol/proj/Units";
 import { Collection, Feature, View } from "ol";
 import type { Geometry } from "ol/geom";
 import TileLayer from "ol/layer/Tile";
@@ -212,7 +211,7 @@ class HiCViewAndLayersManager {
     // Define projection:
     this.pixelProjection = new Projection({
       code: "pixelate",
-      units: Units.PIXELS,
+      units: "pixels",
       metersPerUnit: undefined,
       extent: maximum_global_extent,
       axisOrientation: "esu", // OK, axis orientation is changed in layer projections
@@ -562,6 +561,7 @@ class HiCViewAndLayersManager {
       new BinMousePosition({
         projection: this.pixelProjection,
         dimension_holder: this.mapManager.getContigDimensionHolder(),
+        layers: this.layersHolder.hicDataLayers,
       })
     );
   }

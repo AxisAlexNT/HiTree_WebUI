@@ -32,7 +32,7 @@
     "mobx-vue-lite": "^0.3.1",
     "multi-range-slider-vue": "^1.1.4",
     "normalize.css": "^8.0.1",
-    "ol": "^6.15.1",
+    "ol": "^7.1.0",
     "vue": "^3.2.41",
     "vue-color-kit": "^1.0.5"
   },

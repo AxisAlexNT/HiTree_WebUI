@@ -5,7 +5,6 @@ import { transform } from "ol/proj";
 import EventType from "ol/events/EventType.js";
 import { DEVICE_PIXEL_RATIO, FIREFOX } from "ol/has.js";
 import binarySearch from "binary-search";
-import { Mode } from "ol/interaction/MouseWheelZoom";
 import TileLayer from "ol/layer/Tile";
 
 /**
@@ -20,6 +19,7 @@ export default class ContigMouseWheelZoom extends MouseWheelZoom {
     this.resolutions = [...opt_options.resolutions];
     this.pixelResolutionSet = [...opt_options.pixelResolutionSet];
     this.global_projection = opt_options.global_projection;
+    this.layers = opt_options.layers;
   }
 
   /**
