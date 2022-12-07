@@ -24,6 +24,7 @@ import {
   TranslocationArrowsTrack2D,
   ScaffoldBordersTrack2D,
   Track2DSymmetric,
+  BorderStyle,
 } from "../tracks/Track2DSymmetric";
 import Fill from "ol/style/Fill";
 import { pointerMove, shiftKeyOnly, singleClick } from "ol/events/condition";
@@ -346,8 +347,41 @@ class HiCViewAndLayersManager {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public onContigBorderColorChanged(contigBorderColor: string): void {
-    throw new Error("Contig border color change is not yet implemented");
-    this.reloadTiles();
+    this.track2DHolder.contigBordersTrack.options.borderColor =
+      contigBorderColor;
+
+    this.track2DHolder.contigBordersTrack.style =
+      this.track2DHolder.contigBordersTrack.generateStyleFunction()();
+
+    this.reloadTracks();
+  }
+
+  public onScanffoldBorderColorChanged(scaffoldBorderColor: string): void {
+    this.track2DHolder.scaffoldBordersTrack.options.borderColor =
+      scaffoldBorderColor;
+
+    this.track2DHolder.scaffoldBordersTrack.style =
+      this.track2DHolder.scaffoldBordersTrack.generateStyleFunction()();
+
+    this.reloadTracks();
+  }
+
+  public onContigBorderStyleChanged(style: BorderStyle): void {
+    this.track2DHolder.contigBordersTrack.setStyleType(style);
+
+    this.track2DHolder.contigBordersTrack.style =
+      this.track2DHolder.contigBordersTrack.generateStyleFunction()();
+
+    this.reloadTracks();
+  }
+
+  public onScanffoldBorderStyleChanged(style: BorderStyle): void {
+    this.track2DHolder.scaffoldBordersTrack.setStyleType(style);
+
+    this.track2DHolder.scaffoldBordersTrack.style =
+      this.track2DHolder.scaffoldBordersTrack.generateStyleFunction()();
+
+    this.reloadTracks();
   }
 
   public getView(): View {
