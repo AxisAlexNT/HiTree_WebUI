@@ -31,8 +31,13 @@ const emit = defineEmits<{
 
 const currentColor = ref("#000000");
 
-function updateBackgroundColor(evt: { hex: string }) {
-  currentColor.value = evt.hex;
+function updateBackgroundColor(evt: {
+  hex: string;
+  rgba: { r: number; g: number; b: number; a: number };
+}) {
+  // currentColor.value = evt.hex;
+  currentColor.value = `rgba(${evt.rgba.r},${evt.rgba.g},${evt.rgba.b},${evt.rgba.a})`;
+  // console.log("onColorChanged: ", evt);
   colorSelectorStyleObject.value.background = currentColor.value;
   emit("onColorChanged", currentColor.value);
 }
