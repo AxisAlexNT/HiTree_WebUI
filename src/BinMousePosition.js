@@ -15,7 +15,7 @@ export default class BinMousePosition extends MousePosition {
     if (opt_options.dimension_holder) {
       this.dimension_holder = opt_options.dimension_holder;
     }
-    if (opt_options.layers){
+    if (opt_options.layers) {
       this.layers = opt_options.layers;
     }
   }

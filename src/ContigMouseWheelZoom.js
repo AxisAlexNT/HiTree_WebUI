@@ -43,16 +43,15 @@ export default class ContigMouseWheelZoom extends MouseWheelZoom {
     );
     wheelEvent.preventDefault();
 
-    const layers = [];
-    map.forEachLayerAtPixel(mapBrowserEvent.pixel, function (layer) {
-      layers.push(layer);
-    });
-    const hovered_layer =
-      layers.length === 0
-        ? null
-        : layers
-            .filter((l) => l instanceof TileLayer)
-            .sort((l1, l2) => l1.zIndex - l2.zIndex)[0];
+    const layers = this.layers
+      .filter((l) => l instanceof TileLayer && l.getData(mapBrowserEvent.pixel))
+      .sort((l1, l2) => l1.zIndex - l2.zIndex); //[];
+    // map.forEachLayerAtPixel(mapBrowserEvent.pixel, function (layer) {
+    //   layers.push(layer);
+    // });
+    const hovered_layer = layers.length === 0 ? null : layers[0];
+    // .filter((l) => l instanceof TileLayer)
+    // .sort((l1, l2) => l1.zIndex - l2.zIndex)[0];
 
     if (hovered_layer) {
       const layer_projection = hovered_layer.getSource().getProjection();
