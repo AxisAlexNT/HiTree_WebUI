@@ -1,3 +1,5 @@
+import Style from "ol/style/Style";
+
 type track2DBorders = [[number, number], [number, number]];
 
 interface Track2DDescriptor {
@@ -11,6 +13,7 @@ interface Track2DOptions {
 }
 
 abstract class Track2D {
+  public abstract getStyle(): Style;
   public abstract recalculateBorders(): void;
 }
 

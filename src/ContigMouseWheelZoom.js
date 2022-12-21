@@ -20,6 +20,7 @@ export default class ContigMouseWheelZoom extends MouseWheelZoom {
     this.pixelResolutionSet = [...opt_options.pixelResolutionSet];
     this.global_projection = opt_options.global_projection;
     this.layers = opt_options.layers;
+    this.isTrackPad = undefined;
   }
 
   /**
@@ -114,13 +115,16 @@ export default class ContigMouseWheelZoom extends MouseWheelZoom {
       this.startTime_ = now;
     }
 
-    if (!this.mode_ || now - this.startTime_ > this.trackpadEventGap_) {
-      this.mode_ = Math.abs(delta) < 4 ? Mode.TRACKPAD : Mode.WHEEL;
+    if (
+      this.isTrackPad === undefined ||
+      now - this.startTime_ > this.trackpadEventGap_
+    ) {
+      this.isTrackPad = Math.abs(delta) < 4;
     }
 
     const view = map.getView();
     if (
-      this.mode_ === Mode.TRACKPAD &&
+      this.isTrackPad &&
       !(view.getConstrainResolution() || this.constrainResolution_)
     ) {
       if (this.trackpadTimeoutId_) {

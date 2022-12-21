@@ -62,6 +62,10 @@ abstract class Track2DSymmetric extends Track2D {
     this.style = this.generateStyleFunction()();
   }
 
+  public getStyle(): Style {
+    return this.style;
+  }
+
   public generateStyleFunction(): () => Style {
     const style = new Style({
       stroke: new Stroke({
@@ -180,7 +184,7 @@ class ContigBordersTrack2D extends WithRing {
       },
       mapManager.getContigDimensionHolder(),
       {
-        borderColor: "rgba(100, 64, 255, 1.0)",
+        borderColor: "rgba(255, 64, 64, 1.0)",
         fillColor: "rgba(0, 127, 127, 0.0)",
         width: 2,
         zIndex: 11,
@@ -283,7 +287,7 @@ class ScaffoldBordersTrack2D extends WithRing {
       },
       mapManager.getContigDimensionHolder(),
       {
-        fillColor: "rgba(100, 100, 0, 0.0)",
+        fillColor: "rgba(64, 64, 255, 0.0)",
         borderColor: "rgba(255, 255, 0, 1)",
         width: 4,
         zIndex: 12,
@@ -313,10 +317,10 @@ class ScaffoldBordersTrack2D extends WithRing {
 
             const [fromPx, toPx] = [
               prefix_sum_px[
-                this.contigDimensionHolder.contigIdToOrd[startContigId]
+              this.contigDimensionHolder.contigIdToOrd[startContigId]
               ],
               prefix_sum_px[
-                this.contigDimensionHolder.contigIdToOrd[endContigId] + 1
+              this.contigDimensionHolder.contigIdToOrd[endContigId] + 1
               ] - 1,
             ];
 
@@ -483,11 +487,10 @@ class TranslocationArrowsTrack2D extends Track2DSymmetric {
               const lrArrow = new MultiPolygon(multiPolygonRings);
 
               const multiPolygonFeature = new Feature({
-                name: `Arrow-between-${
-                  previousShown.contigDescriptor === cd
+                name: `Arrow-between-${previousShown.contigDescriptor === cd
                     ? "left-border-"
                     : previousShown.contigDescriptor.contigName
-                }-and-${cd.contigName}-at-bp${resolution}`,
+                  }-and-${cd.contigName}-at-bp${resolution}`,
                 geometry: lrArrow,
               });
               multiPolygonFeature.setStyle(this.style);

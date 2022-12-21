@@ -111,10 +111,10 @@ class HiCViewAndLayersManager {
     readonly selectedScaffoldFeatures: Collection<Feature<Geometry>>;
     readonly selectedTranslocationArrowsFeatures: Collection<Feature<Geometry>>;
   } = {
-    selectedContigFeatures: new Collection(),
-    selectedScaffoldFeatures: new Collection(),
-    selectedTranslocationArrowsFeatures: new Collection(),
-  };
+      selectedContigFeatures: new Collection(),
+      selectedScaffoldFeatures: new Collection(),
+      selectedTranslocationArrowsFeatures: new Collection(),
+    };
 
   public currentViewState: CurrentHiCViewState;
 
@@ -122,9 +122,9 @@ class HiCViewAndLayersManager {
     readonly HIC_MAP_LAYER_Z_INDEX: number;
     readonly TRACK_2D_LAYER_Z_INDEX: number;
   } = {
-    HIC_MAP_LAYER_Z_INDEX: 4,
-    TRACK_2D_LAYER_Z_INDEX: 100,
-  };
+      HIC_MAP_LAYER_Z_INDEX: 4,
+      TRACK_2D_LAYER_Z_INDEX: 100,
+    };
 
   protected readonly layerResolutionBorders: Map<
     number,
@@ -150,8 +150,8 @@ class HiCViewAndLayersManager {
       ranges: CurrentSignalRangeResponse
     ) => void)[];
   } = {
-    contrastSliderRangesCallbacks: [],
-  };
+      contrastSliderRangesCallbacks: [],
+    };
 
   constructor(
     public readonly mapManager: ContactMapManager,
@@ -573,6 +573,7 @@ class HiCViewAndLayersManager {
         resolutions: this.resolutions,
         pixelResolutionSet: this.pixelResolutionSet,
         global_projection: this.pixelProjection,
+        layers: this.layersHolder.hicDataLayers,
       })
     );
     this.mapManager
@@ -613,7 +614,7 @@ class HiCViewAndLayersManager {
           ) as ContigDescriptor;
           const contigOrder =
             this.mapManager.contigDimensionHolder.contigIdToOrd[
-              contigDescriptor.contigId
+            contigDescriptor.contigId
             ];
 
           this.currentViewState.selectionBorders = {
@@ -682,7 +683,7 @@ class HiCViewAndLayersManager {
       if (
         rightPxInclusive >
         this.imageSizes[
-          this.currentViewState.resolutionDesciptor.imageSizeIndex
+        this.currentViewState.resolutionDesciptor.imageSizeIndex
         ]
       ) {
         rightContigOrderInclusive =

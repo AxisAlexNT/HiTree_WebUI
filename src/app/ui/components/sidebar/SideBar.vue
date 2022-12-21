@@ -3,7 +3,7 @@
     <div id="upper-block">
       <div id="minimap"></div>
 
-      <div id="color-range">
+      <div id="color-range" v-if="props.mapManager">
         <ContrastSelector :map-manager="props.mapManager" />
       </div>
 
@@ -12,12 +12,13 @@
       </div>
     </div>
 
-    <div id="layers-block">
+    <div id="layers-block" v-if="props.mapManager">
       <!-- Instantiate layer components here using v-for -->
       <LayerComponent
         v-for="layer in layers"
         v-bind:key="layer.name"
         v-bind:layer-name="layer.name"
+        :getDefaultColor="layer.getStyle"
         @onColorChanged="onColorChanged"
         @onBorderStyleChanged="onBorderStyleChanged"
       ></LayerComponent>
@@ -33,24 +34,31 @@ import { ref, type Ref } from "vue";
 import ContrastSelector from "./ContrastSelector.vue";
 import { CommonEventManager } from "@/app/core/mapmanagers/CommonEventManager";
 import { BorderStyle } from "@/app/core/tracks/Track2DSymmetric";
+import Style from "ol/style/Style";
 
 const props = defineProps<{
   mapManager?: ContactMapManager;
 }>();
 
 class LayerDescriptor {
-  name: string;
-  layer_manager: object | null;
-
-  constructor(name: string) {
-    this.name = name;
-    this.layer_manager = null;
-  }
+  constructor(
+    public name: string,
+    public getStyle?: () => Style | undefined,
+    public layer_manager?: unknown
+  ) {}
 }
 
-const layers: Ref<Array<LayerDescriptor>> = ref([
-  new LayerDescriptor("Contigs"),
-  new LayerDescriptor("Scaffolds"),
+const layers: Ref<LayerDescriptor[]> = ref([
+  new LayerDescriptor("Contigs", () =>
+    props.mapManager
+      ?.getLayersManager()
+      .track2DHolder.contigBordersTrack.getStyle()
+  ),
+  new LayerDescriptor("Scaffolds", () =>
+    props.mapManager
+      ?.getLayersManager()
+      .track2DHolder.scaffoldBordersTrack.getStyle()
+  ),
   new LayerDescriptor("Something"),
 ]);
 

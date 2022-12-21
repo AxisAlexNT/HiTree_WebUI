@@ -19,6 +19,10 @@ import { Ref, ref } from "vue";
 import { ColorPicker } from "vue-color-kit";
 import "vue-color-kit/dist/vue-color-kit.css";
 
+const props = defineProps<{
+  getDefaultColor: () => string | undefined;
+}>();
+
 const selectorShown = ref(false);
 
 function toggleShown() {
@@ -29,7 +33,7 @@ const emit = defineEmits<{
   (e: "onColorChanged", newColor: string): void;
 }>();
 
-const currentColor = ref("#000000");
+const currentColor = ref(props.getDefaultColor() || "#000000");
 
 function updateBackgroundColor(evt: {
   hex: string;
