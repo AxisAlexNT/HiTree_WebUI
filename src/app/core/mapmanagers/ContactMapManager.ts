@@ -1,5 +1,5 @@
 import { Map, View } from "ol";
-import { ZoomSlider, ScaleLine } from "ol/control";
+import { ZoomSlider, ScaleLine, OverviewMap } from "ol/control";
 import { DoubleClickZoom, DragPan } from "ol/interaction";
 import TileLayer from "ol/layer/Tile";
 import ContigDimensionHolder from "./ContigDimensionHolder";
@@ -87,6 +87,17 @@ class ContactMapManager {
       })
     );
     this.viewAndLayersManager.initializeMapControls();
+  }
+
+  public addOverviewMapTarget(target: HTMLElement | string) {
+    this.map.addControl(
+      new OverviewMap({
+        collapsed: false,
+        target: target,
+        layers: this.viewAndLayersManager.layersHolder.hicDataLayers,
+        collapsible: false,
+      })
+    );
   }
 
   public getOptions() {

@@ -26,7 +26,7 @@ class VersionedXYZContactMapSource extends XYZ {
       xhr.addEventListener("loadend", function (evt) {
         // console.log("Got XHR Response: ", this.response);
         const data = this.response;
-        if (data !== undefined && data.image !== undefined) {
+        if (data && data.image) {
           // image.src = URL.createObjectURL(data.image);
           // image.src = "data:image/png;base64," + data.image;
           //this.lastResponse = this.response;
@@ -90,27 +90,6 @@ class VersionedXYZContactMapSource extends XYZ {
       );
     };
   }
-
-  // public getTile(
-  //   z: number,
-  //   x: number,
-  //   y: number,
-  //   pixelRatio: number,
-  //   projection: Projection
-  // ): ImageTile | ReprojTile {
-  //   this.layersManager.callbackFns.contrastSliderCallbacks.forEach(
-  //     (fnCallback) => {
-  //       console.log(
-  //         "Calling callbackFn: ",
-  //         fnCallback,
-  //         " with tile version ",
-  //         this.sourceVersion
-  //       );
-  //       fnCallback(this.sourceVersion);
-  //     }
-  //   );
-  //   return super.getTile(z, x, y, pixelRatio, projection);
-  // }
 }
 
 export { VersionedXYZContactMapSource };

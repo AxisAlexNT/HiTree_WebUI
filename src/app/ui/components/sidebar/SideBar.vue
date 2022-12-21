@@ -1,7 +1,12 @@
 <template>
   <aside class="sidebar">
     <div id="upper-block">
-      <div id="minimap"></div>
+      <div id="minimap">
+        <MiniMap
+          :map-manager="props.mapManager"
+          v-if="props.mapManager"
+        ></MiniMap>
+      </div>
 
       <div id="color-range" v-if="props.mapManager">
         <ContrastSelector :map-manager="props.mapManager" />
@@ -35,6 +40,7 @@ import ContrastSelector from "./ContrastSelector.vue";
 import { CommonEventManager } from "@/app/core/mapmanagers/CommonEventManager";
 import { BorderStyle } from "@/app/core/tracks/Track2DSymmetric";
 import Style from "ol/style/Style";
+import MiniMap from "@/app/ui/components/sidebar/MiniMap.vue";
 
 const props = defineProps<{
   mapManager?: ContactMapManager;
