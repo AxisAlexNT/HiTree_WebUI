@@ -1,15 +1,5 @@
 <template>
-  <div id="horizontal-igv-track-div">
-    <!-- <figure class="text-center">
-      <blockquote class="blockquote">
-        <p>Very soon horizontal IGV tracks will be here.</p>
-      </blockquote>
-      <figcaption class="blockquote-footer">
-        Someone famous in the
-        <cite title="HiCT Development Team">HiCT Development Team</cite>
-      </figcaption>
-    </figure> -->
-  </div>
+  <div id="horizontal-igv-track-div"></div>
 </template>
 
 <script setup lang="ts">
@@ -47,7 +37,7 @@ const igvOptions = {
 onMounted(() => {
   const newDiv = document.getElementById("horizontal-igv-track-div");
 
-  if (newDiv) {
+  if (false && newDiv) {
     console.log("New div is", newDiv);
     // igv.createBrowser(newDiv, igvOptions).then(function () {
     //  console.log("Created Horizontal IGV browser");

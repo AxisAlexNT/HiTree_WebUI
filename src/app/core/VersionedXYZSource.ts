@@ -1,4 +1,4 @@
-import { ImageTile } from "ol";
+import { ImageTile, Tile } from "ol";
 import TileState from "ol/TileState";
 import XYZ, { type Options as XYZOptions } from "ol/source/XYZ";
 import { unref } from "vue";
@@ -7,8 +7,7 @@ import { CurrentSignalRangeResponseDTO } from "./net/dto/responseDTO";
 
 class VersionedXYZContactMapSource extends XYZ {
   protected sourceVersion: number;
-  // protected lastResponse?: Record<string, unknown>;
-
+  
   constructor(
     protected readonly layersManager: HiCViewAndLayersManager,
     protected readonly zoomLevel: number,
@@ -16,15 +15,36 @@ class VersionedXYZContactMapSource extends XYZ {
   ) {
     super(xyzOptions);
     this.sourceVersion = 0;
-    this.setTileLoadFunction((tile, src) => {
-      console.assert(tile instanceof ImageTile);
-      const imageTile: ImageTile = tile as ImageTile;
-      const image: HTMLImageElement | HTMLVideoElement =
-        imageTile.getImage() as HTMLImageElement | HTMLVideoElement;
+    this.isCachingEnabled = false;
+    this.tileImageSrcCache = new Map();
+    this.setTileLoadFunction(this.customTileLoadFunction(this));
+    this.do_reload();
+  }
+
+  /**
+   * do_reload
+   */
+  public do_reload() {
+    this.clearTileCache(true);
+    ++this.sourceVersion;
+    this.setTileUrlFunction(this.create_tile_url_function());
+    this.changed();
+  }
+
+  public clearTileCache(clearHashMap?: boolean | undefined | null) {
+    this.tileCache.expireCache({});
+    this.tileCache.clear();
+    if (clearHashMap && this.isCachingEnabled) {
+      this.tileImageSrcCache.clear();
+    }
+  }
+
+  public customTileLoadFunction(xyzSource: VersionedXYZContactMapSource) {
+    const layersManager = this.layersManager;
+    return (tile: Tile, src: string) => {
       const xhr = new XMLHttpRequest();
       xhr.responseType = "json";
-      xhr.addEventListener("loadend", function (evt) {
-        // console.log("Got XHR Response: ", this.response);
+      xhr.addEventListener("loadend", function () {
         const data = this.response;
         if (data !== undefined && data.image !== undefined) {
           // image.src = URL.createObjectURL(data.image);
@@ -32,15 +52,12 @@ class VersionedXYZContactMapSource extends XYZ {
           //this.lastResponse = this.response;
           tile["lastResponse"] = data;
           image.src = data.image;
-          // console.log("Data.ranges is ", data.ranges);
-          // console.log(
-          //   "Constructed ranges DTO: ",
-          //   new CurrentSignalRangeResponseDTO(data.ranges)
-          // );
-          // console.log(
-          //   "Constructed ranges entity: ",
-          //   new CurrentSignalRangeResponseDTO(data.ranges).toEntity()
-          // );
+          if (xyzSource.isCachingEnabled) {
+            xyzSource.tileImageSrcCache.set(
+              tile.getTileCoord().toString(),
+              image.src
+            );
+          }
           layersManager.callbackFns.contrastSliderRangesCallbacks.forEach(
             (callbackFn) => {
               callbackFn(
@@ -61,19 +78,7 @@ class VersionedXYZContactMapSource extends XYZ {
       });
       xhr.open("GET", src);
       xhr.send();
-    });
-    this.do_reload();
-  }
-
-  /**
-   * do_reload
-   */
-  public do_reload() {
-    this.tileCache.expireCache({});
-    this.tileCache.clear();
-    ++this.sourceVersion;
-    this.setTileUrlFunction(this.create_tile_url_function());
-    this.changed();
+    };
   }
 
   protected create_tile_url_function() {
@@ -90,27 +95,6 @@ class VersionedXYZContactMapSource extends XYZ {
       );
     };
   }
-
-  // public getTile(
-  //   z: number,
-  //   x: number,
-  //   y: number,
-  //   pixelRatio: number,
-  //   projection: Projection
-  // ): ImageTile | ReprojTile {
-  //   this.layersManager.callbackFns.contrastSliderCallbacks.forEach(
-  //     (fnCallback) => {
-  //       console.log(
-  //         "Calling callbackFn: ",
-  //         fnCallback,
-  //         " with tile version ",
-  //         this.sourceVersion
-  //       );
-  //       fnCallback(this.sourceVersion);
-  //     }
-  //   );
-  //   return super.getTile(z, x, y, pixelRatio, projection);
-  // }
 }
 
 export { VersionedXYZContactMapSource };
