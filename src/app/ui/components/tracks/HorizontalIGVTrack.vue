@@ -7,6 +7,7 @@
 ///<reference path="../../../../../node_modules/igv/dist/igv.esm.js" />
 import igv from "igv";
 import { onMounted } from "vue";
+
 const igvOptions = {
   genome: "hg38",
   locus: "chr8:127,736,588-127,739,371",
@@ -20,6 +21,7 @@ const igvOptions = {
     },
   ],
 };
+
 // watch(
 //   () => document.getElementById("horizontal-igv-track-div"),
 //   (newDiv) => {
@@ -31,8 +33,10 @@ const igvOptions = {
 //     }
 //   }
 // );
+
 onMounted(() => {
   const newDiv = document.getElementById("horizontal-igv-track-div");
+
   if (false && newDiv) {
     console.log("New div is", newDiv);
     // igv.createBrowser(newDiv, igvOptions).then(function () {
