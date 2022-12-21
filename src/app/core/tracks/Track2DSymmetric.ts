@@ -2,7 +2,13 @@ import type ContigDimensionHolder from "@/app/core/mapmanagers/ContigDimensionHo
 import type { Color } from "ol/color";
 import type { ColorLike } from "ol/colorlike";
 import Feature from "ol/Feature";
-import { MultiPolygon, Polygon, type Geometry } from "ol/geom";
+import {
+  MultiPolygon,
+  Polygon,
+  type Geometry,
+  LineString,
+  SimpleGeometry,
+} from "ol/geom";
 import Fill from "ol/style/Fill";
 import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
@@ -54,6 +60,10 @@ abstract class Track2DSymmetric extends Track2D {
       zIndex: opt_options?.zIndex ?? 0,
     };
     this.style = this.generateStyleFunction()();
+  }
+
+  public getStyle(): Style {
+    return this.style;
   }
 
   public generateStyleFunction(): () => Style {
@@ -125,7 +135,47 @@ class BasePairsTrack2DSymmetric extends Track2DSymmetric {
   }
 }
 
-class ContigBordersTrack2D extends Track2DSymmetric {
+abstract class WithRing extends Track2DSymmetric {
+  protected borderStyle: BorderStyle = BorderStyle.FULL;
+  public setStyleType(style: BorderStyle): void {
+    this.borderStyle = style;
+  }
+  protected drawPolygon(
+    topLeft: Array<number>,
+    topRight: Array<number>,
+    botRight: Array<number>,
+    botLeft: Array<number>,
+    pixelResolution: number
+  ): SimpleGeometry {
+    const ring: Array<Array<number>> = (() => {
+      switch (this.borderStyle) {
+        case BorderStyle.FULL:
+          return [topLeft, topRight, botRight, botLeft];
+        case BorderStyle.TOP:
+          return [botRight, botLeft, topLeft];
+        case BorderStyle.BOTTOM:
+          return [topLeft, topRight, botRight];
+        case BorderStyle.NONE:
+          return [];
+      }
+    })();
+
+    for (const c of ring) {
+      c[0] *= pixelResolution;
+      c[1] *= pixelResolution;
+    }
+    switch (this.borderStyle) {
+      case BorderStyle.FULL:
+      case BorderStyle.NONE:
+        return new Polygon([ring]);
+      case BorderStyle.BOTTOM:
+      case BorderStyle.TOP:
+        return new LineString(ring);
+    }
+  }
+}
+
+class ContigBordersTrack2D extends WithRing {
   public constructor(public readonly mapManager: ContactMapManager) {
     super(
       {
@@ -134,8 +184,8 @@ class ContigBordersTrack2D extends Track2DSymmetric {
       },
       mapManager.getContigDimensionHolder(),
       {
-        borderColor: "rgba(100, 64, 255, 1.0)",
-        fillColor: "rgba(0, 127, 127, 0.15)",
+        borderColor: "rgba(255, 64, 64, 1.0)",
+        fillColor: "rgba(0, 127, 127, 0.0)",
         width: 2,
         zIndex: 11,
       }
@@ -178,20 +228,33 @@ class ContigBordersTrack2D extends Track2DSymmetric {
               );
             }
 
-            const ring = [
+            // const ring = [
+            //   [fromPx, -fromPx],
+            //   [fromPx, -toPx],
+            //   [toPx, -toPx],
+            //   [toPx, -fromPx],
+            //   [fromPx, -fromPx],
+            // ];
+
+            // const ring = this.updateRing(
+            //   [fromPx, -fromPx],
+            //   [fromPx, -toPx],
+            //   [toPx, -toPx],
+            //   [toPx, -fromPx]
+            // );
+            //
+            // for (const c of ring) {
+            //   c[0] *= pixelResolution;
+            //   c[1] *= pixelResolution;
+            // }
+
+            const contig_bounding_box = this.drawPolygon(
               [fromPx, -fromPx],
               [fromPx, -toPx],
               [toPx, -toPx],
               [toPx, -fromPx],
-              [fromPx, -fromPx],
-            ];
-
-            for (const c of ring) {
-              c[0] *= pixelResolution;
-              c[1] *= pixelResolution;
-            }
-
-            const contig_bounding_box = new Polygon([ring]);
+              pixelResolution
+            );
 
             const polygonFeature = new Feature({
               name: `ContigBorder-${cd.contigName}-bp${resolution}`,
@@ -215,7 +278,7 @@ class ContigBordersTrack2D extends Track2DSymmetric {
   }
 }
 
-class ScaffoldBordersTrack2D extends Track2DSymmetric {
+class ScaffoldBordersTrack2D extends WithRing {
   public constructor(public readonly mapManager: ContactMapManager) {
     super(
       {
@@ -224,7 +287,7 @@ class ScaffoldBordersTrack2D extends Track2DSymmetric {
       },
       mapManager.getContigDimensionHolder(),
       {
-        fillColor: "rgba(100, 100, 0, 0.3)",
+        fillColor: "rgba(64, 64, 255, 0.0)",
         borderColor: "rgba(255, 255, 0, 1)",
         width: 4,
         zIndex: 12,
@@ -254,10 +317,10 @@ class ScaffoldBordersTrack2D extends Track2DSymmetric {
 
             const [fromPx, toPx] = [
               prefix_sum_px[
-                this.contigDimensionHolder.contigIdToOrd[startContigId]
+              this.contigDimensionHolder.contigIdToOrd[startContigId]
               ],
               prefix_sum_px[
-                this.contigDimensionHolder.contigIdToOrd[endContigId] + 1
+              this.contigDimensionHolder.contigIdToOrd[endContigId] + 1
               ] - 1,
             ];
 
@@ -275,20 +338,33 @@ class ScaffoldBordersTrack2D extends Track2DSymmetric {
               );
             }
 
-            const ring = [
+            // const ring = [
+            //   [fromPx, -fromPx],
+            //   [fromPx, -toPx],
+            //   [toPx, -toPx],
+            //   [toPx, -fromPx],
+            //   [fromPx, -fromPx],
+            // ];
+
+            // const ring = this.updateRing(
+            //   [fromPx, -fromPx],
+            //   [fromPx, -toPx],
+            //   [toPx, -toPx],
+            //   [toPx, -fromPx]
+            // );
+            //
+            // for (const c of ring) {
+            //   c[0] *= pixelResolution;
+            //   c[1] *= pixelResolution;
+            // }
+
+            const scaffold_bounding_box = this.drawPolygon(
               [fromPx, -fromPx],
               [fromPx, -toPx],
               [toPx, -toPx],
               [toPx, -fromPx],
-              [fromPx, -fromPx],
-            ];
-
-            for (const c of ring) {
-              c[0] *= pixelResolution;
-              c[1] *= pixelResolution;
-            }
-
-            const scaffold_bounding_box = new Polygon([ring]);
+              pixelResolution
+            );
 
             const polygonFeature = new Feature({
               name: `ScaffoldBorder-${scaffoldDescriptor.scaffoldName}-bp${bpResolution}`,
@@ -411,11 +487,10 @@ class TranslocationArrowsTrack2D extends Track2DSymmetric {
               const lrArrow = new MultiPolygon(multiPolygonRings);
 
               const multiPolygonFeature = new Feature({
-                name: `Arrow-between-${
-                  previousShown.contigDescriptor === cd
+                name: `Arrow-between-${previousShown.contigDescriptor === cd
                     ? "left-border-"
                     : previousShown.contigDescriptor.contigName
-                }-and-${cd.contigName}-at-bp${resolution}`,
+                  }-and-${cd.contigName}-at-bp${resolution}`,
                 geometry: lrArrow,
               });
               multiPolygonFeature.setStyle(this.style);
@@ -507,6 +582,13 @@ class TranslocationArrowsTrack2D extends Track2DSymmetric {
   }
 }
 
+enum BorderStyle {
+  FULL,
+  BOTTOM,
+  TOP,
+  NONE,
+}
+
 export {
   Track2DSymmetric,
   ContigBordersTrack2D,
@@ -516,4 +598,5 @@ export {
   BasePairsTrack2DSymmetric,
   ScaffoldBordersTrack2D,
   TranslocationArrowsTrack2D,
+  BorderStyle,
 };

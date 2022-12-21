@@ -3,7 +3,6 @@ import { Extent, Select } from "ol/interaction";
 import { Projection } from "ol/proj";
 import type Layer from "ol/layer/Layer";
 import type { ContactMapManager } from "./ContactMapManager";
-import Units from "ol/proj/Units";
 import { Collection, Feature, View } from "ol";
 import type { Geometry } from "ol/geom";
 import TileLayer from "ol/layer/Tile";
@@ -24,6 +23,7 @@ import {
   TranslocationArrowsTrack2D,
   ScaffoldBordersTrack2D,
   Track2DSymmetric,
+  BorderStyle,
 } from "../tracks/Track2DSymmetric";
 import Fill from "ol/style/Fill";
 import { pointerMove, shiftKeyOnly, singleClick } from "ol/events/condition";
@@ -111,10 +111,10 @@ class HiCViewAndLayersManager {
     readonly selectedScaffoldFeatures: Collection<Feature<Geometry>>;
     readonly selectedTranslocationArrowsFeatures: Collection<Feature<Geometry>>;
   } = {
-    selectedContigFeatures: new Collection(),
-    selectedScaffoldFeatures: new Collection(),
-    selectedTranslocationArrowsFeatures: new Collection(),
-  };
+      selectedContigFeatures: new Collection(),
+      selectedScaffoldFeatures: new Collection(),
+      selectedTranslocationArrowsFeatures: new Collection(),
+    };
 
   public currentViewState: CurrentHiCViewState;
 
@@ -122,9 +122,9 @@ class HiCViewAndLayersManager {
     readonly HIC_MAP_LAYER_Z_INDEX: number;
     readonly TRACK_2D_LAYER_Z_INDEX: number;
   } = {
-    HIC_MAP_LAYER_Z_INDEX: 4,
-    TRACK_2D_LAYER_Z_INDEX: 100,
-  };
+      HIC_MAP_LAYER_Z_INDEX: 4,
+      TRACK_2D_LAYER_Z_INDEX: 100,
+    };
 
   protected readonly layerResolutionBorders: Map<
     number,
@@ -150,8 +150,8 @@ class HiCViewAndLayersManager {
       ranges: CurrentSignalRangeResponse
     ) => void)[];
   } = {
-    contrastSliderRangesCallbacks: [],
-  };
+      contrastSliderRangesCallbacks: [],
+    };
 
   constructor(
     public readonly mapManager: ContactMapManager,
@@ -211,7 +211,7 @@ class HiCViewAndLayersManager {
     // Define projection:
     this.pixelProjection = new Projection({
       code: "pixelate",
-      units: Units.PIXELS,
+      units: "pixels",
       metersPerUnit: undefined,
       extent: maximum_global_extent,
       axisOrientation: "esu", // OK, axis orientation is changed in layer projections
@@ -346,8 +346,41 @@ class HiCViewAndLayersManager {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public onContigBorderColorChanged(contigBorderColor: string): void {
-    throw new Error("Contig border color change is not yet implemented");
-    this.reloadTiles();
+    this.track2DHolder.contigBordersTrack.options.borderColor =
+      contigBorderColor;
+
+    this.track2DHolder.contigBordersTrack.style =
+      this.track2DHolder.contigBordersTrack.generateStyleFunction()();
+
+    this.reloadTracks();
+  }
+
+  public onScanffoldBorderColorChanged(scaffoldBorderColor: string): void {
+    this.track2DHolder.scaffoldBordersTrack.options.borderColor =
+      scaffoldBorderColor;
+
+    this.track2DHolder.scaffoldBordersTrack.style =
+      this.track2DHolder.scaffoldBordersTrack.generateStyleFunction()();
+
+    this.reloadTracks();
+  }
+
+  public onContigBorderStyleChanged(style: BorderStyle): void {
+    this.track2DHolder.contigBordersTrack.setStyleType(style);
+
+    this.track2DHolder.contigBordersTrack.style =
+      this.track2DHolder.contigBordersTrack.generateStyleFunction()();
+
+    this.reloadTracks();
+  }
+
+  public onScanffoldBorderStyleChanged(style: BorderStyle): void {
+    this.track2DHolder.scaffoldBordersTrack.setStyleType(style);
+
+    this.track2DHolder.scaffoldBordersTrack.style =
+      this.track2DHolder.scaffoldBordersTrack.generateStyleFunction()();
+
+    this.reloadTracks();
   }
 
   public getView(): View {
@@ -528,6 +561,7 @@ class HiCViewAndLayersManager {
       new BinMousePosition({
         projection: this.pixelProjection,
         dimension_holder: this.mapManager.getContigDimensionHolder(),
+        layers: this.layersHolder.hicDataLayers,
       })
     );
   }
@@ -539,6 +573,7 @@ class HiCViewAndLayersManager {
         resolutions: this.resolutions,
         pixelResolutionSet: this.pixelResolutionSet,
         global_projection: this.pixelProjection,
+        layers: this.layersHolder.hicDataLayers,
       })
     );
     this.mapManager
@@ -579,7 +614,7 @@ class HiCViewAndLayersManager {
           ) as ContigDescriptor;
           const contigOrder =
             this.mapManager.contigDimensionHolder.contigIdToOrd[
-              contigDescriptor.contigId
+            contigDescriptor.contigId
             ];
 
           this.currentViewState.selectionBorders = {
@@ -648,7 +683,7 @@ class HiCViewAndLayersManager {
       if (
         rightPxInclusive >
         this.imageSizes[
-          this.currentViewState.resolutionDesciptor.imageSizeIndex
+        this.currentViewState.resolutionDesciptor.imageSizeIndex
         ]
       ) {
         rightContigOrderInclusive =

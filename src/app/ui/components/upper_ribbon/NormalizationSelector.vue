@@ -116,9 +116,9 @@ const props = defineProps<{
 
 const applyPreLog: Ref<boolean> = ref(false);
 
-const applyCoolerWeights: Ref<boolean> = ref(true);
+const applyCoolerWeights: Ref<boolean> = ref(false);
 
-const applyPostLog: Ref<boolean> = ref(false);
+const applyPostLog: Ref<boolean> = ref(true);
 
 const preLogBase: Ref<number> = ref(10);
 

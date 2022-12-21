@@ -1,10 +1,10 @@
 import { Map, View } from "ol";
-import { ZoomSlider, ScaleLine } from "ol/control";
-import { DoubleClickZoom, DragPan, Select } from "ol/interaction";
+import { ZoomSlider, ScaleLine, OverviewMap } from "ol/control";
+import { DoubleClickZoom, DragPan } from "ol/interaction";
 import TileLayer from "ol/layer/Tile";
 import ContigDimensionHolder from "./ContigDimensionHolder";
-import { ScaffoldHolder, type ScaffoldId } from "./ScaffoldHolder";
-import { ActiveTool, HiCViewAndLayersManager } from "./HiCViewAndLayersManager";
+import { ScaffoldHolder } from "./ScaffoldHolder";
+import { HiCViewAndLayersManager } from "./HiCViewAndLayersManager";
 import OSM from "ol/source/OSM";
 import type { OpenFileResponse } from "../net/netcommon";
 import type { NetworkManager } from "../net/NetworkManager";
@@ -87,6 +87,17 @@ class ContactMapManager {
       })
     );
     this.viewAndLayersManager.initializeMapControls();
+  }
+
+  public addOverviewMapTarget(target: HTMLElement | string) {
+    this.map.addControl(
+      new OverviewMap({
+        collapsed: false,
+        target: target,
+        layers: this.viewAndLayersManager.layersHolder.hicDataLayers,
+        collapsible: false,
+      })
+    );
   }
 
   public getOptions() {

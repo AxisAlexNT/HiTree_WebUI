@@ -14,6 +14,7 @@ import {
 } from "../net/api/request";
 import { ContactMapManager } from "./ContactMapManager";
 import { ActiveTool } from "./HiCViewAndLayersManager";
+import { BorderStyle } from "@/app/core/tracks/Track2DSymmetric";
 
 class CommonEventManager {
   public constructor(public readonly mapManager: ContactMapManager) {}
@@ -37,11 +38,22 @@ class CommonEventManager {
     // this.mapManager.viewAndLayersManager.onTileSizeChanged(tileSize);
   }
 
-  public onContigBorderColorChanged(contigBorderColor: string): void {
-    throw new Error("Not yet implemented");
+  public onContigBorderColorChanged(newColor: string): void {
+    this.mapManager.viewAndLayersManager.onContigBorderColorChanged(newColor);
+  }
 
-    // this.mapManager.options.contigBorderColor = contigBorderColor;
-    // this.mapManager.viewAndLayersManager.onContigBorderColorChanged(contigBorderColor);
+  public onScanffoldBorderColorChanged(newColor: string): void {
+    this.mapManager.viewAndLayersManager.onScanffoldBorderColorChanged(
+      newColor
+    );
+  }
+
+  public onContigBorderStyleChanged(style: BorderStyle): void {
+    this.mapManager.viewAndLayersManager.onContigBorderStyleChanged(style);
+  }
+
+  public onScanffoldBorderStyleChanged(style: BorderStyle): void {
+    this.mapManager.viewAndLayersManager.onScanffoldBorderStyleChanged(style);
   }
 
   public onNormalizationChanged(
@@ -103,7 +115,7 @@ class CommonEventManager {
           asmInfo.scaffoldDescriptors
         );
         this.resetSelection();
-        this.mapManager.reloadVisuals();
+        this.reloadTracks();
       });
   }
 
@@ -140,7 +152,7 @@ class CommonEventManager {
           asmInfo.scaffoldDescriptors
         );
         this.resetSelection();
-        this.mapManager.reloadVisuals();
+        this.reloadTracks();
       });
   }
 
