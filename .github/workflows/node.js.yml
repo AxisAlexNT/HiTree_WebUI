@@ -32,8 +32,12 @@ jobs:
         node-version: 16
     - name: Install dependencies
       run: npm install
-    - name: Build electron app
-      run: npm run ${{ matrix.npm-task }}
+    - name: Build electron app (linux)
+      run: export GH_TOKEN=${{ secrets.GITHUB_TOKEN }} && npm run ${{ matrix.npm-task }}
+      if: matrix.os == "ubuntu-latest"
+    - name: Build electron app (windows)
+      run: powershell "[Environment]::SetEnvironmentVariable('GH_TOKEN','${{ secrets.GITHUB_TOKEN }}','User'); npm run ${{ matrix.npm-task }}"
+      if: matrix.os == "windows-latest"
     - name: Publish build artifacts
       uses: actions/upload-artifact@v3
       with:

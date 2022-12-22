@@ -81,6 +81,11 @@
     "appId": "ru.itmo.hict",
     "productName": "HiCT WebUI",
     "copyright": "Copyright © 2022 ${author}",
+    "publish": [{
+      "provider": "github",
+      "owner": "ctlab",
+      "repo": "HiCT_WebUI"
+    }],
     "files": [
       "dist"
     ],
