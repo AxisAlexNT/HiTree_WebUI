@@ -17,8 +17,10 @@ jobs:
         include:
           - os: "ubuntu-latest"
             npm-task: "app:linuxbuild"
+            artifact-name: "linuxbuild"
           - os: "windows-latest"
             npm-task: "app:winbuild"
+            artifact-name: "winbuild"
 
     runs-on: ${{ matrix.os }}
 
@@ -40,7 +42,7 @@ jobs:
       - name: Publish build artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: hict_trunk_build_${{ matrix.npm-task }}
+          name: hict_trunk_build_${{ matrix.artifact-name }}
           path: |
             release/*/*.AppImage
             release/*/*.zip
