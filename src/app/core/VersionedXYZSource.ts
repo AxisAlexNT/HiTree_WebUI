@@ -30,7 +30,7 @@ class VersionedXYZContactMapSource extends XYZ {
           // image.src = URL.createObjectURL(data.image);
           // image.src = "data:image/png;base64," + data.image;
           //this.lastResponse = this.response;
-          tile["lastResponse"] = data;
+          // tile["lastResponse"] = data;
           image.src = data.image;
           // console.log("Data.ranges is ", data.ranges);
           // console.log(
@@ -50,9 +50,9 @@ class VersionedXYZContactMapSource extends XYZ {
           );
         } else if (this.status >= 400) {
           tile.setState(TileState.ERROR);
-        } else {
+        } /* else {
           image.src = tile["lastResponse"].image;
-        }
+        }*/
       });
       xhr.addEventListener("error", function () {
         if (this.status >= 400) {
