@@ -14,9 +14,9 @@
     "ts": "tsc",
     "watch": "tsc -w",
     "app:dev": "tsc && concurrently vite \" electron .\" \"tsc -w\"",
-    "app:build": "npm run build && tsc && electron-builder",
-    "app:multibuild": "npm run build && tsc && electron-builder -wl --ia32 --x64",
-    "app:preview": "npm run build && tsc && electron ."
+    "app:build": "npm run build && electron-builder",
+    "app:multibuild": "npm run build && electron-builder -wl --x64",
+    "app:preview": "npm run build && electron ."
   },
   "dependencies": {
     "@popperjs/core": "^2.11.6",
