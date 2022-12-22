@@ -13,22 +13,28 @@ on:
 jobs:
 
   release:
-    runs-on: ${{ matrix.os }}
-
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        include:
+          - os: "ubuntu-latest"
+            npm-task: "app:linuxbuild"
+          - os: "windows-latest"
+            npm-task: "app:winbuild"
+
+    runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v2       
-    - uses: actions/setup-node@master
+    - name: Checkout sources
+      uses: actions/checkout@v2       
+    - name: Setup Node.js
+      uses: actions/setup-node@master
       with:
         node-version: 16
-    - name: install dependencies
+    - name: Install dependencies
       run: npm install
-    - name: build electron app
-      run: npm run app:multibuild
-    - name: publish results
+    - name: Build electron app
+      run: npm run ${{ matrix.npm-task }}
+    - name: Publish build artifacts
       uses: actions/upload-artifact@v3
       with:
         name: HiCT trunk build
