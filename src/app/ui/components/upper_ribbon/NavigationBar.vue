@@ -129,7 +129,10 @@
           </li>
           <!-- Report a bug -->
           <li class="nav-item">
-            <a aria-current="page" class="nav-link active" href="#"
+            <a
+              aria-current="page"
+              class="nav-link active"
+              href="https://github.com/ctlab/HiCT/issues"
               >Report a bug</a
             >
           </li>
