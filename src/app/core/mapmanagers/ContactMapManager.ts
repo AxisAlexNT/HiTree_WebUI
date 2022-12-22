@@ -80,12 +80,15 @@ class ContactMapManager {
   public initializeMapControls(): void {
     // Add some more controls:
     this.map.addControl(new ZoomSlider());
+    /*
+    // No more scale line in kilometers:
     this.map.addControl(
       new ScaleLine({
         bar: true,
         text: true,
       })
     );
+    */
     this.viewAndLayersManager.initializeMapControls();
   }
 

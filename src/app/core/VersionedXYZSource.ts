@@ -7,7 +7,6 @@ import { CurrentSignalRangeResponseDTO } from "./net/dto/responseDTO";
 
 class VersionedXYZContactMapSource extends XYZ {
   protected sourceVersion: number;
-  // protected lastResponse?: Record<string, unknown>;
 
   constructor(
     protected readonly layersManager: HiCViewAndLayersManager,
@@ -29,18 +28,8 @@ class VersionedXYZContactMapSource extends XYZ {
         if (data && data.image) {
           // image.src = URL.createObjectURL(data.image);
           // image.src = "data:image/png;base64," + data.image;
-          //this.lastResponse = this.response;
-          // tile["lastResponse"] = data;
           image.src = data.image;
-          // console.log("Data.ranges is ", data.ranges);
-          // console.log(
-          //   "Constructed ranges DTO: ",
-          //   new CurrentSignalRangeResponseDTO(data.ranges)
-          // );
-          // console.log(
-          //   "Constructed ranges entity: ",
-          //   new CurrentSignalRangeResponseDTO(data.ranges).toEntity()
-          // );
+          tile.setState(TileState.LOADED);
           layersManager.callbackFns.contrastSliderRangesCallbacks.forEach(
             (callbackFn) => {
               callbackFn(
@@ -49,14 +38,16 @@ class VersionedXYZContactMapSource extends XYZ {
             }
           );
         } else if (this.status >= 400) {
-          tile.setState(TileState.ERROR);
+          //tile.setState(TileState.ERROR);
+          tile.setState(TileState.EMPTY);
         } /* else {
           image.src = tile["lastResponse"].image;
         }*/
       });
       xhr.addEventListener("error", function () {
         if (this.status >= 400) {
-          tile.setState(TileState.ERROR);
+          //tile.setState(TileState.ERROR);
+          tile.setState(TileState.EMPTY);
         }
       });
       xhr.open("GET", src);
