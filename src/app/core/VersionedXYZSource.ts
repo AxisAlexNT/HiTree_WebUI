@@ -30,6 +30,8 @@ class VersionedXYZContactMapSource extends XYZ {
           // image.src = "data:image/png;base64," + data.image;
           image.src = data.image;
           tile.setState(TileState.LOADED);
+          // @ts-expect-error Adding field to object is ok in JS but not in TS
+          tile.lastResponse = data;
           layersManager.callbackFns.contrastSliderRangesCallbacks.forEach(
             (callbackFn) => {
               callbackFn(
@@ -37,17 +39,23 @@ class VersionedXYZContactMapSource extends XYZ {
               );
             }
           );
-        } else if (this.status >= 400) {
-          //tile.setState(TileState.ERROR);
-          tile.setState(TileState.EMPTY);
-        } /* else {
-          image.src = tile["lastResponse"].image;
-        }*/
+        } else /* if (this.status >= 400) */ {
+          // @ts-expect-error If tile was loaded successfully at least once, last response is saved
+          if (tile.lastResponse) {
+            // @ts-expect-error If tile was loaded successfully at least once, last response is saved
+            image.src = tile.lastResponse.image;
+          } else {
+            tile.setState(TileState.ERROR); // tile.setState(TileState.EMPTY);
+          }
+        }
       });
       xhr.addEventListener("error", function () {
-        if (this.status >= 400) {
-          //tile.setState(TileState.ERROR);
-          tile.setState(TileState.EMPTY);
+        // @ts-expect-error If tile was loaded successfully at least once, last response is saved
+        if (tile.lastResponse) {
+          // @ts-expect-error If tile was loaded successfully at least once, last response is saved
+          image.src = tile.lastResponse.image;
+        } else {
+          tile.setState(TileState.ERROR);
         }
       });
       xhr.open("GET", src);
