@@ -206,14 +206,14 @@ async function onZoomLevelChanged(newIndex: number): Promise<void> {
     );
     console.log("SignalsMins: ", signalsMins, " Maxs: ", signalsMaxs);
   }
-  const oldRange = Math.max(1e-8, signalMax.value - signalMin.value);
-  const ratioLower = (lowerBound.value - signalMin.value) / oldRange;
-  const ratioUpper = (upperBound.value - signalMin.value) / oldRange;
-  if (debug) {
-    console.log(
-      `Contrast slider: OLD: min=${signalMin.value} max=${signalMax.value} range=${oldRange} lowerBound=${lowerBound.value} upperBound=${upperBound.value} lBratio=${ratioLower} uBratio=${ratioUpper}`
-    );
-  }
+  // const oldRange = Math.max(1e-8, signalMax.value - signalMin.value);
+  // const ratioLower = (lowerBound.value - signalMin.value) / oldRange;
+  // const ratioUpper = (upperBound.value - signalMin.value) / oldRange;
+  // if (debug) {
+  //   console.log(
+  //     `Contrast slider: OLD: min=${signalMin.value} max=${signalMax.value} range=${oldRange} lowerBound=${lowerBound.value} upperBound=${upperBound.value} lBratio=${ratioLower} uBratio=${ratioUpper}`
+  //   );
+  // }
   signalMin.value = signalsMins.value[1 + newIndex ?? 0];
   signalMax.value = signalsMaxs.value[1 + newIndex ?? 0];
   if (!isFinite(signalMin.value)) {
@@ -235,20 +235,20 @@ async function onZoomLevelChanged(newIndex: number): Promise<void> {
     console.log("Maximum value for slider is not finite: ", signalMin.value);
     signalMax.value = 1;
   }
-  const newRange = Math.max(0, signalMax.value - signalMin.value);
-  lowerBound.value = Math.max(
-    lowerBound.value,
-    signalMin.value + newRange * ratioLower
-  );
-  upperBound.value = Math.min(
-    upperBound.value,
-    signalMin.value + newRange * ratioUpper
-  );
-  if (debug) {
-    console.log(
-      `Contrast slider: NEW: min=${signalMin.value} max=${signalMax.value} range=${newRange} lowerBound=${lowerBound.value} upperBound=${upperBound.value}`
-    );
-  }
+  // const newRange = Math.max(0, signalMax.value - signalMin.value);
+  // lowerBound.value = Math.max(
+  //   lowerBound.value,
+  //   signalMin.value + newRange * ratioLower
+  // );
+  // upperBound.value = Math.min(
+  //   upperBound.value,
+  //   signalMin.value + newRange * ratioUpper
+  // );
+  // if (debug) {
+  //   console.log(
+  //     `Contrast slider: NEW: min=${signalMin.value} max=${signalMax.value} range=${newRange} lowerBound=${lowerBound.value} upperBound=${upperBound.value}`
+  //   );
+  // }
   currentZoomLevel.value = newIndex;
 }
 </script>
