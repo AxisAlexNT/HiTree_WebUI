@@ -49,6 +49,8 @@ interface SelectionBorders {
   rightContigDescriptorInclusive?: ContigDescriptor;
   leftPx?: [number, number];
   rightPx?: [number, number];
+  leftBP?: [number, number];
+  rightBP?: [number, number];
 }
 
 enum ActiveTool {
@@ -646,6 +648,8 @@ class HiCViewAndLayersManager {
           rightContigDescriptorInclusive: undefined,
           leftPx: undefined,
           rightPx: undefined,
+          leftBP: undefined,
+          rightBP: undefined,
         };
         return;
       }
@@ -705,6 +709,26 @@ class HiCViewAndLayersManager {
         rightContigDescriptorInclusive: rightContigDescriptorInclusive,
         leftPx: [x0_px, y0_px],
         rightPx: [x1_px, y1_px],
+        leftBP: [
+          this.mapManager.contigDimensionHolder.getStartBpOfPx(
+            x0_px,
+            bpResolution
+          ),
+          this.mapManager.contigDimensionHolder.getStartBpOfPx(
+            y0_px,
+            bpResolution
+          ),
+        ],
+        rightBP: [
+          this.mapManager.contigDimensionHolder.getStartBpOfPx(
+            x1_px,
+            bpResolution
+          ),
+          this.mapManager.contigDimensionHolder.getStartBpOfPx(
+            y1_px,
+            bpResolution
+          ),
+        ],
       };
 
       const activeContigBordersLayer =

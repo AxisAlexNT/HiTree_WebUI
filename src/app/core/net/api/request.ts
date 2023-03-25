@@ -59,8 +59,8 @@ class GroupContigsIntoScaffoldRequest implements HiCTAPIRequest {
 
   public constructor(
     public readonly options: {
-      readonly startContigId: number;
-      readonly endContigId: number;
+      readonly startBP: number;
+      readonly endBP: number;
       readonly newScaffoldName?: string;
       readonly spacerLength?: number;
     }
@@ -102,8 +102,8 @@ class UngroupContigsFromScaffoldRequest implements HiCTAPIRequest {
 
   public constructor(
     public readonly options: {
-      readonly startContigId: number;
-      readonly endContigId: number;
+      readonly startBP: number;
+      readonly endBP: number;
     }
   ) {}
 }
@@ -113,8 +113,8 @@ class ReverseSelectionRangeRequest implements HiCTAPIRequest {
 
   public constructor(
     public readonly options: {
-      readonly startContigId: number;
-      readonly endContigId: number;
+      readonly startBP: number;
+      readonly endBP: number;
     }
   ) {}
 }
@@ -124,9 +124,9 @@ class MoveSelectionRangeRequest implements HiCTAPIRequest {
 
   public constructor(
     public readonly options: {
-      readonly startContigId: number;
-      readonly endContigId: number;
-      readonly targetStartOrder: number;
+      readonly startBP: number;
+      readonly endBP: number;
+      readonly targetStartBP: number;
     }
   ) {}
 }

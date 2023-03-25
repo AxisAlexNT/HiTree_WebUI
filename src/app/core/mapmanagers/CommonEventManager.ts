@@ -31,6 +31,7 @@ class CommonEventManager {
     this.mapManager.viewAndLayersManager.reloadTracks();
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public onTileSizeChanged(tileSize: number): void {
     throw new Error("Not yet implemented");
 
@@ -85,26 +86,29 @@ class CommonEventManager {
   public onAddScaffoldClicked(): void {
     this.mapManager.viewAndLayersManager.currentViewState.activeTool =
       undefined;
-    const startContigId: number | undefined =
-      this.mapManager.viewAndLayersManager.currentViewState.selectionBorders
-        .leftContigDescriptorInclusive?.contigId;
-    const endContigId: number | undefined =
-      this.mapManager.viewAndLayersManager.currentViewState.selectionBorders
-        .rightContigDescriptorInclusive?.contigId;
-    if (startContigId === undefined || endContigId === undefined) {
+    const [startBP, endBP] = [
+      this.mapManager.viewAndLayersManager.currentViewState.selectionBorders.leftBP?.reduce(
+        (a, b) => Math.min(a, b)
+      ),
+      this.mapManager.viewAndLayersManager.currentViewState.selectionBorders.rightBP?.reduce(
+        (a, b) => Math.max(a, b)
+      ),
+    ];
+
+    if (startBP === undefined || endBP === undefined) {
       console.log(
-        "Not grouping contigs into scaffold: left border is",
-        startContigId,
-        " right border is ",
-        endContigId
+        "Not grouping contigs into scaffold from selection: left border bp is",
+        startBP,
+        " right border bp is ",
+        endBP
       );
       return;
     }
     this.mapManager.networkManager.requestManager
       .groupContigsIntoScaffold(
         new GroupContigsIntoScaffoldRequest({
-          startContigId: startContigId,
-          endContigId: endContigId,
+          startBP: startBP,
+          endBP: endBP,
         })
       )
       .then((asmInfo) => {
@@ -122,26 +126,29 @@ class CommonEventManager {
   public onRemoveScaffoldClicked(): void {
     this.mapManager.viewAndLayersManager.currentViewState.activeTool =
       undefined;
-    const startContigId: number | undefined =
-      this.mapManager.viewAndLayersManager.currentViewState.selectionBorders
-        .leftContigDescriptorInclusive?.contigId;
-    const endContigId: number | undefined =
-      this.mapManager.viewAndLayersManager.currentViewState.selectionBorders
-        .rightContigDescriptorInclusive?.contigId;
-    if (startContigId === undefined || endContigId === undefined) {
+    const [startBP, endBP] = [
+      this.mapManager.viewAndLayersManager.currentViewState.selectionBorders.leftBP?.reduce(
+        (a, b) => Math.min(a, b)
+      ),
+      this.mapManager.viewAndLayersManager.currentViewState.selectionBorders.rightBP?.reduce(
+        (a, b) => Math.max(a, b)
+      ),
+    ];
+
+    if (startBP === undefined || endBP === undefined) {
       console.log(
-        "Not ungrouping contigs from scaffold: left border is",
-        startContigId,
-        " right border is ",
-        endContigId
+        "Not ungrouping contigs from selection: left border bp is",
+        startBP,
+        " right border bp is ",
+        endBP
       );
       return;
     }
     this.mapManager.networkManager.requestManager
       .ungroupContigsFromScaffold(
         new UngroupContigsFromScaffoldRequest({
-          startContigId: startContigId,
-          endContigId: endContigId,
+          startBP: startBP,
+          endBP: endBP,
         })
       )
       .then((asmInfo) => {
@@ -159,26 +166,29 @@ class CommonEventManager {
   public onReverseSelectionClicked(): void {
     this.mapManager.viewAndLayersManager.currentViewState.activeTool =
       undefined;
-    const startContigId: number | undefined =
-      this.mapManager.viewAndLayersManager.currentViewState.selectionBorders
-        .leftContigDescriptorInclusive?.contigId;
-    const endContigId: number | undefined =
-      this.mapManager.viewAndLayersManager.currentViewState.selectionBorders
-        .rightContigDescriptorInclusive?.contigId;
-    if (startContigId === undefined || endContigId === undefined) {
+    const [startBP, endBP] = [
+      this.mapManager.viewAndLayersManager.currentViewState.selectionBorders.leftBP?.reduce(
+        (a, b) => Math.min(a, b)
+      ),
+      this.mapManager.viewAndLayersManager.currentViewState.selectionBorders.rightBP?.reduce(
+        (a, b) => Math.max(a, b)
+      ),
+    ];
+
+    if (startBP === undefined || endBP === undefined) {
       console.log(
-        "Not reversing selection: left border is",
-        startContigId,
-        " right border is ",
-        endContigId
+        "Not reversing selection: left border bp is",
+        startBP,
+        " right border bp is ",
+        endBP
       );
       return;
     }
     this.mapManager.networkManager.requestManager
       .reverseSelectionRange(
         new ReverseSelectionRangeRequest({
-          startContigId: startContigId,
-          endContigId: endContigId,
+          startBP: startBP,
+          endBP: endBP,
         })
       )
       .then((asmInfo) => {
@@ -199,18 +209,21 @@ class CommonEventManager {
     if (activeTool === ActiveTool.TRANSLOCATION) {
       this.mapManager.deactivateTranslocation();
     } else {
-      const startContigId: number | undefined =
-        this.mapManager.viewAndLayersManager.currentViewState.selectionBorders
-          .leftContigDescriptorInclusive?.contigId;
-      const endContigId: number | undefined =
-        this.mapManager.viewAndLayersManager.currentViewState.selectionBorders
-          .rightContigDescriptorInclusive?.contigId;
-      if (startContigId === undefined || endContigId === undefined) {
+      const [startBP, endBP] = [
+        this.mapManager.viewAndLayersManager.currentViewState.selectionBorders.leftBP?.reduce(
+          (a, b) => Math.min(a, b)
+        ),
+        this.mapManager.viewAndLayersManager.currentViewState.selectionBorders.rightBP?.reduce(
+          (a, b) => Math.max(a, b)
+        ),
+      ];
+
+      if (startBP === undefined || endBP === undefined) {
         console.log(
-          "Not moving contigs: left border is",
-          startContigId,
-          " right border is ",
-          endContigId
+          "Not moving (start) selection: left border bp is",
+          startBP,
+          " right border bp is ",
+          endBP
         );
         return;
       }
@@ -226,12 +239,12 @@ class CommonEventManager {
         true
       );
       this.mapManager.viewAndLayersManager.selectionInteractions.translocationArrowSelectionInteraction.set(
-        "startContigId",
-        startContigId
+        "startBP",
+        startBP
       );
       this.mapManager.viewAndLayersManager.selectionInteractions.translocationArrowSelectionInteraction.set(
-        "endContigId",
-        endContigId
+        "endBP",
+        endBP
       );
     }
 
@@ -266,16 +279,26 @@ class CommonEventManager {
         : this.mapManager.contigDimensionHolder.contig_count
       : 0;
 
-    const [startContigId, endContigId] = ["startContigId", "endContigId"].map(
+    const targetBP = Math.max(
+      0,
+      Math.min(
+        this.mapManager.contigDimensionHolder.prefix_sum_bp[targetOrder]
+      ),
+      this.mapManager.contigDimensionHolder.prefix_sum_bp[
+        this.mapManager.contigDimensionHolder.prefix_sum_bp.length - 1
+      ]
+    );
+
+    const [startBP, endBP] = ["startBP", "endBP"].map(
       (key) => interaction.get(key) as number
     );
 
     this.mapManager.networkManager.requestManager
       .moveSelectionRange(
         new MoveSelectionRangeRequest({
-          startContigId: startContigId,
-          endContigId: endContigId,
-          targetStartOrder: targetOrder,
+          startBP: startBP,
+          endBP: endBP,
+          targetStartBP: targetBP,
         })
       )
       .then((asmInfo) => {
