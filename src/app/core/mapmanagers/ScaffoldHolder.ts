@@ -1,10 +1,12 @@
-import type { ScaffoldDescriptor } from "../domain/ScaffoldDescriptor";
+import type {
+  ScaffoldBordersBP,
+  ScaffoldDescriptor,
+} from "../domain/ScaffoldDescriptor";
 import type ContigDimensionHolder from "./ContigDimensionHolder";
 
 type ScaffoldId = number;
-type ScaffoldBordersBp = [leftBp: number, rightBp: number];
 type SortedScaffoldSegment = [
-  borders: ScaffoldBordersBp,
+  borders: ScaffoldBordersBP,
   scaffoldId: ScaffoldId
 ];
 
@@ -12,7 +14,7 @@ class ScaffoldHolder {
   public readonly scaffoldTable: Map<ScaffoldId, ScaffoldDescriptor> =
     new Map();
 
-  public readonly scaffoldBordersBp: Map<ScaffoldId, ScaffoldBordersBp> =
+  public readonly scaffoldBordersBp: Map<ScaffoldId, ScaffoldBordersBP> =
     new Map();
 
   public readonly scaffoldBordersSorted: SortedScaffoldSegment[] = [];
@@ -32,30 +34,14 @@ class ScaffoldHolder {
     this.scaffoldBordersSorted.length = 0;
     for (const sd of scaffoldDescriptors) {
       this.scaffoldTable.set(sd.scaffoldId, sd);
-      if (sd.scaffoldBorders) {
-        const startContigDescriptor =
-          this.contigDimensionHolder.contigDescriptors[
-            sd.scaffoldBorders.startContigId
-          ];
-        const endContigDescriptor =
-          this.contigDimensionHolder.contigDescriptors[
-            sd.scaffoldBorders.endContigId
-          ];
-        const bordersBp: ScaffoldBordersBp = [
-          this.contigDimensionHolder.prefix_sum_bp[
-            startContigDescriptor.contigId
-          ],
-          this.contigDimensionHolder.prefix_sum_bp[
-            endContigDescriptor.contigId
-          ] + endContigDescriptor.contigLengthBp,
-        ];
-        this.scaffoldBordersBp.set(sd.scaffoldId, bordersBp);
-        this.scaffoldBordersSorted.push([bordersBp, sd.scaffoldId]);
+      if (sd.scaffoldBordersBP) {
+        this.scaffoldBordersBp.set(sd.scaffoldId, sd.scaffoldBordersBP);
+        this.scaffoldBordersSorted.push([sd.scaffoldBordersBP, sd.scaffoldId]);
       }
     }
-    this.scaffoldBordersSorted.sort(([[l1, r1], id1], [[l2, r2], id2]) => {
-      const leftBorders = l1 - l2;
-      const rightBordes = r1 - r2;
+    this.scaffoldBordersSorted.sort(([bp1, id1], [bp2, id2]) => {
+      const leftBorders = bp1.startBP - bp2.startBP;
+      const rightBordes = bp1.endBP - bp2.endBP;
       return leftBorders !== 0 ? leftBorders : rightBordes;
     });
   }
