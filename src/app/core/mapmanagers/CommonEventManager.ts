@@ -271,13 +271,27 @@ class CommonEventManager {
       "rightContigDescriptor",
     ].map((key) => clickedArrow.get(key) as ContigDescriptor | undefined);
 
-    const targetOrder: number = leftContigDescriptor
-      ? rightContigDescriptor
-        ? this.mapManager.contigDimensionHolder.contigIdToOrd[
-            rightContigDescriptor.contigId
-          ]
-        : this.mapManager.contigDimensionHolder.contig_count
-      : 0;
+    let targetOrder: number;
+    if (leftContigDescriptor && rightContigDescriptor) {
+      targetOrder =
+        this.mapManager.contigDimensionHolder.contigIdToOrd[
+          rightContigDescriptor.contigId
+        ];
+    } else if (rightContigDescriptor) {
+      targetOrder = 0;
+    } else {
+      targetOrder = this.mapManager.contigDimensionHolder.contig_count;
+    }
+
+    console.log(
+      "Click in Translocation mode:",
+      "leftContigDescriptor:",
+      leftContigDescriptor,
+      "rightContigDescirptor:",
+      rightContigDescriptor,
+      "targetOrder:",
+      targetOrder
+    );
 
     const targetBP = Math.max(
       0,
