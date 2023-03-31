@@ -294,6 +294,10 @@ class HiCViewAndLayersManager {
         }),
         hitTolerance: 0,
         condition: pointerMove,
+        // filter: (feature, layer) => {
+        //   console.log("Hover over", feature, layer);
+        //   return true;
+        // },
       }),
       translocationArrowSelectionInteraction: new Select({
         multi: false,

@@ -1,3 +1,4 @@
+import CommonUtils from "@/CommonUtils";
 import {
   ContrastRangeSettings,
   NormalizationSettings,
@@ -293,11 +294,9 @@ class CommonEventManager {
       targetOrder
     );
 
-    const targetBP = Math.max(
+    const targetBP = CommonUtils.clamp(
+      this.mapManager.contigDimensionHolder.prefix_sum_bp[targetOrder],
       0,
-      Math.min(
-        this.mapManager.contigDimensionHolder.prefix_sum_bp[targetOrder]
-      ),
       this.mapManager.contigDimensionHolder.prefix_sum_bp[
         this.mapManager.contigDimensionHolder.prefix_sum_bp.length - 1
       ]
