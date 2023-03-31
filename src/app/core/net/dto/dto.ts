@@ -90,9 +90,9 @@ class ScaffoldDescriptorDTO extends InboundDTO<ScaffoldDescriptor> {
       scaffoldId: this.json.scaffoldId as number,
       scaffoldName: this.json.scaffoldName as string,
       spacerLength: this.json.spacerLength as number,
-      scaffoldBordersBP: this.json.scaffoldBorders
+      scaffoldBordersBP: this.json.scaffoldBordersBP
         ? new ScaffoldBordersBPDTO(
-            this.json.scaffoldBorders as Record<string, unknown>
+            this.json.scaffoldBordersBP as Record<string, unknown>
           ).toEntity()
         : null,
     };
