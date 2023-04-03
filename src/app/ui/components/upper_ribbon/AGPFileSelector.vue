@@ -1,22 +1,11 @@
 <template>
-  <div
-    class="modal fade in"
-    id="loadAGPModal"
-    ref="loadAGPModal"
-    tabindex="-1"
-    data-keyboard="false"
-    data-backdrop="static"
-  >
+  <div class="modal fade in" id="loadAGPModal" ref="loadAGPModal" tabindex="-1" data-keyboard="false"
+    data-backdrop="static">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Select AGP file</h5>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            @click="onDismissClicked"
-          ></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" @click="onDismissClicked"></button>
         </div>
         <div class="modal-body">
           <div class="d-flex align-items-center" v-if="errorMessage">
@@ -27,35 +16,18 @@
             <div class="spinner-border ms-auto" role="status"></div>
           </div>
           <div v-if="!loading">
-            <select
-              class="form-select form-select-lg mb-3"
-              v-model="selectedAGPFilename"
-            >
+            <select class="form-select form-select-lg mb-3" v-model="selectedAGPFilename">
               <option selected>Select AGP file from the list below...</option>
-              <option
-                v-for="(filename, idx) in filenames"
-                :key="idx"
-                :value="filename"
-              >
+              <option v-for="(filename, idx) in filenames" :key="idx" :value="filename">
                 {{ filename }}
               </option>
             </select>
           </div>
           <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-              @click="onDismissClicked"
-            >
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="onDismissClicked">
               Dismiss
             </button>
-            <button
-              type="button"
-              class="btn btn-primary"
-              data-bs-dismiss="modal"
-              @click="onSelectClicked"
-            >
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="onSelectClicked">
               Load AGP
             </button>
           </div>
@@ -101,28 +73,41 @@ function getAGPFilenamesList(): void {
     });
 }
 
+function resetState(): void {
+  try {
+    modal.value?.hide();
+    modal.value?.dispose();
+  } catch (e: unknown) {
+    // Expected
+  } finally {
+    modal.value = null;
+    errorMessage.value = null;
+    loading.value = false;
+    filenames.value = null;
+    selectedAGPFilename.value = null;
+  }
+}
+
 function onDismissClicked(): void {
-  modal.value?.dispose();
-  modal.value = null;
-  errorMessage.value = null;
-  loading.value = false;
-  filenames.value = null;
-  selectedAGPFilename.value = null;
+  resetState();
   emit("dismissed");
 }
 
 function onSelectClicked(): void {
   const selectedAGPFilenameString = selectedAGPFilename.value;
   if (!selectedAGPFilenameString) {
+    onDismissClicked();
     throw new Error("Selected AGP filename was null?");
   }
   props.networkManager.requestManager
     .loadAGP(new LoadAGPRequest({ agpFilename: selectedAGPFilenameString }))
     .then(() => {
       emit("selected", selectedAGPFilenameString);
+      resetState();
     })
     .catch((e) => {
       errorMessage.value = e;
+      onDismissClicked();
     });
 }
 

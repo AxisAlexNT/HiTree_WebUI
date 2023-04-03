@@ -8,39 +8,21 @@
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <!-- File -->
           <li class="nav-item dropdown">
-            <a
-              class="nav-link active dropdown-toggle"
-              data-bs-toggle="dropdown"
-              href="#"
-              >File</a
-            >
+            <a class="nav-link active dropdown-toggle" data-bs-toggle="dropdown" href="#">File</a>
             <ul class="dropdown-menu">
               <li>
-                <a class="dropdown-item" href="#" @click="onOpenFile"
-                  >Open...</a
-                >
+                <a class="dropdown-item" href="#" @click="onOpenFile">Open...</a>
               </li>
               <li>
-                <a class="dropdown-item" href="#" @click="onSaveClicked"
-                  >Save</a
-                >
-                <div
-                  v-if="saving"
-                  class="spinner-border ms-auto"
-                  role="status"
-                ></div>
+                <a class="dropdown-item" href="#" @click="onSaveClicked">Save</a>
+                <div v-if="saving" class="spinner-border ms-auto" role="status"></div>
               </li>
-              <li><a class="dropdown-item" href="#">Close</a></li>
+              <li><a class="dropdown-item" href="#" @click="onCloseClicked">Close</a></li>
             </ul>
           </li>
           <!-- View -->
           <li class="nav-item dropdown">
-            <a
-              class="nav-link active dropdown-toggle"
-              data-bs-toggle="dropdown"
-              href="#"
-              >View</a
-            >
+            <a class="nav-link active dropdown-toggle" data-bs-toggle="dropdown" href="#">View</a>
             <ul class="dropdown-menu">
               <li><a class="dropdown-item" href="#">Choose color scheme</a></li>
               <li><a class="dropdown-item" href="#">Show borders</a></li>
@@ -49,49 +31,26 @@
           </li>
           <!-- Bookmarks -->
           <li class="nav-item">
-            <a aria-current="page" class="nav-link active" href="#"
-              >Bookmarks</a
-            >
+            <a aria-current="page" class="nav-link active" href="#">Bookmarks</a>
           </li>
           <!-- Assembly -->
           <li class="nav-item dropdown">
-            <a
-              class="nav-link active dropdown-toggle"
-              data-bs-toggle="dropdown"
-              href="#"
-              >Assembly</a
-            >
+            <a class="nav-link active dropdown-toggle" data-bs-toggle="dropdown" href="#">Assembly</a>
             <ul class="dropdown-menu">
               <li>
-                <a class="dropdown-item" href="#" @click="onOpenFASTAFile"
-                  >Link FASTA</a
-                >
+                <a class="dropdown-item" href="#" @click="onOpenFASTAFile">Link FASTA</a>
               </li>
               <li>
-                <a
-                  class="dropdown-item"
-                  href="#"
-                  @click="onAssemblyFASTARequest"
-                  >Export assembly</a
-                >
+                <a class="dropdown-item" href="#" @click="onAssemblyFASTARequest">Export assembly</a>
               </li>
               <li>
-                <a
-                  class="dropdown-item"
-                  href="#"
-                  @click="onSelectionFASTARequest"
-                  >Export FASTA for selection</a
-                >
+                <a class="dropdown-item" href="#" @click="onSelectionFASTARequest">Export FASTA for selection</a>
               </li>
               <li>
-                <a class="dropdown-item" href="#" @click="onLoadAGP"
-                  >Load AGP</a
-                >
+                <a class="dropdown-item" href="#" @click="onLoadAGP">Load AGP</a>
               </li>
               <li>
-                <a class="dropdown-item" href="#" @click="onAssemblyAGPRequest"
-                  >Export to AGP</a
-                >
+                <a class="dropdown-item" href="#" @click="onAssemblyAGPRequest">Export to AGP</a>
               </li>
             </ul>
           </li>
@@ -101,27 +60,13 @@
           </li>
           <!-- Connection settings -->
           <li class="nav-item dropdown">
-            <a
-              aria-current="page"
-              class="nav-link active dropdown-toggle"
-              data-bs-toggle="dropdown"
-              href="#"
-              >Connection</a
-            >
+            <a aria-current="page" class="nav-link active dropdown-toggle" data-bs-toggle="dropdown"
+              href="#">Connection</a>
             <ul class="dropdown-menu" id="connection-settings-menu-dropdown">
               <li id="connection-settings-input-group" class="input-group m-3">
-                <input
-                  id="global-search-input"
-                  class="form-control m-0"
-                  placeholder="http://localhost:5000/"
-                  type="text"
-                  v-model="gatewayAddress"
-                />
-                <button
-                  class="btn btn-sm btn-outline-dark"
-                  id="set-gateway-btn"
-                  @click="onGatewayChanged"
-                >
+                <input id="global-search-input" class="form-control m-0" placeholder="http://localhost:5000/" type="text"
+                  v-model="gatewayAddress" />
+                <button class="btn btn-sm btn-outline-dark" id="set-gateway-btn" @click="onGatewayChanged">
                   Set API gateway
                 </button>
               </li>
@@ -129,35 +74,18 @@
           </li>
           <!-- Report a bug -->
           <li class="nav-item">
-            <a
-              aria-current="page"
-              class="nav-link active"
-              href="https://github.com/ctlab/HiCT/issues"
-              >Report a bug</a
-            >
+            <a aria-current="page" class="nav-link active" href="https://github.com/ctlab/HiCT/issues">Report a bug</a>
           </li>
         </ul>
       </div>
     </div>
   </nav>
-  <OpenFileSelector
-    :network-manager="props.networkManager"
-    v-if="openingFile"
-    @selected="onFileSelected"
-    @dismissed="onFileDismissed"
-  ></OpenFileSelector>
-  <FASTAFileSelector
-    :network-manager="props.networkManager"
-    v-if="openingFASTAFile"
-    @selected="onFASTAFileSelected"
-    @dismissed="onFASTAFileDismissed"
-  ></FASTAFileSelector>
-  <AGPFileSelector
-    :network-manager="props.networkManager"
-    v-if="openingAGPFile"
-    @selected="onAGPFileSelected"
-    @dismissed="onAGPFileDismissed"
-  ></AGPFileSelector>
+  <OpenFileSelector :network-manager="props.networkManager" v-if="openingFile" @selected="onFileSelected"
+    @dismissed="onFileDismissed"></OpenFileSelector>
+  <FASTAFileSelector :network-manager="props.networkManager" v-if="openingFASTAFile" @selected="onFASTAFileSelected"
+    @dismissed="onFASTAFileDismissed"></FASTAFileSelector>
+  <AGPFileSelector :network-manager="props.networkManager" v-if="openingAGPFile" @selected="onAGPFileSelected"
+    @dismissed="onAGPFileDismissed"></AGPFileSelector>
 </template>
 
 <script setup lang="ts">
@@ -179,6 +107,7 @@ const gatewayAddress: Ref<string> = ref("http://localhost:5000/");
 
 const emit = defineEmits<{
   (e: "selected", filename: string): void;
+  (e: "closed"): void;
 }>();
 
 const props = defineProps<{
@@ -203,6 +132,10 @@ function onSaveClicked(): void {
   props.networkManager.requestManager.save().finally(() => {
     saving.value = false;
   });
+}
+
+function onCloseClicked(): void {
+  emit("closed");
 }
 
 function onOpenFASTAFile() {
@@ -233,7 +166,7 @@ function onFASTAFileSelected() {
 }
 
 function onAGPFileSelected() {
-  openingFASTAFile.value = false;
+  openingAGPFile.value = false;
 }
 
 function onAssemblyFASTARequest() {
