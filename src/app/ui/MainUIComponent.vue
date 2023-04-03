@@ -4,6 +4,7 @@
       :networkManager="networkManager"
       :mapManager="mapManager"
       @selected="onFileSelected"
+      @closed="onClosed"
     ></UpperFrame>
     <WorkspaceComponent
       :mapManager="mapManager"
@@ -37,6 +38,17 @@ const networkManager: NetworkManager = new NetworkManager(
   "http://localhost:5000/",
   undefined
 );
+
+function resetState() {
+  mapManager.value?.dispose();
+  filename.value = "";
+  fastaFilename.value = "";
+  mapManager.value = undefined;
+}
+
+function onClosed() {
+  resetState();
+}
 
 function displayNewMap() {
   const fname = filename.value;
@@ -91,8 +103,8 @@ watch(
 
 function onFileSelected(newFilename: string) {
   if (newFilename !== filename.value) {
+    resetState();
     filename.value = newFilename;
-    mapManager.value?.dispose();
     if (filename.value && filename.value !== "") {
       displayNewMap();
     }

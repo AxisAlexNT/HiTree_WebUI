@@ -132,7 +132,7 @@ class ContactMapManager {
   }
 
   public dispose() {
-    return;
+    this.map.setTarget(undefined);
   }
 
   public addOSM() {

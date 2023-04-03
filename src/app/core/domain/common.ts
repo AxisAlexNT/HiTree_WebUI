@@ -9,11 +9,6 @@ enum ContigDirection {
   REVERSED = 0,
 }
 
-enum ScaffoldDirection {
-  FORWARD = 1,
-  REVERSED = 0,
-}
-
 enum ContigHideType {
   AUTO_HIDDEN = 0,
   AUTO_SHOWN = 1,
@@ -21,4 +16,4 @@ enum ContigHideType {
   FORCED_SHOWN = 3,
 }
 
-export { QueryLengthUnit, ContigDirection, ScaffoldDirection, ContigHideType };
+export { QueryLengthUnit, ContigDirection, ContigHideType };

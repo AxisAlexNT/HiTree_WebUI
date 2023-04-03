@@ -102,8 +102,8 @@ abstract class HiCTAPIRequestDTO<
 class ReverseSelectionRangeRequestDTO extends HiCTAPIRequestDTO<ReverseSelectionRangeRequest> {
   toDTO(): Record<string, unknown> {
     return {
-      startContigId: this.entity.options.startContigId,
-      endContigId: this.entity.options.endContigId,
+      startBP: this.entity.options.startBP,
+      endBP: this.entity.options.endBP,
     };
   }
 }
@@ -111,9 +111,9 @@ class ReverseSelectionRangeRequestDTO extends HiCTAPIRequestDTO<ReverseSelection
 class MoveSelectionRangeRequestDTO extends HiCTAPIRequestDTO<MoveSelectionRangeRequest> {
   toDTO(): Record<string, unknown> {
     return {
-      startContigId: this.entity.options.startContigId,
-      endContigId: this.entity.options.endContigId,
-      targetStartOrder: this.entity.options.targetStartOrder,
+      startBP: this.entity.options.startBP,
+      endBP: this.entity.options.endBP,
+      targetStartBP: this.entity.options.targetStartBP,
     };
   }
 }
@@ -152,8 +152,8 @@ class LoadAGPRequestDTO extends HiCTAPIRequestDTO<LoadAGPRequest> {
 class GroupContigsIntoScaffoldRequestDTO extends HiCTAPIRequestDTO<GroupContigsIntoScaffoldRequest> {
   toDTO(): Record<string, unknown> {
     return {
-      startContigId: this.entity.options.startContigId,
-      endContigId: this.entity.options.endContigId,
+      startBP: this.entity.options.startBP,
+      endBP: this.entity.options.endBP,
       scaffoldName: this.entity.options.newScaffoldName,
       spacerLength: this.entity.options.spacerLength,
     };
@@ -187,8 +187,8 @@ class GetCurrentSignalRangeRequestDTO extends HiCTAPIRequestDTO<GetCurrentSignal
 class UngroupContigsFromScaffoldRequestDTO extends HiCTAPIRequestDTO<UngroupContigsFromScaffoldRequest> {
   toDTO(): Record<string, unknown> {
     return {
-      startContigId: this.entity.options.startContigId,
-      endContigId: this.entity.options.endContigId,
+      startBP: this.entity.options.startBP,
+      endBP: this.entity.options.endBP,
     };
   }
 }

@@ -3,11 +3,10 @@ import {
   ContigDirection,
   ContigHideType,
   QueryLengthUnit,
-  ScaffoldDirection,
 } from "../../domain/common";
 import type { ContigDescriptor } from "../../domain/ContigDescriptor";
 import type {
-  ScaffoldBorders,
+  ScaffoldBordersBP,
   ScaffoldDescriptor,
 } from "../../domain/ScaffoldDescriptor";
 import type { OpenFileResponse } from "../netcommon";
@@ -36,14 +35,6 @@ function queryLengthUnitFromDTO(dto: number): QueryLengthUnit {
 function contigDirectionFromDTO(dto: number): ContigDirection {
   const contigDirections = [ContigDirection.REVERSED, ContigDirection.FORWARD];
   return contigDirections[dto];
-}
-
-function scaffoldDirectionFromDTO(dto: number): ScaffoldDirection {
-  const scaffoldDirections = [
-    ScaffoldDirection.REVERSED,
-    ScaffoldDirection.FORWARD,
-  ];
-  return scaffoldDirections[dto];
 }
 
 function contigHideTypeFromDTO(dto: number): ContigHideType {
@@ -80,19 +71,15 @@ class ContigDescriptorDTO extends InboundDTO<ContigDescriptor> {
           contigHideTypeFromDTO(chtIndex),
         ])
       ),
-      scaffoldId:
-        this.json.scaffoldId === null
-          ? undefined
-          : (this.json.scaffoldId as number),
     };
   }
 }
 
-class ScaffoldBordersDTO extends InboundDTO<ScaffoldBorders> {
-  public toEntity(): ScaffoldBorders {
+class ScaffoldBordersBPDTO extends InboundDTO<ScaffoldBordersBP> {
+  public toEntity(): ScaffoldBordersBP {
     return {
-      startContigId: this.json.startContigId as number,
-      endContigId: this.json.endContigId as number,
+      startBP: this.json.startBP as number,
+      endBP: this.json.endBP as number,
     };
   }
 }
@@ -102,15 +89,12 @@ class ScaffoldDescriptorDTO extends InboundDTO<ScaffoldDescriptor> {
     return {
       scaffoldId: this.json.scaffoldId as number,
       scaffoldName: this.json.scaffoldName as string,
-      scaffoldBorders: this.json.scaffoldBorders
-        ? new ScaffoldBordersDTO(
-            this.json.scaffoldBorders as Record<string, unknown>
+      spacerLength: this.json.spacerLength as number,
+      scaffoldBordersBP: this.json.scaffoldBordersBP
+        ? new ScaffoldBordersBPDTO(
+            this.json.scaffoldBordersBP as Record<string, unknown>
           ).toEntity()
         : null,
-      direction: scaffoldDirectionFromDTO(
-        this.json.scaffoldDirection as number
-      ),
-      spacerLength: this.json.spacerLength as number,
     };
   }
 }
@@ -148,12 +132,11 @@ export {
   InboundDTO,
   OutboundDTO,
   ContigDescriptorDTO,
-  ScaffoldBordersDTO,
+  ScaffoldBordersBPDTO,
   ScaffoldDescriptorDTO,
   AssemblyInfoDTO,
   OpenFileResponseDTO,
   queryLengthUnitFromDTO,
   contigDirectionFromDTO,
-  scaffoldDirectionFromDTO,
   contigHideTypeFromDTO,
 };

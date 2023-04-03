@@ -14,14 +14,16 @@
           <button
             type="button"
             class="btn-close"
-            data-bs-dismiss="modal"
-            @click="$emit('dismissed')"
+            @click="onDismissClicked"
           ></button>
         </div>
         <div class="modal-body">
           <div class="d-flex align-items-center" v-if="loading">
             <strong>Loading...</strong>
             <div class="spinner-border ms-auto" role="status"></div>
+          </div>
+          <div class="d-flex align-items-center" v-if="errorMessage">
+            Error: {{ errorMessage }}
           </div>
           <div v-if="!loading">
             <select
@@ -42,16 +44,14 @@
             <button
               type="button"
               class="btn btn-secondary"
-              data-bs-dismiss="modal"
-              @click="$emit('dismissed')"
+              @click="onDismissClicked"
             >
               Dismiss
             </button>
             <button
               type="button"
               class="btn btn-primary"
-              data-bs-dismiss="modal"
-              @click="$emit('selected', selected_filename)"
+              @click="onSelectClicked"
             >
               Open
             </button>
@@ -79,28 +79,56 @@ const props = defineProps<{
 const selected_filename: Ref<string> = ref("");
 const filenames: Ref<string[]> = ref([]);
 const loading: Ref<boolean> = ref(true);
-
+const modal: Ref<Modal | null> = ref(null);
 const openFileModal = ref<HTMLElement | null>(null);
+const errorMessage: Ref<unknown | null> = ref(null);
+
+function resetState(): void {
+  try {
+    modal.value?.dispose();
+  } catch (e: unknown) {
+    // Expected
+  } finally {
+    modal.value = null;
+    loading.value = false;
+    filenames.value.length = 0;
+    selected_filename.value = "";
+  }
+}
+
+function onDismissClicked(): void {
+  resetState();
+  emit("dismissed");
+}
+
+function onSelectClicked(): void {
+  const selectedFilename = selected_filename.value;
+  if (!selectedFilename) {
+    onDismissClicked();
+    throw new Error("Selected filename was null?");
+  }
+  emit("selected", selectedFilename);
+  resetState();
+}
 
 onMounted(() => {
   filenames.value.length = 0;
   loading.value = true;
-  const modal = new Modal(openFileModal.value ?? "openFileModal", {
+  modal.value = new Modal(openFileModal.value ?? "openFileModal", {
     backdrop: "static",
     keyboard: false,
   });
-  modal.show();
+  modal.value.show();
   props.networkManager.requestManager
     .listFiles()
     .then((lst) => {
       filenames.value = lst;
-      loading.value = false;
     })
     .catch((e) => {
+      errorMessage.value = e;
+    })
+    .finally(() => {
       loading.value = false;
-      alert(e);
-      emit("selected", "");
-      modal.hide();
     });
 });
 </script>

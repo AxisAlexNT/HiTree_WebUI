@@ -14,7 +14,6 @@
           <button
             type="button"
             class="btn-close"
-            data-bs-dismiss="modal"
             @click="onDismissClicked"
           ></button>
         </div>
@@ -45,7 +44,6 @@
             <button
               type="button"
               class="btn btn-secondary"
-              data-bs-dismiss="modal"
               @click="onDismissClicked"
             >
               Dismiss
@@ -53,7 +51,6 @@
             <button
               type="button"
               class="btn btn-primary"
-              data-bs-dismiss="modal"
               @click="onSelectClicked"
             >
               Load AGP
@@ -83,7 +80,7 @@ const props = defineProps<{
 const selectedAGPFilename: Ref<string | null> = ref(null);
 const filenames: Ref<string[] | null> = ref(null);
 const loading: Ref<boolean> = ref(true);
-const errorMessage: Ref<any | null> = ref(null);
+const errorMessage: Ref<unknown | null> = ref(null);
 const modal: Ref<Modal | null> = ref(null);
 
 const loadAGPModal = ref<HTMLElement | null>(null);
@@ -101,25 +98,38 @@ function getAGPFilenamesList(): void {
     });
 }
 
+function resetState(): void {
+  try {
+    modal.value?.dispose();
+  } catch (e: unknown) {
+    // Expected
+  } finally {
+    modal.value = null;
+    errorMessage.value = null;
+    loading.value = false;
+    filenames.value = null;
+    selectedAGPFilename.value = null;
+  }
+}
+
 function onDismissClicked(): void {
-  modal.value?.dispose();
-  modal.value = null;
-  errorMessage.value = null;
-  loading.value = false;
-  filenames.value = null;
-  selectedAGPFilename.value = null;
+  resetState();
   emit("dismissed");
 }
 
 function onSelectClicked(): void {
   const selectedAGPFilenameString = selectedAGPFilename.value;
   if (!selectedAGPFilenameString) {
-    throw new Error("Selected AGP filename was null?");
+    //onDismissClicked();
+    // throw new Error("Selected AGP filename was null?");
+    errorMessage.value = "Please, select AGP file";
+    return;
   }
   props.networkManager.requestManager
     .loadAGP(new LoadAGPRequest({ agpFilename: selectedAGPFilenameString }))
     .then(() => {
       emit("selected", selectedAGPFilenameString);
+      resetState();
     })
     .catch((e) => {
       errorMessage.value = e;

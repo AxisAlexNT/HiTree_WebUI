@@ -304,25 +304,17 @@ class ScaffoldBordersTrack2D extends WithRing {
       this.mapManager.getLayersManager();
     this.mapManager.scaffoldHolder.scaffoldTable.forEach(
       (scaffoldDescriptor) => {
-        const borders = scaffoldDescriptor.scaffoldBorders;
+        const borders = scaffoldDescriptor.scaffoldBordersBP;
         if (!borders) {
           return;
         }
         this.contigDimensionHolder.prefix_sum_px.forEach(
           (prefix_sum_px, bpResolution) => {
-            const [startContigId, endContigId] = [
-              borders.startContigId,
-              borders.endContigId,
-            ];
+            const [startBP, endBP] = [borders.startBP, borders.endBP];
 
-            const [fromPx, toPx] = [
-              prefix_sum_px[
-              this.contigDimensionHolder.contigIdToOrd[startContigId]
-              ],
-              prefix_sum_px[
-              this.contigDimensionHolder.contigIdToOrd[endContigId] + 1
-              ] - 1,
-            ];
+            const [fromPx, toPx] = [startBP, endBP].map((bp) =>
+              this.contigDimensionHolder.getPxContainingBp(bp, bpResolution)
+            );
 
             if (toPx <= fromPx) {
               return;
@@ -487,10 +479,11 @@ class TranslocationArrowsTrack2D extends Track2DSymmetric {
               const lrArrow = new MultiPolygon(multiPolygonRings);
 
               const multiPolygonFeature = new Feature({
-                name: `Arrow-between-${previousShown.contigDescriptor === cd
+                name: `Arrow-between-${
+                  previousShown.contigDescriptor === cd
                     ? "left-border-"
                     : previousShown.contigDescriptor.contigName
-                  }-and-${cd.contigName}-at-bp${resolution}`,
+                }-and-${cd.contigName}-at-bp${resolution}`,
                 geometry: lrArrow,
               });
               multiPolygonFeature.setStyle(this.style);
