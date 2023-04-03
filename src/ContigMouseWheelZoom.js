@@ -248,7 +248,7 @@ export default class ContigMouseWheelZoom extends MouseWheelZoom {
     this.totalDelta_ = 0;
     this.startTime_ = undefined;
     this.timeoutId_ = undefined;
-    this.lastMousePixel = null;
-    this.lastCenterPixel = null;
+    // this.lastMousePixel = null;
+    // this.lastCenterPixel = null;
   }
 }
