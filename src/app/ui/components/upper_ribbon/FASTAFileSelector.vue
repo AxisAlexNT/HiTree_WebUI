@@ -14,7 +14,6 @@
           <button
             type="button"
             class="btn-close"
-            data-bs-dismiss="modal"
             @click="onDismissClicked"
           ></button>
         </div>
@@ -45,7 +44,6 @@
             <button
               type="button"
               class="btn btn-secondary"
-              data-bs-dismiss="modal"
               @click="onDismissClicked"
             >
               Dismiss
@@ -53,7 +51,6 @@
             <button
               type="button"
               class="btn btn-primary"
-              data-bs-dismiss="modal"
               @click="onSelectClicked"
             >
               Link FASTA
@@ -83,38 +80,46 @@ const props = defineProps<{
 const selectedFASTAFilename: Ref<string | null> = ref(null);
 const filenames: Ref<string[] | null> = ref(null);
 const loading: Ref<boolean> = ref(true);
-const errorMessage: Ref<any | null> = ref(null);
+const errorMessage: Ref<unknown | null> = ref(null);
 const modal: Ref<Modal | null> = ref(null);
 
 const openFASTAModal = ref<HTMLElement | null>(null);
 
 function getFASTAFilenamesList(): void {
+  loading.value = true;
   props.networkManager.requestManager
     .listFASTAFiles()
     .then((lst) => {
       filenames.value = lst;
-      loading.value = false;
     })
     .catch((e) => {
       errorMessage.value = e;
+    })
+    .finally(() => {
       loading.value = false;
     });
 }
 
-function onDismissClicked(): void {
+function resetState(): void {
   modal.value?.dispose();
   modal.value = null;
   errorMessage.value = null;
   loading.value = false;
   filenames.value = null;
   selectedFASTAFilename.value = null;
+}
+
+function onDismissClicked(): void {
   emit("dismissed");
+  resetState();
 }
 
 function onSelectClicked(): void {
   const selectedFASTAFilenameString = selectedFASTAFilename.value;
   if (!selectedFASTAFilenameString) {
-    throw new Error("Selected FASTA filename was null?");
+    // throw new Error("Selected FASTA filename was null?");
+    errorMessage.value = "Please, select valid FASTA file";
+    return;
   }
   props.networkManager.requestManager
     .linkFASTA(
@@ -122,6 +127,7 @@ function onSelectClicked(): void {
     )
     .then(() => {
       emit("selected", selectedFASTAFilenameString);
+      resetState();
     })
     .catch((e) => {
       errorMessage.value = e;
