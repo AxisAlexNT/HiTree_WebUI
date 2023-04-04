@@ -21,28 +21,16 @@
           <div class="d-flex align-items-center" v-if="errorMessage">
             <p class="error-message">Error: {{ errorMessage }}</p>
           </div>
-          <div v-if="!loading">
-            <select
-              class="form-select form-select-lg mb-3"
-              v-model="selectedCoolerFilename"
-            >
-              <option selected>
-                Select Cooler file from the list below...
-              </option>
-              <option
-                v-for="(filename, idx) in filenames"
-                :key="idx"
-                :value="filename"
-              >
-                {{ filename }}
-              </option>
-            </select>
-          </div>
           <CoolerFileSelector
             v-if="!selectedCoolerFilename"
             :network-manager="networkManager"
             @selected="onCoolerFileSelected"
           />
+          <ConverterStatusChecker
+            v-if="converting"
+            :network-manager="networkManager"
+            @finished="onConverterFinished"
+          ></ConverterStatusChecker>
         </div>
         <div class="modal-footer">
           <button
@@ -64,6 +52,7 @@ import { Modal } from "bootstrap";
 import type { NetworkManager } from "@/app/core/net/NetworkManager.js";
 import { ConvertCoolerRequest } from "@/app/core/net/api/request";
 import CoolerFileSelector from "./converter/CoolerFileSelector.vue";
+import ConverterStatusChecker from "./converter/ConverterStatusChecker.vue";
 
 const emit = defineEmits<{
   (e: "dismissed"): void;
@@ -75,7 +64,7 @@ const props = defineProps<{
 
 const selectedCoolerFilename: Ref<string | null> = ref(null);
 const filenames: Ref<string[] | null> = ref(null);
-const loading: Ref<boolean> = ref(true);
+const converting: Ref<boolean> = ref(false);
 const errorMessage: Ref<unknown | null> = ref(null);
 const modal: Ref<Modal | null> = ref(null);
 const convertCoolerModal = ref<HTMLElement | null>(null);
@@ -88,7 +77,7 @@ function resetState(): void {
   } finally {
     modal.value = null;
     errorMessage.value = null;
-    loading.value = false;
+    converting.value = false;
     filenames.value = null;
     selectedCoolerFilename.value = null;
   }
@@ -107,7 +96,6 @@ function onCoolerFileSelected(coolerFilename: string): void {
 function convertCooler(): void {
   const filename = selectedCoolerFilename.value;
   if (filename) {
-    loading.value = true;
     props.networkManager.requestManager
       .convertCooler(
         new ConvertCoolerRequest({
@@ -115,12 +103,13 @@ function convertCooler(): void {
         })
       )
       .catch((e) => {
-        loading.value = false;
         errorMessage.value = e;
       })
       .finally(() => {
-        loading.value = false;
+        converting.value = false;
       });
+
+    converting.value = true;
   }
 }
 
@@ -129,13 +118,22 @@ onMounted(() => {
   if (fns) {
     fns.length = 0;
   }
-  loading.value = true;
+  converting.value = false;
   modal.value = new Modal(convertCoolerModal.value ?? "loadAGPModal", {
     backdrop: "static",
     keyboard: false,
   });
   modal.value.show();
 });
+
+function onConverterFinished(): void {
+  converting.value = false;
+  selectedCoolerFilename.value = null;
+}
 </script>
 
-<style scoped></style>
+<style scoped>
+.error-message {
+  color: red;
+}
+</style>

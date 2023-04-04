@@ -20,6 +20,7 @@ import {
   GetAGPForAssemblyRequest,
   ListCoolerFilesRequest,
   ConvertCoolerRequest,
+  GetConverterStatusRequest,
 } from "../api/request";
 import { OutboundDTO } from "./dto";
 
@@ -73,6 +74,10 @@ abstract class HiCTAPIRequestDTO<
         return new ListFilesRequestDTO(entity);
       case entity instanceof ListCoolerFilesRequest:
         return new ListCoolerFilesRequestDTO(entity);
+      case entity instanceof GetConverterStatusRequest:
+        return new GetConverterStatusRequestDTO(
+          entity as GetConverterStatusRequest
+        );
       case entity instanceof ListFASTAFilesRequest:
         return new ListFASTAFilesRequestDTO(entity);
       case entity instanceof LinkFASTARequest:
@@ -147,6 +152,7 @@ class SaveFileRequestDTO extends HiCTAPIRequestDTO<SaveFileRequest> {
     };
   }
 }
+
 class LinkFASTARequestDTO extends HiCTAPIRequestDTO<LinkFASTARequest> {
   toDTO(): Record<string, unknown> {
     return {
@@ -218,6 +224,12 @@ class ListCoolerFilesRequestDTO extends HiCTAPIRequestDTO<ListCoolerFilesRequest
   }
 }
 
+class GetConverterStatusRequestDTO extends HiCTAPIRequestDTO<GetConverterStatusRequest> {
+  toDTO(): Record<string, unknown> {
+    return {};
+  }
+}
+
 class ListFASTAFilesRequestDTO extends HiCTAPIRequestDTO<ListFASTAFilesRequest> {
   toDTO(): Record<string, unknown> {
     return {};
@@ -273,4 +285,5 @@ export {
   GetCurrentSignalRangeRequestDTO,
   SaveFileRequestDTO,
   ListCoolerFilesRequestDTO,
+  GetConverterStatusRequestDTO,
 };

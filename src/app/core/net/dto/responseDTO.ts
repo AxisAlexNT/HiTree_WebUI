@@ -1,4 +1,8 @@
-import { CurrentSignalRangeResponse, TilePOSTResponse } from "../api/response";
+import {
+  ConverterStatusResponse,
+  CurrentSignalRangeResponse,
+  TilePOSTResponse,
+} from "../api/response";
 import { InboundDTO } from "./dto";
 
 class CurrentSignalRangeResponseDTO extends InboundDTO<CurrentSignalRangeResponse> {
@@ -43,4 +47,18 @@ class TilePOSTResponseDTO extends InboundDTO<TilePOSTResponse> {
   }
 }
 
-export { CurrentSignalRangeResponseDTO, TilePOSTResponseDTO };
+class ConverterStatusResponseDTO extends InboundDTO<ConverterStatusResponse> {
+  public toEntity(): ConverterStatusResponse {
+    return new ConverterStatusResponse(
+      this.json["isConverting"] as boolean,
+      this.json["resolutionProgress"] as number,
+      this.json["totalProgress"] as number
+    );
+  }
+}
+
+export {
+  CurrentSignalRangeResponseDTO,
+  TilePOSTResponseDTO,
+  ConverterStatusResponseDTO,
+};

@@ -46,6 +46,10 @@ class ListCoolerFilesRequest implements HiCTAPIRequest {
   requestPath = "/list_coolers";
 }
 
+class GetConverterStatusRequest implements HiCTAPIRequest {
+  requestPath = "/converter_status";
+}
+
 class CloseFileRequest implements HiCTAPIRequest {
   requestPath = "/close";
 }
@@ -213,5 +217,6 @@ export {
   SetContrastRangeRequest,
   GetCurrentSignalRangeRequest,
   SaveFileRequest,
+  GetConverterStatusRequest,
   // TileLoadPOSTRequest,
 };

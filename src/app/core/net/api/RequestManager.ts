@@ -6,6 +6,7 @@ import type { AssemblyInfo } from "../../domain/AssemblyInfo";
 import { AssemblyInfoDTO, OpenFileResponseDTO } from "../dto/dto";
 import { HiCTAPIRequestDTO } from "../dto/requestDTO";
 import {
+  ConverterStatusResponseDTO,
   CurrentSignalRangeResponseDTO,
   TilePOSTResponseDTO,
 } from "../dto/responseDTO";
@@ -14,6 +15,7 @@ import type { NetworkManager } from "../NetworkManager";
 import {
   ConvertCoolerRequest,
   GetAGPForAssemblyRequest,
+  GetConverterStatusRequest,
   GetCurrentSignalRangeRequest,
   GetFastaForAssemblyRequest,
   GetFastaForSelectionRequest,
@@ -31,7 +33,10 @@ import {
   UngroupContigsFromScaffoldRequest,
   type HiCTAPIRequest,
 } from "./request";
-import { CurrentSignalRangeResponse, TilePOSTResponse } from "./response";
+import {
+  ConverterStatusResponse,
+  CurrentSignalRangeResponse,
+} from "./response";
 
 class RequestManager {
   constructor(public readonly networkManager: NetworkManager) {}
@@ -94,13 +99,17 @@ class RequestManager {
   }
 
   public async convertCooler(request: ConvertCoolerRequest): Promise<void> {
-    return this.sendRequest(request)
-      .then(() => {
-        return;
-      })
-      .catch((err) => {
-        throw new Error("Cannot convert cooler file: " + err);
-      });
+    return this.sendRequest(request).then(() => {
+      return;
+    });
+  }
+
+  public async getConverterStatus(): Promise<ConverterStatusResponse> {
+    return this.sendRequest(new GetConverterStatusRequest(), {
+      timeout: 1000,
+    }).then((response) =>
+      new ConverterStatusResponseDTO(response.data).toEntity()
+    );
   }
 
   public async listAGPFiles(): Promise<string[]> {
