@@ -12,6 +12,7 @@ import {
 import type { OpenFileResponse } from "../netcommon";
 import type { NetworkManager } from "../NetworkManager";
 import {
+  ConvertCoolerRequest,
   GetAGPForAssemblyRequest,
   GetCurrentSignalRangeRequest,
   GetFastaForAssemblyRequest,
@@ -19,6 +20,7 @@ import {
   GroupContigsIntoScaffoldRequest,
   LinkFASTARequest,
   ListAGPFilesRequest,
+  ListCoolerFilesRequest,
   ListFASTAFilesRequest,
   ListFilesRequest,
   LoadAGPRequest,
@@ -71,6 +73,11 @@ class RequestManager {
     return response.data as string[];
   }
 
+  public async listCoolers(): Promise<string[]> {
+    const response = await this.sendRequest(new ListCoolerFilesRequest());
+    return response.data as string[];
+  }
+
   public async listFASTAFiles(): Promise<string[]> {
     const response = await this.sendRequest(new ListFASTAFilesRequest());
     return response.data as string[];
@@ -83,6 +90,16 @@ class RequestManager {
       })
       .catch((err) => {
         throw new Error("Cannot link FASTA file: " + err);
+      });
+  }
+
+  public async convertCooler(request: ConvertCoolerRequest): Promise<void> {
+    return this.sendRequest(request)
+      .then(() => {
+        return;
+      })
+      .catch((err) => {
+        throw new Error("Cannot convert cooler file: " + err);
       });
   }
 
