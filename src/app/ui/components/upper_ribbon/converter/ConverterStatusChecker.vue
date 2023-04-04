@@ -142,6 +142,7 @@ function updateState(): void {
 }
 
 onMounted(() => {
+  // @ts-expect-error "Using default JS-style timer instead of NodeJS"
   timerId.value = setInterval(updateState, 5000);
 });
 </script>
