@@ -42,6 +42,14 @@ class ListAGPFilesRequest implements HiCTAPIRequest {
   requestPath = "/list_agp_files";
 }
 
+class ListCoolerFilesRequest implements HiCTAPIRequest {
+  requestPath = "/list_coolers";
+}
+
+class GetConverterStatusRequest implements HiCTAPIRequest {
+  requestPath = "/converter_status";
+}
+
 class CloseFileRequest implements HiCTAPIRequest {
   requestPath = "/close";
 }
@@ -73,6 +81,16 @@ class SetNormalizationRequest implements HiCTAPIRequest {
   public constructor(
     public readonly options: {
       readonly normalizationSettings: NormalizationSettings;
+    }
+  ) {}
+}
+
+class ConvertCoolerRequest implements HiCTAPIRequest {
+  requestPath = "/convert_cooler";
+
+  public constructor(
+    public readonly options: {
+      readonly cooler_filename: string;
     }
   ) {}
 }
@@ -180,6 +198,8 @@ class LoadAGPRequest implements HiCTAPIRequest {
 export {
   type HiCTAPIRequest,
   CloseFileRequest,
+  ListCoolerFilesRequest,
+  ConvertCoolerRequest,
   GetFastaForAssemblyRequest,
   GetAGPForAssemblyRequest,
   OpenFileRequest,
@@ -197,5 +217,6 @@ export {
   SetContrastRangeRequest,
   GetCurrentSignalRangeRequest,
   SaveFileRequest,
+  GetConverterStatusRequest,
   // TileLoadPOSTRequest,
 };
