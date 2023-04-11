@@ -4,10 +4,10 @@
       <TrackNames></TrackNames>
     </div>
     <div class="interactive-workspace_horizontal">
-      <HorizontalIGVTrack></HorizontalIGVTrack>
+      <HorizontalIGVTrack :map-manager="props.mapManager"></HorizontalIGVTrack>
     </div>
     <div class="interactive-workspace_vertical">
-      <VerticalIGVTrack></VerticalIGVTrack>
+      <VerticalIGVTrack :map-manager="props.mapManager"></VerticalIGVTrack>
     </div>
     <div class="interactive-workspace_content">
       <ContactMap></ContactMap>

@@ -1,5 +1,5 @@
 import { Map, View } from "ol";
-import { ZoomSlider, ScaleLine } from "ol/control";
+import { ZoomSlider, ScaleLine, Zoom } from "ol/control";
 import { DoubleClickZoom, DragPan, Select } from "ol/interaction";
 import TileLayer from "ol/layer/Tile";
 import ContigDimensionHolder from "./ContigDimensionHolder";
@@ -77,9 +77,17 @@ class ContactMapManager {
     this.viewAndLayersManager.initializeMapInteractions();
   }
 
+  private zoomSlider: ZoomSlider | undefined = undefined;
+
+  public onZoomChanged(callback: any): void {
+    this.zoomSlider?.on("propertychange", callback);
+  }
+
   public initializeMapControls(): void {
     // Add some more controls:
-    this.map.addControl(new ZoomSlider());
+    this.zoomSlider = new ZoomSlider();
+
+    this.map.addControl(this.zoomSlider);
     this.map.addControl(
       new ScaleLine({
         bar: true,

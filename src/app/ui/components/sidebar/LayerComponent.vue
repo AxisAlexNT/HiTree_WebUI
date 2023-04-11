@@ -51,7 +51,10 @@
         <i v-if="bordersStyle === 1" class="bi bi-arrow-down-left"></i>
         <i v-if="bordersStyle === 2" class="bi bi-arrow-up-right"></i>
       </div>
-      <i class="bi bi-pencil edit-btn" @click="editLayer"></i>
+      <PencilEdit
+        @onWeightChanged="onWeightChanged"
+      >
+      </PencilEdit>
     </div>
   </div>
 </template>
@@ -60,6 +63,7 @@
 import { type Ref, ref } from "vue";
 import { BorderStyle } from "@/app/core/tracks/Track2DSymmetric";
 import ColorPickerRectangle from "./ColorPickerRectangle.vue";
+import PencilEdit from "./PencilEdit.vue";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const props = defineProps({
@@ -73,6 +77,7 @@ const emit = defineEmits<{
     layerName: string,
     borderStyle: BorderStyle
   ): void;
+  (e: "onWeightChanged", layerName: string, weight: number): void;
 }>();
 
 const currentColor: Ref<string> = ref("#ffaaff");
@@ -99,8 +104,8 @@ function updateBorderStyle() {
   emit("onBorderStyleChanged", props.layerName as string, bordersStyle.value);
   // (Object.values(BorderStyle) as Array<BorderStyle>)[bordersStyle.value]
 }
-function editLayer() {
-  alert("Edit layer?");
+function onWeightChanged(weight: number) {
+  emit("onWeightChanged", props.layerName as string, weight);
 }
 </script>
 
