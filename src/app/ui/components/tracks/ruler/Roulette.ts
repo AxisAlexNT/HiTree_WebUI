@@ -211,7 +211,7 @@ export class Roulette {
     for (const obj of this.objects) {
       const pos = this.config.translate(obj.position);
       if (obj.text) {
-        drawText(pos, obj.text);
+        drawText(pos.add(new Vector(0, -15)), obj.text);
       }
 
       switch (obj.type) {

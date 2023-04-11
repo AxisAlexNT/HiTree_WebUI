@@ -44,13 +44,14 @@ export default class ContigMouseWheelZoom extends MouseWheelZoom {
       case "pointerdrag": {
         const now = mapBrowserEvent.pixel;
 
-        if (this.horizontalRoulette && this.lastMousePixelDrag) {
+        if (this.horizontalRoulette && this.verticalRoulette && this.lastMousePixelDrag) {
           const dxdy = [
             now[0] - this.lastMousePixelDrag[0],
             now[1] - this.lastMousePixelDrag[1],
           ];
 
           this.horizontalRoulette.shift(dxdy[0]);
+          this.verticalRoulette.shift(dxdy[1]);
         }
 
         this.lastMousePixelDrag = now;
@@ -186,6 +187,10 @@ export default class ContigMouseWheelZoom extends MouseWheelZoom {
 
   setHorizontalRoulette(roulette) {
     this.horizontalRoulette = roulette;
+  }
+
+  setVerticalRoulette(roulette) {
+    this.verticalRoulette = roulette;
   }
 
   handleWheelZoom_(map) {

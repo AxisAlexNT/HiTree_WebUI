@@ -66,27 +66,27 @@ watch(
         const pixelResolution =
           newManager?.getLayersManager().currentViewState.resolutionDesciptor
             .pixelResolution; //newResolution;
-        const basePixelResolution =
-          newManager?.viewAndLayersManager.pixelResolutionSet[
-            newManager?.viewAndLayersManager.currentViewState
-              .resolutionDesciptor.imageSizeIndex
-          ];
+        // const basePixelResolution =
+        //   newManager?.viewAndLayersManager.pixelResolutionSet[
+        //     newManager?.viewAndLayersManager.currentViewState
+        //       .resolutionDesciptor.imageSizeIndex
+        //   ];
 
         const size = Math.round(baseLength * (pixelResolution / newResolution));
 
-        console.log(pixel);
-        console.log(
-          "size",
-          size,
-          "pixelResolution",
-          pixelResolution,
-          "basePixelResolution",
-          basePixelResolution,
-          "bpResolution",
-          bpResolution,
-          "newResolution",
-          newResolution
-        );
+        // console.log(pixel);
+        // console.log(
+        //   "size",
+        //   size,
+        //   "pixelResolution",
+        //   pixelResolution,
+        //   "basePixelResolution",
+        //   basePixelResolution,
+        //   "bpResolution",
+        //   bpResolution,
+        //   "newResolution",
+        //   newResolution
+        // );
 
         roulette.value?.zoom(pixel[0], size);
       }
@@ -175,7 +175,7 @@ function setupRoulette(newDiv: Element): void {
         roulette.value.draw(
           (s, e) => p5.line(s.x, s.y, e.x, e.y),
           (p, t) => p5.text(t, p.x, p.y),
-          (p) => p5.point(p.x, p.y)
+          (p) => p5.line(p.x, p.y - 5, p.x, p.y + 5)
         );
       }
     };
@@ -183,7 +183,7 @@ function setupRoulette(newDiv: Element): void {
 
   new P5(sketch);
 
-  console.log("Roulette:", roulette);
+  console.log("Horizontal roulette:", roulette);
 
   // watch(() => props.mapManager?.getLayersManager().layersHolder.hicDataLayers.length,
   //   (newLength, _) => {

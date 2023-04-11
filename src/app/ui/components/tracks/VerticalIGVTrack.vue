@@ -1,5 +1,8 @@
 <template>
-  <div id="vertical-igv-track-div">
+  <div id="vertical-p5-div"
+       style="height: auto; min-height: 100%; /*overflow: auto*/ width: 100px">
+  </div>
+<!--  <div id="vertical-igv-track-div">-->
 <!--    <figure class="text-center vertical">-->
 <!--      <blockquote class="blockquote">-->
 <!--        <p>Very soon horizontal IGV tracks will be here.</p>-->
@@ -8,7 +11,7 @@
 <!--        Someone famous in the <cite title="HiCT Development Team">HiCT Development Team</cite>-->
 <!--      </figcaption>-->
 <!--    </figure>-->
-  </div>
+<!--  </div>-->
 </template>
 
 <script setup lang="ts">
@@ -16,88 +19,218 @@
 ///<reference path="../../../../../node_modules/igv/dist/igv.esm.js" />
 import igv from "igv";
 import { Browser } from "igv";
-import { onMounted, watch } from "vue";
+import { onMounted, ref, Ref, watch } from "vue";
 import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
+import { Roulette, RouletteConfig, Vector } from "@/app/ui/components/tracks/ruler/Roulette";
+import P5 from "p5";
 
 const props = defineProps<{
   mapManager: ContactMapManager | undefined;
 }>();
 
-const igvOptions = {
-  genome: "hg38",
-  locus: "chr8:127,736,588-127,739,371",
-  tracks: [
-    {
-      name: "HG00103",
-      url: "https://s3.amazonaws.com/1000genomes/data/HG00103/alignment/HG00103.alt_bwamem_GRCh38DH.20150718.GBR.low_coverage.cram",
-      indexURL:
-        "https://s3.amazonaws.com/1000genomes/data/HG00103/alignment/HG00103.alt_bwamem_GRCh38DH.20150718.GBR.low_coverage.cram.crai",
-      format: "cram",
-    },
-  ],
-};
+const roulette: Ref<Roulette | undefined> = ref(undefined);
+const initialized: Ref<boolean> = ref(false);
 
 watch(
-  () => document.getElementById("vertical-igv-track-div"),
-  (newDiv) => {
-    console.log("New div is", newDiv);
-    if (newDiv) {
-      igv.createBrowser(newDiv, igvOptions).then(function () {
-        console.log("Created Horizontal IGV browser");
-      });
-    }
+  () => props.mapManager,
+  (newManager, _) => {
+    newManager?.addContrastSliderCallback(() => {
+      if (roulette.value && !initialized.value) {
+        props.mapManager
+          ?.getLayersManager()
+          .initVerticalRoulette(roulette.value);
+        roulette.value.invalidate();
+
+        initialized.value = true;
+      }
+    });
+
+    newManager?.viewAndLayersManager.resolutionChangedAsyncSubscribers.push(
+      async () => {
+
+        const newZoom = newManager?.getView().getZoom() ?? 0;
+        const newResolution = newManager?.getView().getResolutionForZoom(newZoom);
+
+        const pixel = newManager?.getMap().getPixelFromCoordinate([0, 0]);
+
+        const bpResolution =
+          newManager?.viewAndLayersManager?.currentViewState.resolutionDesciptor
+            .bpResolution;
+        const prefixSumPx =
+          newManager?.contigDimensionHolder.prefix_sum_px.get(bpResolution) ??
+          [];
+        const baseLength = prefixSumPx[prefixSumPx.length - 1];
+
+        const pixelResolution =
+          newManager?.getLayersManager().currentViewState.resolutionDesciptor
+            .pixelResolution;
+
+        const size = Math.round(baseLength * (pixelResolution / newResolution));
+
+        roulette.value?.zoom(pixel[1], size);
+      }
+    );
   }
 );
 
 onMounted(() => {
-  const newDiv = undefined;//document.getElementById("vertical-igv-track-div");
+  const newDiv = document.getElementById("vertical-p5-div");
+  if (!newDiv) {
+    alert("FAILED: `newDiv` in VerticalIGVTrack.vue");
+    return;
+  }
 
-  if (newDiv) {
-    console.log("New div is", newDiv);
-    igv.createBrowser(newDiv, igvOptions).then(function (browser: Browser) {
-      console.log("Created Vertical IGV browser");
-
-      document.getElementsByClassName("igv-container")[1].class += "vertical";
-
-      removeUseless([
-        // "igv-axis-column",
-        "igv-navbar",
-        "igv-track-drag-column",
-        "igv-gear-menu-column",
-        "igv-scrollbar-column",
-      ]);
-
-      const divs =
-        document.getElementsByClassName("igv-axis-column")[0].children;
-
-      for (let i = 2; i < divs.length; i++) {
-        divs[i].style.display = "none";
+  watch(
+    () => props.mapManager?.contigDimensionHolder.contigDescriptors,
+    (updated, _) => {
+      if (!updated) {
+        return;
       }
 
-      removeUseless(["igv-viewport"], 2);
-
-      props.mapManager
-        ?.getLayersManager()
-        .initVerticalIgvInteraction(browser);
-
-      // const updated = igvOptions;
-      // updated.locus = "chr8:127,737,000-127,739,000";
-      // browser.search(updated.locus);
-
-      console.log(browser);
-    });
-  }
+      setupRoulette(newDiv);
+    }
+  );
 });
 
-function removeUseless(useless: Array<string>, from = 0) {
-  for (const item of useless) {
-    const divs = document.getElementsByClassName(item);
+function setupRoulette(newDiv: Element): void {
+  const WIDTH = newDiv.getBoundingClientRect().width;
+  const HEIGHT = newDiv.getBoundingClientRect().height;
 
-    for (let i = from; i < divs.length; i++) {
-      divs[i].style.display = "none";
-    }
-  }
+  const offset = 50;
+
+  roulette.value = new Roulette(
+    new RouletteConfig(
+      new Vector(WIDTH / 2, 100),
+      HEIGHT,
+      false,
+      (e) =>
+        props.mapManager?.contigDimensionHolder.getStartBpOfPx(
+          e,
+          props.mapManager?.viewAndLayersManager.currentViewState
+            .resolutionDesciptor.bpResolution
+        ) ?? HEIGHT
+    ),
+    400,
+    100_000_000
+  );
+
+  const sketch = (p5: P5) => {
+    p5.setup = () => {
+      const canvas = p5.createCanvas(WIDTH, HEIGHT + 2 * offset);
+      canvas.parent(newDiv);
+
+      p5.background("white");
+    };
+
+    p5.draw = () => {
+      p5.background("white");
+
+      p5.textAlign(p5.CENTER);
+      // p5.line(0, 0, WIDTH + 2 * offset, HEIGHT);
+
+      if (roulette.value) {
+        roulette.value.draw(
+          (s, e) => p5.line(s.x, s.y, e.x, e.y),
+          (p, t) => p5.text(t, p.x, p.y),
+          (p) => p5.line(p.x - 5, p.y, p.x + 5, p.y)
+        );
+      }
+    };
+  };
+
+  new P5(sketch);
+
+  console.log("Vertical roulette:", roulette);
+
+  // watch(() => props.mapManager?.getLayersManager().layersHolder.hicDataLayers.length,
+  //   (newLength, _) => {
+  //     if (newLength) {
+  //       props.mapManager?.getLayersManager().initHorizontalRoulette(roulette);
+  //       roulette.invalidate();
+  //
+  //       console.log("#", props.mapManager?.getMap().getPixelFromCoordinate([0, 0]));
+  //     }
+  //   });
+
+  // props.mapManager?.getLayersManager().initHorizontalRoulette(roulette);
+  // roulette.invalidate();
 }
+
+// const igvOptions = {
+//   genome: "hg38",
+//   locus: "chr8:127,736,588-127,739,371",
+//   tracks: [
+//     {
+//       name: "HG00103",
+//       url: "https://s3.amazonaws.com/1000genomes/data/HG00103/alignment/HG00103.alt_bwamem_GRCh38DH.20150718.GBR.low_coverage.cram",
+//       indexURL:
+//         "https://s3.amazonaws.com/1000genomes/data/HG00103/alignment/HG00103.alt_bwamem_GRCh38DH.20150718.GBR.low_coverage.cram.crai",
+//       format: "cram",
+//     },
+//   ],
+// };
+//
+// watch(
+//   () => document.getElementById("vertical-igv-track-div"),
+//   (newDiv) => {
+//     console.log("New div is", newDiv);
+//     if (newDiv) {
+//       igv.createBrowser(newDiv, igvOptions).then(function () {
+//         console.log("Created Horizontal IGV browser");
+//       });
+//     }
+//   }
+// );
+//
+// onMounted(() => {
+//   const newDiv = undefined;//document.getElementById("vertical-igv-track-div");
+//
+//   if (newDiv) {
+//     console.log("New div is", newDiv);
+//     igv.createBrowser(newDiv, igvOptions).then(function (browser: Browser) {
+//       console.log("Created Vertical IGV browser");
+//
+//       document.getElementsByClassName("igv-container")[1].class += "vertical";
+//
+//       removeUseless([
+//         // "igv-axis-column",
+//         "igv-navbar",
+//         "igv-track-drag-column",
+//         "igv-gear-menu-column",
+//         "igv-scrollbar-column",
+//       ]);
+//
+//       const divs =
+//         document.getElementsByClassName("igv-axis-column")[0].children;
+//
+//       for (let i = 2; i < divs.length; i++) {
+//         divs[i].style.display = "none";
+//       }
+//
+//       removeUseless(["igv-viewport"], 2);
+//
+//       props.mapManager
+//         ?.getLayersManager()
+//         .initVerticalIgvInteraction(browser);
+//
+//       // const updated = igvOptions;
+//       // updated.locus = "chr8:127,737,000-127,739,000";
+//       // browser.search(updated.locus);
+//
+//       console.log(browser);
+//     });
+//   }
+// });
+//
+// function removeUseless(useless: Array<string>, from = 0) {
+//   for (const item of useless) {
+//     const divs = document.getElementsByClassName(item);
+//
+//     for (let i = from; i < divs.length; i++) {
+//       divs[i].style.display = "none";
+//     }
+//   }
+// }
 </script>
 
 <style scoped>

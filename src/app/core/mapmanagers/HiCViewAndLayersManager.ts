@@ -597,6 +597,7 @@ class HiCViewAndLayersManager {
   private verticalIgv: Browser | undefined = undefined;
 
   private horizontalRoulette: Roulette | undefined = undefined;
+  private verticalRoulette: Roulette | undefined = undefined;
 
   public initHorizontalRoulette(roulette: Roulette): void {
     this.horizontalRoulette = roulette;
@@ -606,6 +607,37 @@ class HiCViewAndLayersManager {
 
     const pixel = this.mapManager.getMap().getPixelFromCoordinate([0, 0]);
     roulette.moveTo(pixel[0] ?? 0);
+
+    const bpResolution =
+      this.mapManager.viewAndLayersManager.currentViewState.resolutionDesciptor
+        .bpResolution;
+    const prefixSumPx =
+      this.mapManager.contigDimensionHolder.prefix_sum_px.get(bpResolution) ??
+      [];
+    const size = prefixSumPx[prefixSumPx.length - 1];
+
+    roulette.resize(size);
+
+    // this.mapManager.onZoomChanged((e) => {
+    //   alert(e);
+    //   this.horizontalRoulette?.scale(e.zoomFactor, (e.position - this.mapManager.getMap().getView().getCenter()) / 100.0);
+    // });
+
+    // this.mapManager.getMap().on("pointerdrag", (e) => {
+    //   alert("asd");
+    //   // this.getBinPosition(e.coordinate);
+    //   this.horizontalRoulette?.moveTo(e.coordinate[0]);
+    // });
+  }
+
+  public initVerticalRoulette(roulette: Roulette): void {
+    this.verticalRoulette = roulette;
+
+    // this.binMouse?.setVerticalRoulette(roulette);
+    this.mouseWheel?.setVerticalRoulette(roulette);
+
+    const pixel = this.mapManager.getMap().getPixelFromCoordinate([0, 0]);
+    roulette.moveTo(pixel[1] ?? 0);
 
     const bpResolution =
       this.mapManager.viewAndLayersManager.currentViewState.resolutionDesciptor
