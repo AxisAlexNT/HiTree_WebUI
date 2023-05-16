@@ -11,6 +11,8 @@ import Stroke from "ol/style/Stroke";
 import { Coordinate } from "ol/coordinate";
 import MapBrowserEventType from "ol/MapBrowserEventType";
 import CommonUtils from "@/CommonUtils";
+import TileLayer from "ol/layer/Tile";
+import { transform } from "ol/proj";
 
 interface Options extends PIOpts {
   mapManager: ContactMapManager;
@@ -59,6 +61,12 @@ class SplitRulesInteraction extends PointerInteraction {
 
   protected handlePointerMove(mapBrowserEvent: MapBrowserEvent<UIEvent>): void {
     const pixel = mapBrowserEvent.pixel;
+
+    const coordinate = this.getMap()?.getCoordinateFromPixelInternal(
+      mapBrowserEvent.pixel
+    ) ?? [0, 0];
+
+    console.log("pixel:", mapBrowserEvent.pixel, "coordinate:", coordinate);
 
     this.createOrUpdateRules(pixel);
   }
@@ -141,28 +149,57 @@ class SplitRulesInteraction extends PointerInteraction {
     switch (mapBrowserEvent.type) {
       case MapBrowserEventType.DBLCLICK:
         {
+          mapBrowserEvent.preventDefault();
           const coordinate = this.getMap()?.getCoordinateFromPixelInternal(
             mapBrowserEvent.pixel
           ) ?? [0, 0];
-          const bpResolution =
+
+          const pixelResolution =
             this.mapManager.viewAndLayersManager.currentViewState
-              .resolutionDesciptor.bpResolution;
-          const contigCount =
-            this.mapManager.contigDimensionHolder.contig_count;
-          const prefixSumPx =
-            this.mapManager.contigDimensionHolder.prefix_sum_px.get(
-              bpResolution
-            );
-          const mapSizePx = prefixSumPx ? prefixSumPx[contigCount] : 1000;
-          mapBrowserEvent.preventDefault();
-          this.options.selectionCallback(
-            coordinate.map((c) =>
-              CommonUtils.clamp(c >= 0 ? c : -c, 0, mapSizePx)
-            ),
-            this.mapManager.viewAndLayersManager.currentViewState
-              .resolutionDesciptor.bpResolution
-          );
-          return false;
+              .resolutionDesciptor.pixelResolution;
+
+          const layers =
+            this.mapManager.viewAndLayersManager.layersHolder.hicDataLayers;
+          const hovered_layer =
+            layers.length === 0
+              ? null
+              : layers
+                  .filter((l) => l instanceof TileLayer)
+                  .sort((l1, l2) => l1.zIndex - l2.zIndex)[0];
+          if (hovered_layer) {
+            const layer_projection = hovered_layer.getSource()?.getProjection();
+            if (layer_projection) {
+              const fixed_coordinates = transform(
+                coordinate,
+                this.getMap()?.getView()?.getProjection(),
+                layer_projection
+              ).map((c) => Math.ceil(c / pixelResolution));
+              const bpResolutionString = hovered_layer.get("bpResolution");
+              const bpResolution = Number(bpResolutionString);
+              const int_coordinates_px =
+                this.mapManager.contigDimensionHolder.clampPxCoordinatesAtResolution(
+                  [
+                    Math.floor(fixed_coordinates[0]),
+                    -Math.floor(fixed_coordinates[1]),
+                  ],
+                  bpResolution
+                );
+              this.setActive(false);
+              this.ruleFeatures.forEach((f) => {
+                if (f) {
+                  this.ruleOverlayLayer.getSource()?.removeFeature(f);
+                }
+              });
+              this.ruleFeatures = [undefined, undefined];
+              this.options.selectionCallback(
+                int_coordinates_px,
+                this.mapManager.viewAndLayersManager.currentViewState
+                  .resolutionDesciptor.bpResolution
+              );
+              return false;
+            }
+          }
+          return true;
         }
         break;
       case MapBrowserEventType.POINTERMOVE:
