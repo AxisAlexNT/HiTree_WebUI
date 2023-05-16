@@ -55,7 +55,7 @@ export default class BinMousePosition extends MousePosition {
             ? null
             : layers
                 .filter((l) => l instanceof TileLayer)
-                .sort((l1, l2) => l1.zIndex - l2.zIndex)[0];
+                .sort((l1, l2) => l1.getZIndex() - l2.getZIndex())[0];
         if (hovered_layer) {
           const layer_projection = hovered_layer.getSource().getProjection();
           const pixelResolution = hovered_layer.get("pixelResolution");

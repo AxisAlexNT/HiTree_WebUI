@@ -165,7 +165,7 @@ class SplitRulesInteraction extends PointerInteraction {
               ? null
               : layers
                   .filter((l) => l instanceof TileLayer)
-                  .sort((l1, l2) => l1.zIndex - l2.zIndex)[0];
+                  .sort((l1, l2) => l1.getZIndex() - l2.getZIndex())[0];
           if (hovered_layer) {
             const layer_projection = hovered_layer.getSource()?.getProjection();
             if (layer_projection) {
