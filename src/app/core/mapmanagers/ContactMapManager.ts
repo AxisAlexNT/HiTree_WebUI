@@ -11,6 +11,8 @@ import type { NetworkManager } from "../net/NetworkManager";
 import type { ContigDescriptor } from "../domain/ContigDescriptor";
 import { CommonEventManager } from "./CommonEventManager";
 import { CurrentSignalRangeResponse } from "../net/api/response";
+import { VerticalLineControl } from "../controls/VerticalLineControl";
+import { SplitRulesInteraction } from "../interactions/SplitRulesInteraction";
 
 class ContactMapManager {
   public readonly map: Map;
@@ -80,6 +82,12 @@ class ContactMapManager {
   public initializeMapControls(): void {
     // Add some more controls:
     this.map.addControl(new ZoomSlider());
+    // this.map.addInteraction(
+    //   new SplitRulesInteraction({
+    //     mapManager: this,
+    //     selectionCallback: this.eventManager.onClickInScissorsMode,
+    //   })
+    // );
     /*
     // No more scale line in kilometers:
     this.map.addControl(
@@ -161,11 +169,28 @@ class ContactMapManager {
     this.viewAndLayersManager.selectionInteractions.contigSelectionInteraction.setActive(
       true
     );
+    this.viewAndLayersManager.selectionInteractions.contigSelectExtent.setActive(
+      true
+    );
     this.viewAndLayersManager.selectionInteractions.translocationArrowSelectionInteraction.unset(
       "startContigId"
     );
     this.viewAndLayersManager.selectionInteractions.translocationArrowSelectionInteraction.unset(
       "endContigId"
+    );
+  }
+
+  public deactivateScissors(): void {
+    // Deactivate selection:
+    this.viewAndLayersManager.currentViewState.activeTool = undefined;
+    this.viewAndLayersManager.deferredInitializationInteractions.scissorsGuideInteraction?.setActive(
+      false
+    );
+    this.viewAndLayersManager.selectionInteractions.contigSelectionInteraction.setActive(
+      true
+    );
+    this.viewAndLayersManager.selectionInteractions.contigSelectExtent.setActive(
+      true
     );
   }
 

@@ -12,10 +12,12 @@ import {
   GetFastaForSelectionRequest,
   SetNormalizationRequest,
   SetContrastRangeRequest,
+  SplitContigRequest,
 } from "../net/api/request";
 import { ContactMapManager } from "./ContactMapManager";
 import { ActiveTool } from "./HiCViewAndLayersManager";
 import { BorderStyle } from "@/app/core/tracks/Track2DSymmetric";
+import { Coordinate } from "ol/coordinate";
 
 class CommonEventManager {
   public constructor(public readonly mapManager: ContactMapManager) {}
@@ -233,6 +235,12 @@ class CommonEventManager {
       this.mapManager.viewAndLayersManager.selectionInteractions.contigSelectionInteraction.setActive(
         false
       );
+      this.mapManager.viewAndLayersManager.selectionInteractions.contigSelectExtent.setActive(
+        false
+      );
+      this.mapManager.viewAndLayersManager.deferredInitializationInteractions.scissorsGuideInteraction?.setActive(
+        false
+      );
       this.mapManager.viewAndLayersManager.selectionInteractions.translocationArrowSelectionInteraction.setActive(
         true
       );
@@ -250,6 +258,44 @@ class CommonEventManager {
     }
 
     this.mapManager.viewAndLayersManager.reloadTracks();
+  }
+
+  public onSplitContigClicked(): void {
+    console.log("onSplitContigClicked");
+    const activeTool =
+      this.mapManager.viewAndLayersManager.currentViewState.activeTool;
+    if (activeTool === ActiveTool.SCISSORS) {
+      this.mapManager.deactivateScissors();
+    } else {
+      this.mapManager.viewAndLayersManager.currentViewState.activeTool =
+        ActiveTool.SCISSORS;
+      console.log(
+        "Scissors interaction: ",
+        this.mapManager.viewAndLayersManager.deferredInitializationInteractions
+          .scissorsGuideInteraction
+      );
+      this.mapManager.viewAndLayersManager.deferredInitializationInteractions.scissorsGuideInteraction?.setActive(
+        true
+      );
+      this.mapManager.viewAndLayersManager.selectionInteractions.contigSelectionInteraction.setActive(
+        false
+      );
+      this.mapManager.viewAndLayersManager.selectionInteractions.contigSelectExtent.setActive(
+        false
+      );
+      this.mapManager.viewAndLayersManager.selectionInteractions.translocationArrowSelectionInteraction.setActive(
+        false
+      );
+      this.mapManager.viewAndLayersManager.selectionInteractions.translocationArrowHoverInteraction.setActive(
+        false
+      );
+      this.mapManager.viewAndLayersManager.selectionInteractions.translocationArrowSelectionInteraction.unset(
+        "startBP"
+      );
+      this.mapManager.viewAndLayersManager.selectionInteractions.translocationArrowSelectionInteraction.unset(
+        "endBP"
+      );
+    }
   }
 
   public onClickInTranslocationMode(): void {
@@ -321,8 +367,44 @@ class CommonEventManager {
         this.mapManager.scaffoldHolder.updateScaffoldData(
           asmInfo.scaffoldDescriptors
         );
+      })
+      .finally(() => {
         this.onMoveSelectionClicked();
         this.resetSelection();
+        this.mapManager.reloadVisuals();
+      });
+  }
+
+  public onClickInScissorsMode(
+    coordinate_px: Coordinate,
+    bp_resolution: number
+  ): void {
+    console.log(
+      "Click in Scissors mode:",
+      "coordinate_px:",
+      coordinate_px,
+      "bp_resolution:",
+      bp_resolution
+    );
+
+    this.mapManager.networkManager.requestManager
+      .splitContigAtPx(
+        new SplitContigRequest({
+          splitPx: coordinate_px[0],
+          bpResolution: bp_resolution,
+        })
+      )
+      .then((asmInfo) => {
+        this.mapManager.contigDimensionHolder.updateContigData(
+          asmInfo.contigDescriptors
+        );
+        this.mapManager.scaffoldHolder.updateScaffoldData(
+          asmInfo.scaffoldDescriptors
+        );
+      })
+      .finally(() => {
+        this.mapManager.deactivateScissors();
+        this.mapManager.eventManager.resetSelection();
         this.mapManager.reloadVisuals();
       });
   }
