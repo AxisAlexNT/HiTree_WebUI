@@ -9,9 +9,7 @@
 import { onMounted, ref, Ref, watch } from "vue";
 import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
 
-import {} from "p5";
 import P5 from "p5";
-import {} from "@/p5/lib/addons/p5.dom";
 
 // import {
 //   Roulette,
@@ -19,12 +17,15 @@ import {} from "@/p5/lib/addons/p5.dom";
 //   Interval,
 //   Point,
 // } from "@/app/ui/components/tracks/ruler/roulette";
-
 import {
+  Contig,
+  Interval,
   Roulette,
   RouletteConfig,
   Vector,
 } from "@/app/ui/components/tracks/ruler/Roulette";
+import { ContigDirection } from "@/app/core/domain/common";
+import { BedFormatParser, FiLE_CONTENT } from "@/app/ui/components/tracks/ruler/bed-format-parser";
 
 const props = defineProps<{
   mapManager: ContactMapManager | undefined;
@@ -49,9 +50,10 @@ watch(
 
     newManager?.viewAndLayersManager.resolutionChangedAsyncSubscribers.push(
       async () => {
-
         const newZoom = newManager?.getView().getZoom() ?? 0;
-        const newResolution = newManager?.getView().getResolutionForZoom(newZoom);
+        const newResolution = newManager
+          ?.getView()
+          .getResolutionForZoom(newZoom);
 
         const pixel = newManager?.getMap().getPixelFromCoordinate([0, 0]);
 
@@ -141,9 +143,40 @@ function setupRoulette(newDiv: Element): void {
   // const drawText = (p, t) => console.log(`${p}: ${t}`);
   // const drawMark = (p) => console.log(`> ${p}`);
 
+  const acceptContig = (e: number) => {
+    const prefixes =
+      props.mapManager?.contigDimensionHolder.prefix_sum_px.get(
+        props.mapManager?.getLayersManager().currentViewState
+          .resolutionDesciptor.bpResolution
+      ) ?? [];
+
+    let l = -1;
+    let r = prefixes.length;
+    while (r - l > 1) {
+      const m = Math.round(l + (r - l) / 2);
+      if (prefixes[m] < e) {
+        l = m;
+      } else {
+        r = m;
+      }
+    }
+
+    // console.log(`prefixes: [${prefixes.join(", ")}]\ndirections: ${
+    //   props.mapManager?.contigDimensionHolder.contigDescriptors.map((cd) => cd.direction).join(", ")}\ne: ${e}\nl, r, size: (${l}, ${r}, ${prefixes.length})\n`);
+
+    return new Contig(
+      new Interval(prefixes[l], prefixes[l + 1]),
+      props.mapManager?.contigDimensionHolder.contigDescriptors.map(
+        (cd) => cd.direction
+      )[l] == ContigDirection.REVERSED
+    );
+  };
+
+  const trackHolder = new BedFormatParser(FiLE_CONTENT, "chr1").parse();
+
   roulette.value = new Roulette(
     new RouletteConfig(
-      new Vector(100, HEIGHT / 2),
+      new Vector(0, (HEIGHT * 3) / 4),
       WIDTH,
       true,
       (e) =>
@@ -151,11 +184,23 @@ function setupRoulette(newDiv: Element): void {
           e,
           props.mapManager?.viewAndLayersManager.currentViewState
             .resolutionDesciptor.bpResolution
-        ) ?? WIDTH
+        ) ?? WIDTH,
+      (e) =>
+        props.mapManager?.contigDimensionHolder.getPxContainingBp(
+          e,
+          props.mapManager?.viewAndLayersManager.currentViewState
+            .resolutionDesciptor.bpResolution
+        ) ?? 0,
+      acceptContig,
+      trackHolder
     ),
-    400,
-    100_000_000
+    WIDTH
   );
+
+  // const contigsPrefixSumArray =
+  //   props.mapManager?.contigDimensionHolder.prefix_sum_px.get(props.mapManager?.getLayersManager().currentViewState.resolutionDesciptor.bpResolution);
+  // const contigsPrefixSumArray =
+  //   props.mapManager?.contigDimensionHolder.contigDescriptors.map((cd) => cd.direction).
 
   const sketch = (p5: P5) => {
     p5.setup = () => {
@@ -173,9 +218,28 @@ function setupRoulette(newDiv: Element): void {
 
       if (roulette.value) {
         roulette.value.draw(
-          (s, e) => p5.line(s.x, s.y, e.x, e.y),
-          (p, t) => p5.text(t, p.x, p.y),
-          (p) => p5.line(p.x, p.y - 5, p.x, p.y + 5)
+          (s, e, w) => {
+            // p5.strokeWeight(w);
+            p5.line(s.x, s.y, e.x, e.y);
+            p5.strokeWeight(1);
+          },
+          (p, t) => p5.text(t + "bp", p.x, p.y + 20),
+          (p) => p5.line(p.x, p.y - 5, p.x, p.y + 5),
+          (ps, color) => {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(color);
+            const c = result ? {
+                  r: parseInt(result[1], 16),
+                  g: parseInt(result[2], 16),
+                  b: parseInt(result[3], 16),
+                } : { r: 0, g: 0, b: 0 };
+            p5.fill(c.r, c.g, c.b);
+
+            p5.beginShape();
+            ps.forEach((p) => p5.vertex(p.x, p.y));
+            p5.endShape(p5.CLOSE);
+
+            p5.fill(0);
+          }
         );
       }
     };

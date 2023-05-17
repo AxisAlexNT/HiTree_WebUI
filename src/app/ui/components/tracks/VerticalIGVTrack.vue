@@ -21,8 +21,10 @@ import igv from "igv";
 import { Browser } from "igv";
 import { onMounted, ref, Ref, watch } from "vue";
 import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
-import { Roulette, RouletteConfig, Vector } from "@/app/ui/components/tracks/ruler/Roulette";
+import { Contig, Interval, Roulette, RouletteConfig, Vector } from "@/app/ui/components/tracks/ruler/Roulette";
 import P5 from "p5";
+import { ContigDirection } from "@/app/core/domain/common";
+import { BedFormatParser, FiLE_CONTENT } from "@/app/ui/components/tracks/ruler/bed-format-parser";
 
 const props = defineProps<{
   mapManager: ContactMapManager | undefined;
@@ -98,9 +100,37 @@ function setupRoulette(newDiv: Element): void {
 
   const offset = 50;
 
+  const acceptContig = (e: number) => {
+    const prefixes =
+      props.mapManager?.contigDimensionHolder.prefix_sum_px.get(
+        props.mapManager?.getLayersManager().currentViewState
+          .resolutionDesciptor.bpResolution
+      ) ?? [];
+
+    let l = -1;
+    let r = prefixes.length;
+    while (r - l > 1) {
+      const m = l + (r - l) / 2;
+      if (prefixes[m] > e) {
+        l = m;
+      } else {
+        r = m;
+      }
+    }
+
+    return new Contig(
+      new Interval(prefixes[l], prefixes[l + 1]),
+      props.mapManager?.contigDimensionHolder.contigDescriptors.map(
+        (cd) => cd.direction
+      )[l] == ContigDirection.REVERSED
+    );
+  };
+
+  const trackHolder = new BedFormatParser(FiLE_CONTENT, "chr1").parse();
+
   roulette.value = new Roulette(
     new RouletteConfig(
-      new Vector(WIDTH / 2, 100),
+      new Vector(WIDTH * 5 / 6, 0),
       HEIGHT,
       false,
       (e) =>
@@ -108,10 +138,17 @@ function setupRoulette(newDiv: Element): void {
           e,
           props.mapManager?.viewAndLayersManager.currentViewState
             .resolutionDesciptor.bpResolution
-        ) ?? HEIGHT
+        ) ?? HEIGHT,
+      (e) =>
+        props.mapManager?.contigDimensionHolder.getPxContainingBp(
+          e,
+          props.mapManager?.viewAndLayersManager.currentViewState
+            .resolutionDesciptor.bpResolution
+        ) ?? 0,
+      acceptContig,
+      trackHolder
     ),
-    400,
-    100_000_000
+    HEIGHT
   );
 
   const sketch = (p5: P5) => {
@@ -128,13 +165,13 @@ function setupRoulette(newDiv: Element): void {
       p5.textAlign(p5.CENTER);
       // p5.line(0, 0, WIDTH + 2 * offset, HEIGHT);
 
-      if (roulette.value) {
-        roulette.value.draw(
-          (s, e) => p5.line(s.x, s.y, e.x, e.y),
-          (p, t) => p5.text(t, p.x, p.y),
-          (p) => p5.line(p.x - 5, p.y, p.x + 5, p.y)
-        );
-      }
+      // if (roulette.value) {
+      //   roulette.value.draw(
+      //     (s, e) => p5.line(s.x, s.y, e.x, e.y),
+      //     (p, t) => p5.text(t + "bp", p.x, p.y),
+      //     (p) => p5.line(p.x - 5, p.y, p.x + 5, p.y)
+      //   );
+      // }
     };
   };
 
