@@ -22,10 +22,13 @@ import {
   Interval,
   Roulette,
   RouletteConfig,
+  RouletteObject,
+  RouletteLongObject,
   Vector,
 } from "@/app/ui/components/tracks/ruler/Roulette";
 import { ContigDirection } from "@/app/core/domain/common";
 import { BedFormatParser, FiLE_CONTENT } from "@/app/ui/components/tracks/ruler/bed-format-parser";
+import { mouseOnly } from "ol/events/condition";
 
 const props = defineProps<{
   mapManager: ContactMapManager | undefined;
@@ -210,38 +213,94 @@ function setupRoulette(newDiv: Element): void {
       p5.background("white");
     };
 
+    let onMouseObject: RouletteLongObject | undefined = undefined;
+
     p5.draw = () => {
       p5.background("white");
 
       p5.textAlign(p5.CENTER);
       // p5.line(0, 0, WIDTH + 2 * offset, HEIGHT);
 
-      if (roulette.value) {
-        roulette.value.draw(
-          (s, e, w) => {
-            // p5.strokeWeight(w);
-            p5.line(s.x, s.y, e.x, e.y);
-            p5.strokeWeight(1);
-          },
-          (p, t) => p5.text(t + "bp", p.x, p.y + 20),
-          (p) => p5.line(p.x, p.y - 5, p.x, p.y + 5),
-          (ps, color) => {
-            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(color);
-            const c = result ? {
-                  r: parseInt(result[1], 16),
-                  g: parseInt(result[2], 16),
-                  b: parseInt(result[3], 16),
-                } : { r: 0, g: 0, b: 0 };
-            p5.fill(c.r, c.g, c.b);
-
-            p5.beginShape();
-            ps.forEach((p) => p5.vertex(p.x, p.y));
-            p5.endShape(p5.CLOSE);
-
-            p5.fill(0);
-          }
-        );
+      if (!roulette.value) {
+        return;
       }
+
+      p5.textAlign("center", "center");
+
+      roulette.value.draw(
+        (s, e, w) => {
+          // p5.strokeWeight(w);
+          p5.line(s.x, s.y, e.x, e.y);
+          p5.strokeWeight(1);
+        },
+        (p, t) => p5.text(t + "bp", p.x, p.y + 20),
+        (p) => p5.line(p.x, p.y - 5, p.x, p.y + 5),
+        (ps, color) => {
+          const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(color);
+          const c = result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16),
+              } : { r: 0, g: 0, b: 0 };
+          p5.fill(c.r, c.g, c.b);
+
+          p5.beginShape();
+          ps.forEach((p) => p5.vertex(p.x, p.y));
+          p5.endShape(p5.CLOSE);
+
+          p5.fill(0);
+        }
+      );
+
+      if (onMouseObject) {
+        // "chromosome",
+        // "start",
+        // "end",
+        // "name",
+        // "score",
+        // "strand",
+        // "thickStart",
+        // "thickEnd",
+        // "itemRgb",
+        // "blockCount",
+        // "blockSize",
+        // "blockStarts",
+
+        const description = [];
+
+        p5.textAlign("left", "top");
+
+        if (trackHolder.fieldCount >= 4) {
+          description.push(`Name: ${onMouseObject.contig?.name}`);
+        }
+        if (trackHolder.fieldCount >= 5) {
+          description.push(`Score: ${onMouseObject.contig?.score}`);
+        }
+        if (trackHolder.fieldCount >= 8) {
+          description.push(`thickPosition: [${onMouseObject.contig?.thickStart}, ${onMouseObject.contig?.thickEnd}]`);
+        }
+
+        p5.text(description.join("\n"), onMouseObject.position, 0);
+      }
+    };
+
+    p5.mouseMoved = () => {
+      if (!roulette.value) {
+        return;
+      }
+
+      const marks = roulette.value.getMarks();
+
+      for (const mark of marks) {
+        // false warning
+        // noinspection SuspiciousTypeOfGuard
+        if (mark instanceof RouletteLongObject && mark.contig && mark.in(p5.mouseX)) {
+          onMouseObject = mark;
+          return;
+        }
+      }
+
+      onMouseObject = undefined;
     };
   };
 

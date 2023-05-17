@@ -1,4 +1,4 @@
-import { TracksHolder } from "@/app/ui/components/tracks/ruler/bed-format-parser";
+import { Track, TracksHolder } from "@/app/ui/components/tracks/ruler/bed-format-parser";
 
 class Pair {
   public readonly x: number;
@@ -92,7 +92,7 @@ enum ROType {
   RIGHT_ARROW,
 }
 
-class RouletteObject {
+export class RouletteObject {
   public readonly position: number;
   public readonly type: ROType;
   public readonly text: string | undefined;
@@ -102,14 +102,24 @@ class RouletteObject {
     this.type = type;
     this.text = text;
   }
+
+  public in(pos: number): boolean {
+    return pos > this.position - 3 && pos < this.position + 3;
+  }
 }
 
-class RouletteLongObject extends RouletteObject {
+export class RouletteLongObject extends RouletteObject {
   public readonly size: number;
+  public readonly contig: Track | undefined;
 
-  constructor(position: number, size: number, type: ROType) {
+  constructor(position: number, size: number, type: ROType, contig: Track | undefined) {
     super(position, type, undefined);
     this.size = size;
+    this.contig = contig;
+  }
+
+  public in(pos: number): boolean {
+    return pos > this.position - 3 && pos < this.position + this.size + 3;
   }
 }
 
@@ -247,7 +257,8 @@ export class Roulette {
       new RouletteLongObject(
         contig.interval.x - this.offset,
         contig.interval.size(),
-        contig.reversed ? ROType.LEFT_ARROW : ROType.RIGHT_ARROW
+        contig.reversed ? ROType.LEFT_ARROW : ROType.RIGHT_ARROW,
+        undefined
       );
 
     ///// LINE
@@ -295,11 +306,16 @@ export class Roulette {
           new RouletteLongObject(visibleTrack.x, visibleTrack.size(),
             track.strand === undefined ? ROType.NO_DIRECTION_BOX
               : track.strand === "+" ? ROType.FORWARD_BOX
-              : ROType.REVERSED_BOX
+              : ROType.REVERSED_BOX,
+            track
           )
         );
       }
     }
+  }
+
+  public getMarks(): Array<RouletteObject> {
+    return this.objects;
   }
 
   public draw(

@@ -21,7 +21,7 @@ export class BedFormatParser {
   }
 
   public parse(): TracksHolder {
-    const holder = new TracksHolder();
+    let holder: TracksHolder | undefined = undefined;
 
     for (const line of this.content.split(/\n/)) {
       const items = line.trim().split(/\s+/);
@@ -49,7 +49,15 @@ export class BedFormatParser {
         this.fieldCount = index;
       }
 
+      if (!holder) {
+        holder = new TracksHolder(this.fieldCount);
+      }
+
       holder.tracks.push(track);
+    }
+
+    if (!holder) {
+      throw "Invalid empty .bed-file!";
     }
 
     return holder;
@@ -58,6 +66,11 @@ export class BedFormatParser {
 
 export class TracksHolder {
   public readonly tracks: Array<Track> = [];
+  public readonly fieldCount: number;
+
+  constructor(fieldCount: number) {
+    this.fieldCount = fieldCount;
+  }
 }
 
 const TRACK_NAMES = [
