@@ -21,7 +21,14 @@ import igv from "igv";
 import { Browser } from "igv";
 import { onMounted, ref, Ref, watch } from "vue";
 import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
-import { Contig, Interval, Roulette, RouletteConfig, Vector } from "@/app/ui/components/tracks/ruler/Roulette";
+import {
+  Contig,
+  Interval,
+  OnMouseObject,
+  Roulette,
+  RouletteConfig,
+  Vector
+} from "@/app/ui/components/tracks/ruler/Roulette";
 import P5 from "p5";
 import { ContigDirection } from "@/app/core/domain/common";
 import { BedFormatParser, FiLE_CONTENT } from "@/app/ui/components/tracks/ruler/bed-format-parser";
@@ -110,8 +117,8 @@ function setupRoulette(newDiv: Element): void {
     let l = -1;
     let r = prefixes.length;
     while (r - l > 1) {
-      const m = l + (r - l) / 2;
-      if (prefixes[m] > e) {
+      const m = Math.round(l + (r - l) / 2);
+      if (prefixes[m] < e) {
         l = m;
       } else {
         r = m;
@@ -130,7 +137,7 @@ function setupRoulette(newDiv: Element): void {
 
   roulette.value = new Roulette(
     new RouletteConfig(
-      new Vector(WIDTH * 5 / 6, 0),
+      new Vector((WIDTH * 2) / 4, offset),
       HEIGHT,
       false,
       (e) =>
@@ -159,19 +166,89 @@ function setupRoulette(newDiv: Element): void {
       p5.background("white");
     };
 
+    let onMouseObject: OnMouseObject | undefined = undefined;
+
     p5.draw = () => {
       p5.background("white");
 
       p5.textAlign(p5.CENTER);
       // p5.line(0, 0, WIDTH + 2 * offset, HEIGHT);
 
-      // if (roulette.value) {
-      //   roulette.value.draw(
-      //     (s, e) => p5.line(s.x, s.y, e.x, e.y),
-      //     (p, t) => p5.text(t + "bp", p.x, p.y),
-      //     (p) => p5.line(p.x - 5, p.y, p.x + 5, p.y)
-      //   );
-      // }
+      if (!roulette.value) {
+        return;
+      }
+
+      p5.textAlign("center", "center");
+
+      roulette.value.draw(
+        (s, e, w) => {
+          // p5.strokeWeight(w);
+          p5.line(s.x, s.y, e.x, e.y);
+          p5.strokeWeight(1);
+        },
+        (p, t) => {
+          p5.push();
+          p5.translate(p.x, p.y);
+          p5.rotate(p5.radians(270));
+          p5.text(t + "bp", 0, 20);
+          p5.pop();
+        },
+        (p) => p5.line(p.x - 5, p.y, p.x + 5, p.y),
+        (ps, color) => {
+          const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(color);
+          const c = result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16),
+          } : { r: 0, g: 0, b: 0 };
+          p5.fill(c.r, c.g, c.b);
+
+          p5.beginShape();
+          ps.forEach((p) => p5.vertex(p.x, p.y));
+          p5.endShape(p5.CLOSE);
+
+          p5.fill(0);
+        }
+      );
+
+      if (onMouseObject) {
+        // "chromosome",
+        // "start",
+        // "end",
+        // "name",
+        // "score",
+        // "strand",
+        // "thickStart",
+        // "thickEnd",
+        // "itemRgb",
+        // "blockCount",
+        // "blockSize",
+        // "blockStarts",
+
+        const description = [];
+
+        p5.textAlign("left", "top");
+
+        if (trackHolder.fieldCount >= 4) {
+          description.push(`Name: ${onMouseObject.contig?.name}`);
+        }
+        if (trackHolder.fieldCount >= 5) {
+          description.push(`Score: ${onMouseObject.contig?.score}`);
+        }
+        if (trackHolder.fieldCount >= 8) {
+          description.push(`Thick position: [${onMouseObject.contig?.thickStart}, ${onMouseObject.contig?.thickEnd}]`);
+        }
+
+        // p5.text(description.join("\n"), onMouseObject.position.x, 0);
+      }
+    };
+
+    p5.mouseMoved = () => {
+      if (!roulette.value) {
+        return;
+      }
+
+      onMouseObject = roulette.value?.findOnMouse(p5.mouseY);
     };
   };
 

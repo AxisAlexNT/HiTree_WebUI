@@ -50,8 +50,8 @@ export default class ContigMouseWheelZoom extends MouseWheelZoom {
             now[1] - this.lastMousePixelDrag[1],
           ];
 
-          this.horizontalRoulette.shift(dxdy[0]);
-          this.verticalRoulette.shift(dxdy[1]);
+          // this.horizontalRoulette.shift(dxdy[0]);
+          // this.verticalRoulette.shift(dxdy[1]);
         }
 
         this.lastMousePixelDrag = now;

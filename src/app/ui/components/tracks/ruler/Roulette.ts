@@ -106,6 +106,10 @@ export class RouletteObject {
   public in(pos: number): boolean {
     return pos > this.position - 3 && pos < this.position + 3;
   }
+
+  isVisible(visivleZone: Interval): boolean {
+    return visivleZone.x <= this.position && this.position <= visivleZone.y;
+  }
 }
 
 export class RouletteLongObject extends RouletteObject {
@@ -121,6 +125,16 @@ export class RouletteLongObject extends RouletteObject {
   public in(pos: number): boolean {
     return pos > this.position - 3 && pos < this.position + this.size + 3;
   }
+
+  isVisible(visivleZone: Interval): boolean {
+    return (visivleZone.x <= this.position && this.position <= visivleZone.y) ||
+      (visivleZone.x <= this.position + this.size && this.position + this.size <= visivleZone.y);
+  }
+}
+
+export interface OnMouseObject {
+  readonly position: Interval;
+  readonly contig: Track;
 }
 
 export class RouletteConfig {
@@ -187,8 +201,7 @@ export class Roulette {
 
     this.offset = -this.interval.x;
 
-    console.log(">")
-    this.invalidate();
+    // this.invalidate();
   }
 
   public moveTo(pos: number): void {
@@ -226,20 +239,28 @@ export class Roulette {
   public invalidate(): void {
     this.objects = [];
 
-    const intersect = this.config.visible().intersect(this.interval);
+    const intersect = this.interval;//this.config.visible().intersect(this.interval);
     const start = intersect.x + this.offset;
     const end = intersect.y + this.offset;
+    console.log(`# ${intersect} | ${this.interval}`)
+
+    const contigBegin = this.config.acceptValue(start);
+    const contigEnd = this.config.acceptValue(end);
 
     interface collapsedLength {
+      readonly real: number;
       readonly v: number;
       readonly power: string;
     }
     const collapseLength = (x: number): collapsedLength => {
-      // const visibleLength = this.config.visibleLength;
-      // if (visibleLength > )
+      const base = Math.pow(1000, Math.floor(Math.log((contigEnd - contigBegin) / 10) / Math.log(1000)));
+      const sub = Math.pow(10, Math.floor(Math.log10((contigEnd - contigBegin) / 10)));
+
       return {
-        v: x,
-        power: "M",
+        real: x,
+        // 73_698_855
+        v: +(x / base).toFixed(1),
+        power: sub >= 10 ** 9 ? "B" : sub >= 10 ** 6 ? "M" : sub >= 10 ** 3 ? "K" : "",
       };
     };
 
@@ -248,14 +269,14 @@ export class Roulette {
       collapsedLength: collapsedLength
     ): RouletteObject =>
       new RouletteObject(
-        coord - this.offset,
+        coord,//   - this.offset,
         ROType.STREAK,
         `${collapsedLength.v}${collapsedLength.power}`
       );
 
     const genArrow = (contig: Contig): RouletteObject =>
       new RouletteLongObject(
-        contig.interval.x - this.offset,
+        contig.interval.x,// - this.offset,
         contig.interval.size(),
         contig.reversed ? ROType.LEFT_ARROW : ROType.RIGHT_ARROW,
         undefined
@@ -268,8 +289,10 @@ export class Roulette {
     );
 
     ///// STREAKS & ARROWS
-    const step = this.config.visibleLength / 10;
+    const lengthStep = this.config.visibleLength / 10;
+    const contigSizeStep = (contigEnd - contigBegin) / 10;
     let currentStep = 0;
+    let beginAt = contigBegin;
 
     let alongContig = this.config.acceptContig(start);
 
@@ -277,8 +300,10 @@ export class Roulette {
       const currentLength = collapseLength(this.config.acceptValue(dot));
       currentStep++;
 
-      if (currentStep >= step && currentLength.v % 5 == 0) {
+      if (currentStep >= lengthStep && currentLength.real >= beginAt) {
         currentStep = 0;
+        beginAt = currentLength.real;
+
         this.objects.push(genStreak(dot, currentLength));
       }
 
@@ -300,7 +325,7 @@ export class Roulette {
       if ((intersect.x <= trackStart && trackStart < intersect.y) ||
         (intersect.x < trackEnd && trackEnd <= intersect.y)) {
 
-        const visibleTrack = intersect.intersect(new Interval(trackStart, trackEnd));
+        const visibleTrack = intersect.intersect(new Interval(trackStart, trackEnd)).shift(this.offset);
 
         this.objects.push(
           new RouletteLongObject(visibleTrack.x, visibleTrack.size(),
@@ -314,8 +339,19 @@ export class Roulette {
     }
   }
 
-  public getMarks(): Array<RouletteObject> {
-    return this.objects;
+  public findOnMouse(mouse: number): OnMouseObject | undefined {
+    for (const mark of this.objects) {
+      // false warning
+      // noinspection SuspiciousTypeOfGuard
+      if (mark instanceof RouletteLongObject && mark.contig && mark.in(mouse + this.offset)) {
+        return {
+          position: new Interval(Math.max(0, mark.position - this.offset), mark.position + mark.size - this.offset),
+          contig: mark.contig,
+        };
+      }
+    }
+
+    return undefined;
   }
 
   public draw(
@@ -324,16 +360,20 @@ export class Roulette {
     drawMark: (point: Vector) => void,
     drawPolygon: (points: Array<Vector>, color: string) => void
   ): void {
-    const intersect = this.config.visible().intersect(this.interval);
+    const intersect = this.config.visible().intersect(this.interval.shift(this.offset));
 
     drawLine(
-      this.config.translate(intersect.x),
-      this.config.translate(intersect.y),
+      this.config.translate(this.interval.x),
+      this.config.translate(this.interval.y),
       1
     );
 
     for (const obj of this.objects) {
-      const pos = this.config.translate(obj.position);
+      if (!obj.isVisible(intersect)) {
+        continue;
+      }
+
+      const pos = this.config.translate(obj.position - this.offset);
       if (obj.text) {
         drawText(pos, obj.text);
       }

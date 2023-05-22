@@ -18,13 +18,12 @@ import P5 from "p5";
 //   Point,
 // } from "@/app/ui/components/tracks/ruler/roulette";
 import {
-  Contig,
   Interval,
+  Vector,
   Roulette,
   RouletteConfig,
-  RouletteObject,
-  RouletteLongObject,
-  Vector,
+  Contig,
+  OnMouseObject,
 } from "@/app/ui/components/tracks/ruler/Roulette";
 import { ContigDirection } from "@/app/core/domain/common";
 import { BedFormatParser, FiLE_CONTENT } from "@/app/ui/components/tracks/ruler/bed-format-parser";
@@ -213,7 +212,7 @@ function setupRoulette(newDiv: Element): void {
       p5.background("white");
     };
 
-    let onMouseObject: RouletteLongObject | undefined = undefined;
+    let onMouseObject: OnMouseObject | undefined = undefined;
 
     p5.draw = () => {
       p5.background("white");
@@ -277,10 +276,10 @@ function setupRoulette(newDiv: Element): void {
           description.push(`Score: ${onMouseObject.contig?.score}`);
         }
         if (trackHolder.fieldCount >= 8) {
-          description.push(`thickPosition: [${onMouseObject.contig?.thickStart}, ${onMouseObject.contig?.thickEnd}]`);
+          description.push(`Thick position: [${onMouseObject.contig?.thickStart}, ${onMouseObject.contig?.thickEnd}]`);
         }
 
-        p5.text(description.join("\n"), onMouseObject.position, 0);
+        p5.text(description.join("\n"), onMouseObject.position.x, 0);
       }
     };
 
@@ -289,18 +288,7 @@ function setupRoulette(newDiv: Element): void {
         return;
       }
 
-      const marks = roulette.value.getMarks();
-
-      for (const mark of marks) {
-        // false warning
-        // noinspection SuspiciousTypeOfGuard
-        if (mark instanceof RouletteLongObject && mark.contig && mark.in(p5.mouseX)) {
-          onMouseObject = mark;
-          return;
-        }
-      }
-
-      onMouseObject = undefined;
+      onMouseObject = roulette.value?.findOnMouse(p5.mouseX);
     };
   };
 

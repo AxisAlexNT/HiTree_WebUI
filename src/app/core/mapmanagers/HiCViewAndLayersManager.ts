@@ -606,6 +606,7 @@ class HiCViewAndLayersManager {
     this.mouseWheel?.setHorizontalRoulette(roulette);
 
     const pixel = this.mapManager.getMap().getPixelFromCoordinate([0, 0]);
+    console.log(`> ${pixel}`)
     roulette.moveTo(pixel[0] ?? 0);
 
     const bpResolution =
@@ -617,6 +618,11 @@ class HiCViewAndLayersManager {
     const size = prefixSumPx[prefixSumPx.length - 1];
 
     roulette.resize(size);
+
+    this.mapManager.getMap().on("pointerdrag", (_) => {
+      const newPixel = this.mapManager.getMap().getPixelFromCoordinate([0, 0]);
+      roulette.moveTo(newPixel[0] ?? 0);
+    });
 
     // this.mapManager.onZoomChanged((e) => {
     //   alert(e);
@@ -648,6 +654,11 @@ class HiCViewAndLayersManager {
     const size = prefixSumPx[prefixSumPx.length - 1];
 
     roulette.resize(size);
+
+    this.mapManager.getMap().on("pointerdrag", (_) => {
+      const newPixel = this.mapManager.getMap().getPixelFromCoordinate([0, 0]);
+      roulette.moveTo(newPixel[1] ?? 0);
+    });
 
     // this.mapManager.onZoomChanged((e) => {
     //   alert(e);
