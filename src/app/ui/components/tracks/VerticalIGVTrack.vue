@@ -48,7 +48,8 @@ watch(
         props.mapManager
           ?.getLayersManager()
           .initVerticalRoulette(roulette.value);
-        roulette.value.invalidate();
+        roulette.value.init();
+        roulette.value.invalidate(1);
 
         initialized.value = true;
       }
@@ -56,7 +57,6 @@ watch(
 
     newManager?.viewAndLayersManager.resolutionChangedAsyncSubscribers.push(
       async () => {
-
         const newZoom = newManager?.getView().getZoom() ?? 0;
         const newResolution = newManager?.getView().getResolutionForZoom(newZoom);
 

@@ -1,7 +1,7 @@
 <template>
   <div
     id="horizontal-p5-div"
-    style="height: auto; min-height: 100%; /*overflow: auto*/ width: 100px"
+    style="height: auto; min-height: 100%; /*overflow: auto*/ width: 100px; align-content: center"
   ></div>
 </template>
 
@@ -44,7 +44,8 @@ watch(
         props.mapManager
           ?.getLayersManager()
           .initHorizontalRoulette(roulette.value);
-        roulette.value.invalidate();
+        roulette.value.init();
+        roulette.value.invalidate(1);
 
         initialized.value = true;
       }
@@ -120,8 +121,6 @@ onMounted(() => {
 function setupRoulette(newDiv: Element): void {
   const WIDTH = newDiv.getBoundingClientRect().width;
   const HEIGHT = newDiv.getBoundingClientRect().height;
-
-  const offset = 50;
 
   // const roulette = new Roulette(
   //   new Interval(0, WIDTH),
@@ -206,7 +205,7 @@ function setupRoulette(newDiv: Element): void {
 
   const sketch = (p5: P5) => {
     p5.setup = () => {
-      const canvas = p5.createCanvas(WIDTH + 2 * offset, HEIGHT);
+      const canvas = p5.createCanvas(WIDTH, HEIGHT);
       canvas.parent(newDiv);
 
       p5.background("white");
@@ -218,7 +217,7 @@ function setupRoulette(newDiv: Element): void {
       p5.background("white");
 
       p5.textAlign(p5.CENTER);
-      // p5.line(0, 0, WIDTH + 2 * offset, HEIGHT);
+      // p5.line(0, 0, WIDTH, HEIGHT);
 
       if (!roulette.value) {
         return;

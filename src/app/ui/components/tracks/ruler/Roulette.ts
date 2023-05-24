@@ -185,15 +185,67 @@ export class Roulette {
   private readonly config: RouletteConfig;
   private interval: Interval;
   private offset: number;
-  private objects: Array<RouletteObject>;
+  private streaks: Array<RouletteObject>;
+  private readonly objects: Array<RouletteObject>;
+  private factor: number;
 
   constructor(config: RouletteConfig, len: number) {
     this.config = config;
     this.interval = new Interval(0, len);
     this.offset = 0;
+    this.streaks = [];
     this.objects = [];
+    this.factor = 1;
 
-    this.invalidate();
+    // this.init();
+
+    // this.invalidate(1);
+  }
+
+  public init(): void {
+    this.factor = 1;
+    this.streaks = [];
+
+    const start = this.interval.x;
+    const end = this.interval.y;
+
+    ///// BOX
+    for (const track of this.config.trackHolder.tracks) {
+      const trackStart = this.config.acceptPixel(track.start);
+      const trackEnd = this.config.acceptPixel(track.end);
+
+      this.objects.push(
+        new RouletteLongObject(trackStart, trackEnd - trackStart,
+          track.strand === undefined ? ROType.NO_DIRECTION_BOX
+            : track.strand === "+" ? ROType.FORWARD_BOX
+            : ROType.REVERSED_BOX,
+          track
+        )
+      );
+    }
+
+    const genArrow = (contig: Contig): RouletteObject =>
+      new RouletteLongObject(
+        contig.interval.x,
+        contig.interval.size(),
+        contig.reversed ? ROType.LEFT_ARROW : ROType.RIGHT_ARROW,
+        undefined
+      );
+
+    ///// ARROWS
+    let alongContig = this.config.acceptContig(start + this.offset);
+
+    for (let dot = start + this.offset + 1; dot < end + this.offset; dot++) {
+      const currentContig = this.config.acceptContig(dot);
+
+      if (!alongContig.equals(currentContig)) {
+        this.objects.push(genArrow(alongContig));
+
+        alongContig = currentContig;
+      }
+    }
+
+    this.objects.push(genArrow(alongContig));
   }
 
   public shift(v: number): void {
@@ -224,25 +276,30 @@ export class Roulette {
   // }
 
   public resize(newLength: number): void {
+    const prevSize = this.interval.size() ?? newLength;
+
     this.interval = new Interval(this.interval.x, this.interval.x + newLength);
 
-    this.invalidate();
+    this.invalidate(newLength / prevSize);
   }
 
   public zoom(newShift: number, newLength: number): void {
+    const prevSize = this.interval.size() ?? newLength;
+
     this.interval = new Interval(0, newLength);
     this.moveTo(newShift);
 
-    this.invalidate();
+    this.invalidate(newLength / prevSize);
   }
 
-  public invalidate(): void {
-    this.objects = [];
+  public invalidate(factor: number): void {
+    this.factor *= factor;
+
+    this.streaks = [];
 
     const intersect = this.interval;//this.config.visible().intersect(this.interval);
     const start = intersect.x + this.offset;
     const end = intersect.y + this.offset;
-    console.log(`# ${intersect} | ${this.interval}`)
 
     const contigBegin = this.config.acceptValue(start);
     const contigEnd = this.config.acceptValue(end);
@@ -258,7 +315,6 @@ export class Roulette {
 
       return {
         real: x,
-        // 73_698_855
         v: +(x / base).toFixed(1),
         power: sub >= 10 ** 9 ? "B" : sub >= 10 ** 6 ? "M" : sub >= 10 ** 3 ? "K" : "",
       };
@@ -274,67 +330,27 @@ export class Roulette {
         `${collapsedLength.v}${collapsedLength.power}`
       );
 
-    const genArrow = (contig: Contig): RouletteObject =>
-      new RouletteLongObject(
-        contig.interval.x,// - this.offset,
-        contig.interval.size(),
-        contig.reversed ? ROType.LEFT_ARROW : ROType.RIGHT_ARROW,
-        undefined
-      );
-
     ///// LINE
-    this.objects.push(
+    this.streaks.push(
       genStreak(start, collapseLength(start)),
       genStreak(end, collapseLength(end))
     );
 
-    ///// STREAKS & ARROWS
+    ///// STREAKS
     const lengthStep = this.config.visibleLength / 10;
-    const contigSizeStep = (contigEnd - contigBegin) / 10;
+    const contigSizeStep = this.config.acceptValue(this.config.visible().intersect(this.interval).y) / 10;
     let currentStep = 0;
     let beginAt = contigBegin;
-
-    let alongContig = this.config.acceptContig(start);
 
     for (let dot = start + 1; dot < end; dot++) {
       const currentLength = collapseLength(this.config.acceptValue(dot));
       currentStep++;
 
-      if (currentStep >= lengthStep && currentLength.real >= beginAt) {
+      if (currentStep >= lengthStep && currentLength.real >= beginAt + contigSizeStep) {
         currentStep = 0;
         beginAt = currentLength.real;
 
-        this.objects.push(genStreak(dot, currentLength));
-      }
-
-      const currentContig = this.config.acceptContig(dot);
-      if (!alongContig.equals(currentContig)) {
-        this.objects.push(genArrow(alongContig));
-
-        alongContig = currentContig;
-      }
-    }
-
-    this.objects.push(genArrow(alongContig));
-
-    ///// BOX
-    for (const track of this.config.trackHolder.tracks) {
-      const trackStart = this.config.acceptPixel(track.start) - this.offset;
-      const trackEnd = this.config.acceptPixel(track.end) - this.offset;
-
-      if ((intersect.x <= trackStart && trackStart < intersect.y) ||
-        (intersect.x < trackEnd && trackEnd <= intersect.y)) {
-
-        const visibleTrack = intersect.intersect(new Interval(trackStart, trackEnd)).shift(this.offset);
-
-        this.objects.push(
-          new RouletteLongObject(visibleTrack.x, visibleTrack.size(),
-            track.strand === undefined ? ROType.NO_DIRECTION_BOX
-              : track.strand === "+" ? ROType.FORWARD_BOX
-              : ROType.REVERSED_BOX,
-            track
-          )
-        );
+        this.streaks.push(genStreak(dot, currentLength));
       }
     }
   }
@@ -360,43 +376,39 @@ export class Roulette {
     drawMark: (point: Vector) => void,
     drawPolygon: (points: Array<Vector>, color: string) => void
   ): void {
-    const intersect = this.config.visible().intersect(this.interval.shift(this.offset));
+    this.drawObjects(drawLine, drawPolygon);
 
-    drawLine(
-      this.config.translate(this.interval.x),
-      this.config.translate(this.interval.y),
-      1
-    );
+    this.drawStreaks(drawLine, drawText, drawMark);
+  }
 
+  private drawObjects(
+    drawLine: (start: Vector, end: Vector, weight: number) => void,
+    drawPolygon: (points: Array<Vector>, color: string) => void
+  ): void {
     for (const obj of this.objects) {
-      if (!obj.isVisible(intersect)) {
+      if (!obj.isVisible(this.config.visible())) {
         continue;
       }
 
-      const pos = this.config.translate(obj.position - this.offset);
-      if (obj.text) {
-        drawText(pos, obj.text);
-      }
+      const pos = this.config.translate(obj.position * this.factor - this.offset);
 
       switch (obj.type) {
-        case ROType.STREAK:
-          drawMark(pos);
-          break;
         case ROType.LEFT_ARROW:
         case ROType.RIGHT_ARROW: {
           const arrow = obj as RouletteLongObject;
+          const size = arrow.size * this.factor;
           const baseShift = this.config.orient(-15).swap();
           const direction = obj.type == ROType.LEFT_ARROW ? -1 : 1;
 
           drawLine(
             pos.add(baseShift),
-            pos.add(this.config.orient(arrow.size)).add(baseShift),
+            pos.add(this.config.orient(size)).add(baseShift),
             3
           );
-          const arrowLength = arrow.size >= 5 ? 5 : arrow.size;
+          const arrowLength = size >= 5 ? 5 : size;
           const headBegin = pos.add(
             direction > 0
-              ? this.config.orient(arrow.size - arrowLength)
+              ? this.config.orient(size - arrowLength)
               : this.config.orient(arrowLength)
           );
           drawPolygon(
@@ -414,13 +426,13 @@ export class Roulette {
         case ROType.REVERSED_BOX: {
           const box = obj as RouletteLongObject;
           const begin = pos;
-          const end = pos.add(this.config.orient(box.size));
+          const end = pos.add(this.config.orient(box.size * this.factor));
 
           const shift = this.config.orient(
-              obj.type === ROType.FORWARD_BOX ? -5
-                : obj.type === ROType.NO_DIRECTION_BOX ? -5 / 2
+            obj.type === ROType.FORWARD_BOX ? -5
+              : obj.type === ROType.NO_DIRECTION_BOX ? -5 / 2
                 : 0
-            ).swap();
+          ).swap();
 
           drawPolygon([
               begin.add(shift),
@@ -429,13 +441,38 @@ export class Roulette {
               begin.add(shift).add(this.config.orient(5).swap()),
             ],
             obj.type === ROType.FORWARD_BOX ? "#FF0000"
-            : obj.type === ROType.NO_DIRECTION_BOX ? "#888888"
-            : "#0000FF");
+              : obj.type === ROType.NO_DIRECTION_BOX ? "#888888"
+                : "#0000FF");
           break;
         }
         case ROType.DOT:
           throw `Unsupported type=${obj.type}; position=<${obj.position}>${pos}`;
       }
+    }
+  }
+
+  private drawStreaks(
+    drawLine: (start: Vector, end: Vector, weight: number) => void,
+    drawText: (point: Vector, text: string) => void,
+    drawMark: (point: Vector) => void
+  ): void {
+    drawLine(
+      this.config.translate(this.interval.x),
+      this.config.translate(this.interval.y),
+      1
+    );
+
+    for (const obj of this.streaks) {
+      if (!obj.isVisible(this.config.visible())) {
+        continue;
+      }
+
+      const pos = this.config.translate(obj.position - this.offset);
+      if (obj.text) {
+        drawText(pos, obj.text);
+      }
+
+      drawMark(pos);
     }
   }
 }
