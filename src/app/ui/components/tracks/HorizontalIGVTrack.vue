@@ -26,8 +26,7 @@ import {
   OnMouseObject,
 } from "@/app/ui/components/tracks/ruler/Roulette";
 import { ContigDirection } from "@/app/core/domain/common";
-import { BedFormatParser, FiLE_CONTENT } from "@/app/ui/components/tracks/ruler/bed-format-parser";
-import { mouseOnly } from "ol/events/condition";
+import { BedFormatParser, FILE_CONTENT, EXTENDED_FILE_CONTENT } from "@/app/ui/components/tracks/ruler/bed-format-parser";
 
 const props = defineProps<{
   mapManager: ContactMapManager | undefined;
@@ -173,7 +172,7 @@ function setupRoulette(newDiv: Element): void {
     );
   };
 
-  const trackHolder = new BedFormatParser(FiLE_CONTENT, "chr1").parse();
+  const trackHolder = new BedFormatParser(EXTENDED_FILE_CONTENT, "chr1").parse();
 
   roulette.value = new Roulette(
     new RouletteConfig(

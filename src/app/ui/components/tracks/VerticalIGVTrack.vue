@@ -31,7 +31,7 @@ import {
 } from "@/app/ui/components/tracks/ruler/Roulette";
 import P5 from "p5";
 import { ContigDirection } from "@/app/core/domain/common";
-import { BedFormatParser, FiLE_CONTENT } from "@/app/ui/components/tracks/ruler/bed-format-parser";
+import { BedFormatParser, FILE_CONTENT } from "@/app/ui/components/tracks/ruler/bed-format-parser";
 
 const props = defineProps<{
   mapManager: ContactMapManager | undefined;
@@ -133,7 +133,7 @@ function setupRoulette(newDiv: Element): void {
     );
   };
 
-  const trackHolder = new BedFormatParser(FiLE_CONTENT, "chr1").parse();
+  const trackHolder = new BedFormatParser(FILE_CONTENT, "chr1").parse();
 
   roulette.value = new Roulette(
     new RouletteConfig(

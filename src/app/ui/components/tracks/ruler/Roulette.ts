@@ -107,8 +107,10 @@ export class RouletteObject {
     return pos > this.position - 3 && pos < this.position + 3;
   }
 
-  isVisible(visivleZone: Interval): boolean {
-    return visivleZone.x <= this.position && this.position <= visivleZone.y;
+  isVisible(shiftFactor: number, visibleZone: Interval): boolean {
+    const pos = this.position * shiftFactor;
+
+    return visibleZone.x <= pos && pos <= visibleZone.y;
   }
 }
 
@@ -126,9 +128,11 @@ export class RouletteLongObject extends RouletteObject {
     return pos > this.position - 3 && pos < this.position + this.size + 3;
   }
 
-  isVisible(visivleZone: Interval): boolean {
-    return (visivleZone.x <= this.position && this.position <= visivleZone.y) ||
-      (visivleZone.x <= this.position + this.size && this.position + this.size <= visivleZone.y);
+  isVisible(shiftFactor: number, visibleZone: Interval): boolean {
+    const start = this.position * shiftFactor;
+    const end = (this.position + this.size) * shiftFactor;
+
+    return (visibleZone.x <= start && start <= visibleZone.y) || (visibleZone.x <= end && end <= visibleZone.y);
   }
 }
 
@@ -359,7 +363,7 @@ export class Roulette {
     for (const mark of this.objects) {
       // false warning
       // noinspection SuspiciousTypeOfGuard
-      if (mark instanceof RouletteLongObject && mark.contig && mark.in(mouse + this.offset)) {
+      if (mark instanceof RouletteLongObject && mark.contig && mark.in(mouse - this.offset)) {
         return {
           position: new Interval(Math.max(0, mark.position - this.offset), mark.position + mark.size - this.offset),
           contig: mark.contig,
@@ -386,7 +390,7 @@ export class Roulette {
     drawPolygon: (points: Array<Vector>, color: string) => void
   ): void {
     for (const obj of this.objects) {
-      if (!obj.isVisible(this.config.visible())) {
+      if (!obj.isVisible(this.factor, this.config.visible().shift(this.offset))) {
         continue;
       }
 
@@ -429,20 +433,25 @@ export class Roulette {
           const end = pos.add(this.config.orient(box.size * this.factor));
 
           const shift = this.config.orient(
-            obj.type === ROType.FORWARD_BOX ? -5
-              : obj.type === ROType.NO_DIRECTION_BOX ? -5 / 2
+              obj.type === ROType.FORWARD_BOX ? -5
+                : obj.type === ROType.NO_DIRECTION_BOX ? -5 / 2
                 : 0
-          ).swap();
+            ).swap();
 
-          drawPolygon([
-              begin.add(shift),
-              end.add(shift),
-              end.add(shift).add(this.config.orient(5).swap()),
-              begin.add(shift).add(this.config.orient(5).swap()),
-            ],
-            obj.type === ROType.FORWARD_BOX ? "#FF0000"
-              : obj.type === ROType.NO_DIRECTION_BOX ? "#888888"
+          // If short enough then draw just a line, otherwise polygon
+          if (box.size <= 2) {
+            drawLine(begin.add(shift), begin.add(shift).add(this.config.orient(5).swap()), box.size)
+          } else {
+            drawPolygon([
+                begin.add(shift),
+                end.add(shift),
+                end.add(shift).add(this.config.orient(5).swap()),
+                begin.add(shift).add(this.config.orient(5).swap()),
+              ],
+              obj.type === ROType.FORWARD_BOX ? "#FF0000"
+                : obj.type === ROType.NO_DIRECTION_BOX ? "#888888"
                 : "#0000FF");
+          }
           break;
         }
         case ROType.DOT:
@@ -463,7 +472,7 @@ export class Roulette {
     );
 
     for (const obj of this.streaks) {
-      if (!obj.isVisible(this.config.visible())) {
+      if (!obj.isVisible(1, this.config.visible().shift(this.offset))) {
         continue;
       }
 
