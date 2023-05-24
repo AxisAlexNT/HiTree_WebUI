@@ -33,6 +33,23 @@
               <li><a class="dropdown-item" href="#">Close</a></li>
             </ul>
           </li>
+          <!-- Load track -->
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link active dropdown-toggle"
+              data-bs-toggle="dropdown"
+              href="#"
+            >Load track</a
+            >
+            <ul class="dropdown-menu">
+              <li>
+                <a class="dropdown-item" href="#" @click="onLoadTrack"
+                  >Open...</a
+                >
+              </li>
+              <li><a class="dropdown-item" href="#">Close</a></li>
+            </ul>
+          </li>
           <!-- View -->
           <li class="nav-item dropdown">
             <a
@@ -143,6 +160,12 @@
     @selected="onFileSelected"
     @dismissed="onFileDismissed"
   ></OpenFileSelector>
+  <BedTrackSelector
+    :network-manager="props.networkManager"
+    v-if="loadingTrack"
+    @selected="onBedTrackSelected"
+    @dismissed="onBedTrackDismissed"
+  ></BedTrackSelector>
   <FASTAFileSelector
     :network-manager="props.networkManager"
     v-if="openingFASTAFile"
@@ -169,6 +192,7 @@ import {
 } from "@/app/core/net/api/request";
 import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
 const openingFile = ref(false);
+const loadingTrack = ref(false);
 const openingFASTAFile = ref(false);
 const openingAGPFile = ref(false);
 const saving = ref(false);
@@ -176,6 +200,7 @@ const gatewayAddress: Ref<string> = ref("http://localhost:5000/");
 
 const emit = defineEmits<{
   (e: "selected", filename: string): void;
+  (e: "bedtrack", filename: string): void;
 }>();
 
 const props = defineProps<{
@@ -187,12 +212,20 @@ function onOpenFile() {
   openingFile.value = true;
 }
 
+function onLoadTrack() {
+  loadingTrack.value = true;
+}
+
 function onLoadAGP() {
   openingAGPFile.value = true;
 }
 
 function onFileDismissed() {
   openingFile.value = false;
+}
+
+function onBedTrackDismissed() {
+  loadingTrack.value = false;
 }
 
 function onSaveClicked(): void {
@@ -222,6 +255,13 @@ function onFileSelected(filename: string) {
   openingFile.value = false;
   if (filename && filename !== "") {
     emit("selected", filename);
+  }
+}
+
+function onBedTrackSelected(filename: string) {
+  loadingTrack.value = false;
+  if (filename && filename !== "") {
+    emit("bedtrack", filename);
   }
 }
 
