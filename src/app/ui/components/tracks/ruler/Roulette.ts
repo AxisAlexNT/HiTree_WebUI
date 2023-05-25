@@ -154,6 +154,12 @@ export interface OnMouseObject {
   readonly contig: Track;
 }
 
+export interface collapsedLength {
+  readonly real: number;
+  readonly v: number;
+  readonly power: string;
+}
+
 export class RouletteConfig {
   public readonly visualPosition: Vector;
   public visibleLength: number;
@@ -316,6 +322,17 @@ export class Roulette {
     this.invalidate(newLength / prevSize);
   }
 
+  public collapseLength(x: number, totalLength: number): collapsedLength {
+    const base = Math.pow(1000, Math.floor(Math.log(totalLength / 10) / Math.log(1000)));
+    const sub = Math.pow(10, Math.floor(Math.log10(totalLength / 10)));
+
+    return {
+      real: x,
+      v: +(x / base).toFixed(1),
+      power: sub >= 10 ** 9 ? "B" : sub >= 10 ** 6 ? "M" : sub >= 10 ** 3 ? "K" : "",
+    };
+  }
+
   public invalidate(factor: number): void {
     this.factor *= factor;
 
@@ -327,22 +344,6 @@ export class Roulette {
 
     const contigBegin = this.config.acceptValue(start);
     const contigEnd = this.config.acceptValue(end);
-
-    interface collapsedLength {
-      readonly real: number;
-      readonly v: number;
-      readonly power: string;
-    }
-    const collapseLength = (x: number): collapsedLength => {
-      const base = Math.pow(1000, Math.floor(Math.log((contigEnd - contigBegin) / 10) / Math.log(1000)));
-      const sub = Math.pow(10, Math.floor(Math.log10((contigEnd - contigBegin) / 10)));
-
-      return {
-        real: x,
-        v: +(x / base).toFixed(1),
-        power: sub >= 10 ** 9 ? "B" : sub >= 10 ** 6 ? "M" : sub >= 10 ** 3 ? "K" : "",
-      };
-    };
 
     const genStreak = (
       coord: number,
@@ -356,8 +357,8 @@ export class Roulette {
 
     ///// LINE
     this.streaks.push(
-      genStreak(start, collapseLength(start)),
-      genStreak(end, collapseLength(end))
+      genStreak(start, this.collapseLength(this.config.acceptValue(start), contigEnd - contigBegin)),
+      genStreak(end, this.collapseLength(this.config.acceptValue(end), contigEnd - contigBegin))
     );
 
     ///// STREAKS
@@ -366,8 +367,8 @@ export class Roulette {
     let currentStep = 0;
     let beginAt = contigBegin;
 
-    for (let dot = start + 1; dot < end; dot++) {
-      const currentLength = collapseLength(this.config.acceptValue(dot));
+    for (let dot = start + 7; dot <= end - 7; dot++) {
+      const currentLength = this.collapseLength(this.config.acceptValue(dot), contigEnd - contigBegin);
       currentStep++;
 
       if (currentStep >= lengthStep && currentLength.real >= beginAt + contigSizeStep) {

@@ -228,9 +228,11 @@ function setupRoulette(newDiv: Element): void {
         return;
       }
 
+      const rlt = roulette.value as Roulette;
+
       p5.textAlign("center", "center");
 
-      roulette.value.draw(
+      rlt.draw(
         (s, e, color) => {
           p5.push();
 
@@ -284,7 +286,7 @@ function setupRoulette(newDiv: Element): void {
 
       p5.strokeWeight(3);
       p5.stroke("#00FF00");
-      p5.line(p5.mouseX, roulette.value?.baseShift().y - 5, p5.mouseX, roulette.value?.baseShift().y + 5);
+      p5.line(p5.mouseX, rlt.baseShift().y - 5, p5.mouseX, rlt.baseShift().y + 5);
 
       p5.pop();
 
@@ -310,16 +312,20 @@ function setupRoulette(newDiv: Element): void {
 
         p5.textAlign("left", "top");
 
+        const contig = onMouseObject.contig;
+        const contPos = rlt.collapseLength(contig.start, contig.start);
+        const contSize = rlt.collapseLength(contig.end - contig.start, contig.end);
+
         if (props.trackHolder.fieldCount >= 4) {
-          description.push(`Name: ${onMouseObject.contig?.name}`);
+          description.push(`Name: ${contig?.name}`);
         }
-        description.push(`Position: ${onMouseObject.position.x}`);
-        description.push(`Size: ${onMouseObject.position.size()}`);
+        description.push(`Position: ${contPos.v}${contPos.power}`);
+        description.push(`Size: ${contSize.v}${contSize.power}`);
         if (props.trackHolder.fieldCount >= 5) {
-          description.push(`Score: ${onMouseObject.contig?.score}`);
+          description.push(`Score: ${contig?.score}`);
         }
         if (props.trackHolder.fieldCount >= 8) {
-          description.push(`Thick position: [${onMouseObject.contig?.thickStart}, ${onMouseObject.contig?.thickEnd}]`);
+          description.push(`Thick position: [${contig.thickStart}, ${contig.thickEnd}]`);
         }
 
         p5.text(description.join("\n"), onMouseObject.position.x, 0);
