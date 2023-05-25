@@ -37,7 +37,7 @@ const tileSize: Ref<number> = ref(256);
 const contigBorderColor: Ref<string> = ref("ffccee");
 const mapManager: Ref<ContactMapManager | undefined> = ref(undefined);
 const bedfilename: Ref<string | undefined> = ref("");
-const chromosome: Ref<string | undefined> = ref("");
+const chromosome: Ref<string | undefined> = ref("chr1");
 const trackManager: Ref<TracksHolder | undefined> = ref(undefined);
 const networkManager: NetworkManager = new NetworkManager(
   "http://localhost:5000/",
@@ -79,7 +79,7 @@ function parseTrack() {
   const fname = bedfilename.value;
   const chr = chromosome.value;
   // TODO chromosome selection
-  if (!fname /*|| !chr*/) {
+  if (!fname || !chr) {
     throw new Error(
       "Cannot open non-specified files: filename=" +
         fname +
@@ -93,9 +93,11 @@ function parseTrack() {
       mapManager.value?.dispose();
       const bedTrackParser = new BedFormatParser(
         LoadBedTrackResponse.tracks,
-        "chr1"
+        chr
       );
       trackManager.value = bedTrackParser.parse();
+
+      console.log(`Track holder (${chr}):`, trackManager.value);
     })
     .catch(console.log);
 }

@@ -231,29 +231,62 @@ function setupRoulette(newDiv: Element): void {
       p5.textAlign("center", "center");
 
       roulette.value.draw(
-        (s, e, w) => {
-          // p5.strokeWeight(w);
-          p5.line(s.x, s.y, e.x, e.y);
-          p5.strokeWeight(1);
-        },
-        (p, t) => p5.text(t + "bp", p.x, p.y + 20),
-        (p) => p5.line(p.x, p.y - 5, p.x, p.y + 5),
-        (ps, color) => {
-          const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(color);
+        (s, e, color) => {
+          p5.push();
+
+          const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})?$/i.exec(color);
           const c = result ? {
                 r: parseInt(result[1], 16),
                 g: parseInt(result[2], 16),
                 b: parseInt(result[3], 16),
-              } : { r: 0, g: 0, b: 0 };
-          p5.fill(c.r, c.g, c.b);
+                a: parseInt(result[4] ?? "FF", 16),
+              } : { r: 0, g: 0, b: 0, a: 0};
+
+          p5.stroke(c.r, c.g, c.b, c.a);
+          p5.line(s.x, s.y, e.x, e.y);
+
+          p5.pop();
+        },
+        (p, t) => p5.text(t + "bp", p.x, p.y + 20),
+        (p) => {
+          p5.push();
+
+          p5.strokeWeight(3);
+          p5.line(p.x, p.y - 5, p.x, p.y + 5);
+
+          p5.pop();
+        },
+        (ps, color, borders) => {
+          p5.push();
+
+          const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})?$/i.exec(color);
+          const c = result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16),
+                a: parseInt(result[4] ?? "FF", 16),
+              } : { r: 0, g: 0, b: 0, a: 0};
+          if (!borders) {
+            p5.stroke(c.r, c.g, c.b, c.a);
+          }
+
+          p5.fill(c.r, c.g, c.b, c.a);
 
           p5.beginShape();
           ps.forEach((p) => p5.vertex(p.x, p.y));
           p5.endShape(p5.CLOSE);
 
-          p5.fill(0);
+          p5.pop();
         }
       );
+
+      p5.push();
+
+      p5.strokeWeight(3);
+      p5.stroke("#00FF00");
+      p5.line(p5.mouseX, roulette.value?.baseShift().y - 5, p5.mouseX, roulette.value?.baseShift().y + 5);
+
+      p5.pop();
 
       if (!props.trackHolder) {
         return;
@@ -280,6 +313,8 @@ function setupRoulette(newDiv: Element): void {
         if (props.trackHolder.fieldCount >= 4) {
           description.push(`Name: ${onMouseObject.contig?.name}`);
         }
+        description.push(`Position: ${onMouseObject.position.x}`);
+        description.push(`Size: ${onMouseObject.position.size()}`);
         if (props.trackHolder.fieldCount >= 5) {
           description.push(`Score: ${onMouseObject.contig?.score}`);
         }

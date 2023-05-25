@@ -1,3 +1,5 @@
+import { max } from "@popperjs/core/lib/utils/math";
+
 export const EMPTY_TRACK = "unknown 0 0";
 
 export const SAMPLE_TRACK = `
@@ -24,6 +26,7 @@ export class BedFormatParser {
 
   public parse(): TracksHolder {
     let holder: TracksHolder | undefined = undefined;
+    let maxScore = 0;
 
     // eslint-disable-next-line
     for (const line of this.content instanceof Array<string> ? this.content : this.content.split(/\n/)) {
@@ -52,8 +55,12 @@ export class BedFormatParser {
         this.fieldCount = index;
       }
 
+      if (track.score) {
+        maxScore = max(maxScore, +track.score);
+      }
+
       if (!holder) {
-        holder = new TracksHolder(this.fieldCount);
+        holder = new TracksHolder(this.fieldCount, -1);
       }
 
       holder.tracks.push(track);
@@ -63,7 +70,9 @@ export class BedFormatParser {
       throw "Invalid empty .bed-file!";
     }
 
-    console.log(`Track holder (${this.chromosome}):`, holder);
+    const found = holder.tracks;
+    holder = new TracksHolder(this.fieldCount, maxScore);
+    holder.tracks.push(...found);
 
     return holder;
   }
@@ -72,9 +81,11 @@ export class BedFormatParser {
 export class TracksHolder {
   public readonly tracks: Array<Track> = [];
   public readonly fieldCount: number;
+  public readonly maxScore: number;
 
-  constructor(fieldCount: number) {
+  constructor(fieldCount: number, maxScore: number) {
     this.fieldCount = fieldCount;
+    this.maxScore = maxScore;
   }
 }
 
