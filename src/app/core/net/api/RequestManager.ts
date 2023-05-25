@@ -32,6 +32,7 @@ import {
   SaveFileRequest,
   UngroupContigsFromScaffoldRequest,
   type HiCTAPIRequest,
+  SplitContigRequest,
 } from "./request";
 import {
   ConverterStatusResponse,
@@ -197,6 +198,14 @@ class RequestManager {
 
   public async moveSelectionRange(
     request: MoveSelectionRangeRequest
+  ): Promise<AssemblyInfo> {
+    return this.sendRequest(request)
+      .then((response) => response.data)
+      .then((json) => new AssemblyInfoDTO(json).toEntity());
+  }
+
+  public async splitContigAtPx(
+    request: SplitContigRequest
   ): Promise<AssemblyInfo> {
     return this.sendRequest(request)
       .then((response) => response.data)

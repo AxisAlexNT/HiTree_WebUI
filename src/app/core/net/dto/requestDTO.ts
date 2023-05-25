@@ -21,6 +21,7 @@ import {
   ListCoolerFilesRequest,
   ConvertCoolerRequest,
   GetConverterStatusRequest,
+  SplitContigRequest,
 } from "../api/request";
 import { OutboundDTO } from "./dto";
 
@@ -52,6 +53,8 @@ abstract class HiCTAPIRequestDTO<
         return new GroupContigsIntoScaffoldRequestDTO(
           entity as GroupContigsIntoScaffoldRequest
         );
+      case entity instanceof SplitContigRequest:
+        return new SplitContigRequestDTO(entity as SplitContigRequest);
       case entity instanceof ConvertCoolerRequest:
         return new ConvertCoolerRequestDTO(entity as ConvertCoolerRequest);
       case entity instanceof UngroupContigsFromScaffoldRequest:
@@ -132,6 +135,15 @@ class MoveSelectionRangeRequestDTO extends HiCTAPIRequestDTO<MoveSelectionRangeR
       startBP: this.entity.options.startBP,
       endBP: this.entity.options.endBP,
       targetStartBP: this.entity.options.targetStartBP,
+    };
+  }
+}
+
+class SplitContigRequestDTO extends HiCTAPIRequestDTO<SplitContigRequest> {
+  toDTO(): Record<string, unknown> {
+    return {
+      splitPx: this.entity.options.splitPx,
+      bpResolution: this.entity.options.bpResolution,
     };
   }
 }
@@ -286,4 +298,5 @@ export {
   SaveFileRequestDTO,
   ListCoolerFilesRequestDTO,
   GetConverterStatusRequestDTO,
+  SplitContigRequestDTO,
 };

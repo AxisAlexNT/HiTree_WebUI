@@ -14,6 +14,13 @@
     >
       <i class="bi bi-arrows-move"></i>
     </button>
+    <button
+      class="btn btn-outline-primary"
+      type="button"
+      @click="props.mapManager?.eventManager.onSplitContigClicked"
+    >
+      <i class="bi bi-scissors"></i>
+    </button>
   </div>
 </template>
 

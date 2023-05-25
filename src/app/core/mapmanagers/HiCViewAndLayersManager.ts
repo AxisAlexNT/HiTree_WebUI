@@ -29,6 +29,7 @@ import Fill from "ol/style/Fill";
 import { pointerMove, shiftKeyOnly, singleClick } from "ol/events/condition";
 import type { ContigDescriptor } from "../domain/ContigDescriptor";
 import { CurrentSignalRangeResponse } from "../net/api/response";
+import { SplitRulesInteraction } from "../interactions/SplitRulesInteraction";
 
 interface LayerResolutionBorders {
   minResolutionInclusive: number;
@@ -55,6 +56,7 @@ interface SelectionBorders {
 
 enum ActiveTool {
   TRANSLOCATION,
+  SCISSORS,
 }
 
 interface CurrentHiCViewState {
@@ -145,6 +147,10 @@ class HiCViewAndLayersManager {
     readonly translocationArrowHoverInteraction: Select;
     readonly translocationArrowSelectionInteraction: Select;
     readonly contigSelectExtent: Extent;
+  };
+
+  public readonly deferredInitializationInteractions: {
+    scissorsGuideInteraction?: SplitRulesInteraction;
   };
 
   public readonly callbackFns: {
@@ -261,6 +267,10 @@ class HiCViewAndLayersManager {
         this.mapManager
       ),
       scaffoldBordersTrack: new ScaffoldBordersTrack2D(this.mapManager),
+    };
+
+    this.deferredInitializationInteractions = {
+      scissorsGuideInteraction: undefined,
     };
 
     this.selectionInteractions = {
@@ -601,6 +611,21 @@ class HiCViewAndLayersManager {
       .addInteraction(
         this.selectionInteractions.translocationArrowSelectionInteraction
       );
+    this.deferredInitializationInteractions.scissorsGuideInteraction =
+      new SplitRulesInteraction({
+        mapManager: this.mapManager,
+        selectionCallback: this.mapManager.eventManager.onClickInScissorsMode,
+        wrapX: false,
+        zIndex: this.layersZIndices.TRACK_2D_LAYER_Z_INDEX * 2 + 1,
+      });
+    this.mapManager
+      .getMap()
+      .addInteraction(
+        this.deferredInitializationInteractions.scissorsGuideInteraction
+      );
+    this.deferredInitializationInteractions.scissorsGuideInteraction.setActive(
+      this.currentViewState.activeTool === ActiveTool.SCISSORS
+    );
     this.selectionInteractions.contigSelectionInteraction.on(
       "select",
       (evt) => {
