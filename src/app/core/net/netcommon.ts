@@ -10,4 +10,8 @@ interface OpenFileResponse {
   matrixSizesBins: number[];
 }
 
-export { type OpenFileResponse };
+interface LoadBedTrackResponse {
+  tracks: string[];
+}
+
+export { type OpenFileResponse, LoadBedTrackResponse };

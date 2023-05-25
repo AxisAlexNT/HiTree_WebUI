@@ -26,10 +26,16 @@ import {
   OnMouseObject,
 } from "@/app/ui/components/tracks/ruler/Roulette";
 import { ContigDirection } from "@/app/core/domain/common";
-import { BedFormatParser, FILE_CONTENT, EXTENDED_FILE_CONTENT } from "@/app/ui/components/tracks/ruler/bed-format-parser";
+import {
+  BedFormatParser,
+  EMPTY_TRACK,
+  SAMPLE_TRACK,
+  TracksHolder
+} from "@/app/ui/components/tracks/ruler/bed-format-parser";
 
 const props = defineProps<{
   mapManager: ContactMapManager | undefined;
+  trackHolder: TracksHolder | undefined;
 }>();
 
 const roulette: Ref<Roulette | undefined> = ref(undefined);
@@ -172,7 +178,7 @@ function setupRoulette(newDiv: Element): void {
     );
   };
 
-  const trackHolder = new BedFormatParser(EXTENDED_FILE_CONTENT, "chr1").parse();
+  const defaultTrackHolder = new BedFormatParser(EMPTY_TRACK, "unknown").parse();
 
   roulette.value = new Roulette(
     new RouletteConfig(
@@ -192,7 +198,7 @@ function setupRoulette(newDiv: Element): void {
             .resolutionDesciptor.bpResolution
         ) ?? 0,
       acceptContig,
-      trackHolder
+      props.trackHolder ?? defaultTrackHolder
     ),
     WIDTH
   );
@@ -249,6 +255,10 @@ function setupRoulette(newDiv: Element): void {
         }
       );
 
+      if (!props.trackHolder) {
+        return;
+      }
+
       if (onMouseObject) {
         // "chromosome",
         // "start",
@@ -267,13 +277,13 @@ function setupRoulette(newDiv: Element): void {
 
         p5.textAlign("left", "top");
 
-        if (trackHolder.fieldCount >= 4) {
+        if (props.trackHolder.fieldCount >= 4) {
           description.push(`Name: ${onMouseObject.contig?.name}`);
         }
-        if (trackHolder.fieldCount >= 5) {
+        if (props.trackHolder.fieldCount >= 5) {
           description.push(`Score: ${onMouseObject.contig?.score}`);
         }
-        if (trackHolder.fieldCount >= 8) {
+        if (props.trackHolder.fieldCount >= 8) {
           description.push(`Thick position: [${onMouseObject.contig?.thickStart}, ${onMouseObject.contig?.thickEnd}]`);
         }
 

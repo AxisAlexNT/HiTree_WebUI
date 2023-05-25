@@ -19,6 +19,17 @@ class OpenFileRequest implements HiCTAPIRequest {
   ) {}
 }
 
+class LoadBedTrackRequest implements HiCTAPIRequest {
+  requestPath = "/load_bed_track";
+
+  public constructor(
+    public readonly options: {
+      readonly filename: string;
+      readonly chromosome?: string | undefined;
+    }
+  ) {}
+}
+
 class SaveFileRequest implements HiCTAPIRequest {
   requestPath = "/save";
 
@@ -187,6 +198,7 @@ export {
   GetFastaForAssemblyRequest,
   GetAGPForAssemblyRequest,
   OpenFileRequest,
+  LoadBedTrackRequest,
   ListFilesRequest,
   ListBedTracksRequest,
   GroupContigsIntoScaffoldRequest,

@@ -4,6 +4,7 @@
       :networkManager="props.networkManager"
       :mapManager="props.mapManager"
       @selected="onFileSelected"
+      @bedtrack="onBedTrackSelected"
     ></NavigationBar>
     <HeaderRibbon :mapManager="props.mapManager"></HeaderRibbon>
   </div>
@@ -16,6 +17,7 @@ import type { NetworkManager } from "@/app/core/net/NetworkManager.js";
 import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
 const emit = defineEmits<{
   (e: "selected", filename: string): void;
+  (e: "bedtrack", filename: string): void;
 }>();
 
 const props = defineProps<{
@@ -25,6 +27,9 @@ const props = defineProps<{
 
 function onFileSelected(filename: string): void {
   emit("selected", filename);
+}
+function onBedTrackSelected(filename: string): void {
+  emit("bedtrack", filename);
 }
 </script>
 

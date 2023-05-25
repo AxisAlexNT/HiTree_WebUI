@@ -31,10 +31,11 @@ import {
 } from "@/app/ui/components/tracks/ruler/Roulette";
 import P5 from "p5";
 import { ContigDirection } from "@/app/core/domain/common";
-import { BedFormatParser, FILE_CONTENT } from "@/app/ui/components/tracks/ruler/bed-format-parser";
+import { BedFormatParser, EMPTY_TRACK, TracksHolder } from "@/app/ui/components/tracks/ruler/bed-format-parser";
 
 const props = defineProps<{
   mapManager: ContactMapManager | undefined;
+  trackHolder: TracksHolder | undefined;
 }>();
 
 const roulette: Ref<Roulette | undefined> = ref(undefined);
@@ -133,7 +134,7 @@ function setupRoulette(newDiv: Element): void {
     );
   };
 
-  const trackHolder = new BedFormatParser(FILE_CONTENT, "chr1").parse();
+  const defaultTrackHolder = new BedFormatParser(EMPTY_TRACK, "unknown").parse();
 
   roulette.value = new Roulette(
     new RouletteConfig(
@@ -153,7 +154,7 @@ function setupRoulette(newDiv: Element): void {
             .resolutionDesciptor.bpResolution
         ) ?? 0,
       acceptContig,
-      trackHolder
+      props.trackHolder ?? defaultTrackHolder
     ),
     HEIGHT
   );
@@ -197,10 +198,10 @@ function setupRoulette(newDiv: Element): void {
         (ps, color) => {
           const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(color);
           const c = result ? {
-            r: parseInt(result[1], 16),
-            g: parseInt(result[2], 16),
-            b: parseInt(result[3], 16),
-          } : { r: 0, g: 0, b: 0 };
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16),
+              } : { r: 0, g: 0, b: 0 };
           p5.fill(c.r, c.g, c.b);
 
           p5.beginShape();
@@ -210,6 +211,10 @@ function setupRoulette(newDiv: Element): void {
           p5.fill(0);
         }
       );
+
+      if (!props.trackHolder) {
+        return;
+      }
 
       if (onMouseObject) {
         // "chromosome",
@@ -229,13 +234,13 @@ function setupRoulette(newDiv: Element): void {
 
         p5.textAlign("left", "top");
 
-        if (trackHolder.fieldCount >= 4) {
+        if (props.trackHolder.fieldCount >= 4) {
           description.push(`Name: ${onMouseObject.contig?.name}`);
         }
-        if (trackHolder.fieldCount >= 5) {
+        if (props.trackHolder.fieldCount >= 5) {
           description.push(`Score: ${onMouseObject.contig?.score}`);
         }
-        if (trackHolder.fieldCount >= 8) {
+        if (props.trackHolder.fieldCount >= 8) {
           description.push(`Thick position: [${onMouseObject.contig?.thickStart}, ${onMouseObject.contig?.thickEnd}]`);
         }
 

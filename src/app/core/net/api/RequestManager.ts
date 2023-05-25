@@ -3,13 +3,13 @@ import axios, { type AxiosRequestConfig, type AxiosResponse } from "axios";
 import { ImageTile, Tile } from "ol";
 import TileState from "ol/TileState";
 import type { AssemblyInfo } from "../../domain/AssemblyInfo";
-import { AssemblyInfoDTO, OpenFileResponseDTO } from "../dto/dto";
+import { AssemblyInfoDTO, LoadBedTrackResponseDTO, OpenFileResponseDTO } from "../dto/dto";
 import { HiCTAPIRequestDTO } from "../dto/requestDTO";
 import {
   CurrentSignalRangeResponseDTO,
   TilePOSTResponseDTO,
 } from "../dto/responseDTO";
-import type { OpenFileResponse } from "../netcommon";
+import type { LoadBedTrackResponse, OpenFileResponse } from "../netcommon";
 import type { NetworkManager } from "../NetworkManager";
 import {
   GetAGPForAssemblyRequest,
@@ -28,7 +28,7 @@ import {
   ReverseSelectionRangeRequest,
   SaveFileRequest,
   UngroupContigsFromScaffoldRequest,
-  type HiCTAPIRequest,
+  type HiCTAPIRequest, LoadBedTrackRequest
 } from "./request";
 import { CurrentSignalRangeResponse, TilePOSTResponse } from "./response";
 
@@ -55,6 +55,17 @@ class RequestManager {
     )
       .then((response) => response.data)
       .then((json) => new OpenFileResponseDTO(json).toEntity());
+  }
+
+  public async loadBedFile(
+    filename: string,
+    chromosome: string | undefined
+  ): Promise<LoadBedTrackResponse> {
+    return this.sendRequest(
+      new LoadBedTrackRequest({ filename: filename, chromosome: chromosome })
+    )
+      .then((response) => response.data)
+      .then((json) => new LoadBedTrackResponseDTO(json).toEntity());
   }
 
   public async getSignalRanges(

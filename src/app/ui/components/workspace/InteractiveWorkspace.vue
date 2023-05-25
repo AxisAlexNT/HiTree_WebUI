@@ -4,10 +4,16 @@
       <TrackNames></TrackNames>
     </div>
     <div class="interactive-workspace_horizontal">
-      <HorizontalIGVTrack :map-manager="props.mapManager"></HorizontalIGVTrack>
+      <HorizontalIGVTrack
+        :map-manager="props.mapManager"
+        :track-holder="props.trackManager"
+      ></HorizontalIGVTrack>
     </div>
     <div class="interactive-workspace_vertical">
-      <VerticalIGVTrack :map-manager="props.mapManager"></VerticalIGVTrack>
+      <VerticalIGVTrack
+        :map-manager="props.mapManager"
+        :track-holder="props.trackManager"
+      ></VerticalIGVTrack>
     </div>
     <div class="interactive-workspace_content">
       <ContactMap></ContactMap>
@@ -24,9 +30,11 @@ import TrackNames from "./TrackNames.vue";
 import HorizontalIGVTrack from "../tracks/HorizontalIGVTrack.vue";
 import ContactMap from "../../contactmap/ContactMap.vue";
 import VerticalIGVTrack from "../tracks/VerticalIGVTrack.vue";
+import { TracksHolder } from "@/app/ui/components/tracks/ruler/bed-format-parser";
 
 const props = defineProps<{
   mapManager: ContactMapManager | undefined;
+  trackManager: TracksHolder | undefined;
   filename?: string;
 }>();
 </script>
