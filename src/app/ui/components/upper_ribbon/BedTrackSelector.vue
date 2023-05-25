@@ -91,7 +91,7 @@ onMounted(() => {
   });
   modal.show();
   props.networkManager.requestManager
-    .listFiles()
+    .listBedTracks()
     .then((lst) => {
       filenames.value = lst;
       loading.value = false;

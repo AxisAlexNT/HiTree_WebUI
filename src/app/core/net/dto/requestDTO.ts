@@ -17,9 +17,10 @@ import {
   SetContrastRangeRequest,
   GetCurrentSignalRangeRequest,
   SaveFileRequest,
-  GetAGPForAssemblyRequest,
+  GetAGPForAssemblyRequest, ListBedTracksRequest
 } from "../api/request";
 import { OutboundDTO } from "./dto";
+import expandToHashMap from "@popperjs/core/lib/utils/expandToHashMap";
 
 abstract class HiCTAPIRequestDTO<
   T extends HiCTAPIRequest
@@ -67,6 +68,8 @@ abstract class HiCTAPIRequestDTO<
         return new SaveFileRequestDTO(entity as SaveFileRequest);
       case entity instanceof ListFilesRequest:
         return new ListFilesRequestDTO(entity);
+      case entity instanceof ListBedTracksRequest:
+        return new ListBedTracksRequestDTO(entity);
       case entity instanceof ListFASTAFilesRequest:
         return new ListFASTAFilesRequestDTO(entity);
       case entity instanceof LinkFASTARequest:
@@ -199,6 +202,12 @@ class ListFilesRequestDTO extends HiCTAPIRequestDTO<ListFilesRequest> {
   }
 }
 
+class ListBedTracksRequestDTO extends HiCTAPIRequestDTO<ListBedTracksRequest> {
+  toDTO(): Record<string, unknown> {
+    return {};
+  }
+}
+
 class ListFASTAFilesRequestDTO extends HiCTAPIRequestDTO<ListFASTAFilesRequest> {
   toDTO(): Record<string, unknown> {
     return {};
@@ -242,6 +251,7 @@ export {
   HiCTAPIRequestDTO,
   OpenFileRequestDTO,
   ListFilesRequestDTO,
+  ListBedTracksRequestDTO,
   CloseFileRequestDTO,
   GetFastaForAssemblyRequestDTO,
   GetAGPForAssemblyRequestDTO,

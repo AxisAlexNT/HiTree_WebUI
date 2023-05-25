@@ -183,6 +183,7 @@
 <script setup lang="ts">
 import type { NetworkManager } from "@/app/core/net/NetworkManager.js";
 import OpenFileSelector from "@/app/ui/components/upper_ribbon/OpenFileSelector.vue";
+import BedTrackSelector from "@/app/ui/components/upper_ribbon/BedTrackSelector.vue";
 import FASTAFileSelector from "@/app/ui/components/upper_ribbon/FASTAFileSelector.vue";
 import AGPFileSelector from "@/app/ui/components/upper_ribbon/AGPFileSelector.vue";
 import { Ref, ref } from "vue";

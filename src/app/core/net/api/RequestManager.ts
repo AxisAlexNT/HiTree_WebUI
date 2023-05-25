@@ -21,6 +21,7 @@ import {
   ListAGPFilesRequest,
   ListFASTAFilesRequest,
   ListFilesRequest,
+  ListBedTracksRequest,
   LoadAGPRequest,
   MoveSelectionRangeRequest,
   OpenFileRequest,
@@ -68,6 +69,11 @@ class RequestManager {
 
   public async listFiles(): Promise<string[]> {
     const response = await this.sendRequest(new ListFilesRequest());
+    return response.data as string[];
+  }
+
+  public async listBedTracks(): Promise<string[]> {
+    const response = await this.sendRequest(new ListBedTracksRequest());
     return response.data as string[];
   }
 

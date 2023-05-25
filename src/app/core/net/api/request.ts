@@ -34,6 +34,10 @@ class ListFilesRequest implements HiCTAPIRequest {
   requestPath = "/list_files";
 }
 
+class ListBedTracksRequest implements HiCTAPIRequest {
+  requestPath = "/list_bed_tracks";
+}
+
 class ListFASTAFilesRequest implements HiCTAPIRequest {
   requestPath = "/list_fasta_files";
 }
@@ -184,6 +188,7 @@ export {
   GetAGPForAssemblyRequest,
   OpenFileRequest,
   ListFilesRequest,
+  ListBedTracksRequest,
   GroupContigsIntoScaffoldRequest,
   UngroupContigsFromScaffoldRequest,
   ReverseSelectionRangeRequest,
