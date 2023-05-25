@@ -11,8 +11,6 @@ import type { NetworkManager } from "../net/NetworkManager";
 import type { ContigDescriptor } from "../domain/ContigDescriptor";
 import { CommonEventManager } from "./CommonEventManager";
 import { CurrentSignalRangeResponse } from "../net/api/response";
-import { VerticalLineControl } from "../controls/VerticalLineControl";
-import { SplitRulesInteraction } from "../interactions/SplitRulesInteraction";
 
 class ContactMapManager {
   public readonly map: Map;
