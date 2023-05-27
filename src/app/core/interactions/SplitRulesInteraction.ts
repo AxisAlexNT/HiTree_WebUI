@@ -207,7 +207,7 @@ class SplitRulesInteraction extends PointerInteraction {
         return false;
         break;
       default:
-        return true;
+        return false;
     }
   }
 }

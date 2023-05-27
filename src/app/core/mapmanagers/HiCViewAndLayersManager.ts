@@ -624,7 +624,7 @@ class HiCViewAndLayersManager {
         this.deferredInitializationInteractions.scissorsGuideInteraction
       );
     this.deferredInitializationInteractions.scissorsGuideInteraction.setActive(
-      this.currentViewState.activeTool === ActiveTool.SCISSORS
+      false
     );
     this.selectionInteractions.contigSelectionInteraction.on(
       "select",
