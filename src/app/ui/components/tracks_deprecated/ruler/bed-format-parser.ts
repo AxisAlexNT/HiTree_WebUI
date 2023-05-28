@@ -1,5 +1,3 @@
-import { max } from "@popperjs/core/lib/utils/math";
-
 export const EMPTY_TRACK = "unknown 0 0";
 
 export const SAMPLE_TRACK = `
@@ -56,7 +54,7 @@ export class BedFormatParser {
       }
 
       if (track.score) {
-        maxScore = max(maxScore, +track.score);
+        maxScore = Math.max(maxScore, +track.score);
       }
 
       if (!holder) {
