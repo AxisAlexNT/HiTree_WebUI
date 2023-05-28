@@ -36,7 +36,7 @@ import { pointerMove, shiftKeyOnly, singleClick } from "ol/events/condition";
 import type { ContigDescriptor } from "../domain/ContigDescriptor";
 import { CurrentSignalRangeResponse } from "../net/api/response";
 import { Browser } from "igv";
-import { Roulette } from "@/app/ui/components/tracks/ruler/Roulette";
+import { Roulette } from "@/app/ui/components/tracks_deprecated/ruler/Roulette";
 
 interface LayerResolutionBorders {
   minResolutionInclusive: number;

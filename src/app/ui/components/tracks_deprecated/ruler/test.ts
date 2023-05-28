@@ -1,5 +1,5 @@
-import { point } from "@/app/ui/components/tracks/ruler/genome-line";
-import { GenomeLineDrawer } from "@/app/ui/components/tracks/ruler/GenomeLineDrawer";
+import { point } from "@/app/ui/components/tracks_deprecated/ruler/genome-line";
+import { GenomeLineDrawer } from "@/app/ui/components/tracks_deprecated/ruler/GenomeLineDrawer";
 
 function regularLine(): GenomeLineDrawer {
   return new GenomeLineDrawer(new point(0, 0), 100, true, 10, (shift) => shift);

@@ -24,7 +24,7 @@ import { ref, watch, type Ref } from "vue";
 import { NetworkManager } from "@/app/core/net/NetworkManager";
 
 import WorkspaceComponent from "@/app/ui/components/workspace/WorkspaceComponent.vue";
-import { BedFormatParser, TracksHolder } from "@/app/ui/components/tracks/ruler/bed-format-parser";
+import { BedFormatParser, TracksHolder } from "@/app/ui/components/tracks_deprecated/ruler/bed-format-parser";
 
 // Reactively use these refs only inside component
 // Pass them to Map Manager on creation as values, not Refs as objects

@@ -27,10 +27,10 @@ import {
   // type ContactMapManagerOptions,
 } from "@/app/core/mapmanagers/ContactMapManager";
 import TrackNames from "./TrackNames.vue";
-import HorizontalIGVTrack from "../tracks/HorizontalIGVTrack.vue";
+import HorizontalIGVTrack from "../tracks_deprecated/HorizontalIGVTrack.vue";
 import ContactMap from "../../contactmap/ContactMap.vue";
-import VerticalIGVTrack from "../tracks/VerticalIGVTrack.vue";
-import { TracksHolder } from "@/app/ui/components/tracks/ruler/bed-format-parser";
+import VerticalIGVTrack from "../tracks_deprecated/VerticalIGVTrack.vue";
+import { TracksHolder } from "@/app/ui/components/tracks_deprecated/ruler/bed-format-parser";
 
 const props = defineProps<{
   mapManager: ContactMapManager | undefined;

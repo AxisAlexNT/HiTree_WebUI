@@ -15,7 +15,7 @@ import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
 import InteractiveWorkspace from "@/app/ui/components/workspace/InteractiveWorkspace.vue";
 import ToolBar from "@/app/ui/components/toolbar/ToolBar.vue";
 import SideBar from "@/app/ui/components/sidebar/SideBar.vue";
-import { TracksHolder } from "@/app/ui/components/tracks/ruler/bed-format-parser";
+import { TracksHolder } from "@/app/ui/components/tracks_deprecated/ruler/bed-format-parser";
 
 const props = defineProps<{
   mapManager: ContactMapManager | undefined;

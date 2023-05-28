@@ -1,7 +1,7 @@
 import {
   Track,
   TracksHolder,
-} from "@/app/ui/components/tracks/ruler/bed-format-parser";
+} from "@/app/ui/components/tracks_deprecated/ruler/bed-format-parser";
 
 class Pair {
   public readonly x: number;
