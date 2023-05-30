@@ -35,8 +35,7 @@ import Fill from "ol/style/Fill";
 import { pointerMove, shiftKeyOnly, singleClick } from "ol/events/condition";
 import type { ContigDescriptor } from "../domain/ContigDescriptor";
 import { CurrentSignalRangeResponse } from "../net/api/response";
-import { Browser } from "igv";
-import { Roulette } from "@/app/ui/components/tracks_deprecated/ruler/Roulette";
+import { Roulette } from "@/app/core/roulette/Roulette";
 
 interface LayerResolutionBorders {
   minResolutionInclusive: number;
@@ -593,8 +592,6 @@ class HiCViewAndLayersManager {
 
   private binMouse: BinMousePosition | undefined = undefined;
   private mouseWheel: ContigMouseWheelZoom | undefined = undefined;
-  private horizontalIgv: Browser | undefined = undefined;
-  private verticalIgv: Browser | undefined = undefined;
 
   private horizontalRoulette: Roulette | undefined = undefined;
   private verticalRoulette: Roulette | undefined = undefined;
@@ -606,7 +603,7 @@ class HiCViewAndLayersManager {
     this.mouseWheel?.setHorizontalRoulette(roulette);
 
     const pixel = this.mapManager.getMap().getPixelFromCoordinate([0, 0]);
-    console.log(`> ${pixel}`)
+
     roulette.moveTo(pixel[0] ?? 0);
 
     const bpResolution =
@@ -619,27 +616,16 @@ class HiCViewAndLayersManager {
 
     roulette.resize(size);
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     this.mapManager.getMap().on("pointerdrag", (_) => {
       const newPixel = this.mapManager.getMap().getPixelFromCoordinate([0, 0]);
       roulette.moveTo(newPixel[0] ?? 0);
     });
-
-    // this.mapManager.onZoomChanged((e) => {
-    //   alert(e);
-    //   this.horizontalRoulette?.scale(e.zoomFactor, (e.position - this.mapManager.getMap().getView().getCenter()) / 100.0);
-    // });
-
-    // this.mapManager.getMap().on("pointerdrag", (e) => {
-    //   alert("asd");
-    //   // this.getBinPosition(e.coordinate);
-    //   this.horizontalRoulette?.moveTo(e.coordinate[0]);
-    // });
   }
 
   public initVerticalRoulette(roulette: Roulette): void {
     this.verticalRoulette = roulette;
 
-    // this.binMouse?.setVerticalRoulette(roulette);
     this.mouseWheel?.setVerticalRoulette(roulette);
 
     const pixel = this.mapManager.getMap().getPixelFromCoordinate([0, 0]);
@@ -655,121 +641,12 @@ class HiCViewAndLayersManager {
 
     roulette.resize(size);
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     this.mapManager.getMap().on("pointerdrag", (_) => {
       const newPixel = this.mapManager.getMap().getPixelFromCoordinate([0, 0]);
       roulette.moveTo(newPixel[1] ?? 0);
     });
-
-    // this.mapManager.onZoomChanged((e) => {
-    //   alert(e);
-    //   this.horizontalRoulette?.scale(e.zoomFactor, (e.position - this.mapManager.getMap().getView().getCenter()) / 100.0);
-    // });
-
-    // this.mapManager.getMap().on("pointerdrag", (e) => {
-    //   alert("asd");
-    //   // this.getBinPosition(e.coordinate);
-    //   this.horizontalRoulette?.moveTo(e.coordinate[0]);
-    // });
   }
-
-  public initHorizontalIgvInteraction(browser: Browser): void {
-    this.horizontalIgv = browser;
-
-    // this.binMouse?.updateHorizontal(this.horizontalIgv);
-
-    this.mapManager.onZoomChanged((e) => alert(e));
-
-    this.mapManager
-      .getMap()
-      .on("pointerdrag", (e) => this.getBinPosition(e.coordinate));
-  }
-
-  public initVerticalIgvInteraction(browser: Browser): void {
-    this.verticalIgv = browser;
-
-    // this.binMouse?.updateVertical(this.verticalIgv);
-
-    this.mapManager
-      .getMap()
-      .on("pointerdrag", (e) => this.getBinPosition(e.coordinate));
-  }
-
-  private getBinPosition(pixel: any): void {
-    const bp1 = 100_000_000;
-    const bp2 = 50_000_000;
-
-    this.horizontalIgv?.doSearch(`chr7:${bp1}`);
-    this.verticalIgv?.doSearch(`chr7:${bp2}`);
-  }
-
-  // private getBinPosition(pixel: any, horizontal: boolean): number {
-  //   const coordinate = this.mapManager
-  //     .getMap()
-  //     .getCoordinateFromPixelInternal(pixel);
-  //   if (coordinate) {
-  //     const userProjection = getUserProjection();
-  //     if (userProjection) {
-  //       this.transform_ = getTransformFromProjections(
-  //         this.mapProjection_,
-  //         userProjection
-  //       );
-  //     }
-  //     this.transform_(coordinate, coordinate);
-  //
-  //     const layers = [];
-  //     map.forEachLayerAtPixel(pixel, function (layer) {
-  //       layers.push(layer);
-  //     });
-  //     const hovered_layer =
-  //       layers.length === 0
-  //         ? null
-  //         : layers
-  //             .filter((l) => l instanceof TileLayer)
-  //             .sort((l1, l2) => l1.zIndex - l2.zIndex)[0];
-  //     if (hovered_layer) {
-  //       const layer_projection = hovered_layer.getSource().getProjection();
-  //       const pixelResolution = hovered_layer.get("pixelResolution");
-  //       const fixed_coordinates = transform(
-  //         coordinate,
-  //         map.getView().getProjection(),
-  //         layer_projection
-  //       ).map((c) => Math.ceil(c / pixelResolution));
-  //       const bpResolutionString = hovered_layer.get("bpResolution");
-  //       const bpResolution = Number(bpResolutionString);
-  //       const int_coordinates_px =
-  //         this.dimension_holder.clampPxCoordinatesAtResolution(
-  //           [
-  //             Math.floor(fixed_coordinates[0]),
-  //             -Math.floor(fixed_coordinates[1]),
-  //           ],
-  //           bpResolution
-  //         );
-  //
-  //       if (this.dimension_holder) {
-  //         const int_coordinates_bins = this.dimension_holder.pixelsToBins(
-  //           int_coordinates_px,
-  //           bpResolution
-  //         );
-  //         const bp1 = this.dimension_holder.getStartBpOfPx(
-  //           int_coordinates_px[0],
-  //           bpResolution
-  //         );
-  //         const bp2 = this.dimension_holder.getStartBpOfPx(
-  //           int_coordinates_px[1],
-  //           bpResolution
-  //         );
-  //
-  //         if (horizontal) {
-  //           return bp1;
-  //         } else {
-  //           return bp2;
-  //         }
-  //       }
-  //     }
-  //   }
-  //
-  //   return -1;
-  // }
 
   public initializeMapInteractions(): void {
     this.mouseWheel = new ContigMouseWheelZoom({
