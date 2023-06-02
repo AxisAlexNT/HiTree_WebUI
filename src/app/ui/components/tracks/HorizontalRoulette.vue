@@ -1,19 +1,11 @@
 <template>
-  <div
-    id="horizontal-p5-div"
-    style="
-      height: auto;
-      min-height: 100%;
-      /*overflow: auto;*/
-      width: 100px;
-      align-content: center;
-    "
-  >
+  <div class="roulette-holder" id="horizontal-p5-div">
     <RouletteLayer
       v-for="component of this.roulette?.layers() ?? []"
       :key="component.name"
+      :roulette="this.roulette"
+      :layer="component"
       :name="component.name"
-      :roulette="component"
     />
   </div>
 </template>
@@ -23,8 +15,15 @@ import { onMounted, ref, Ref, watch } from "vue";
 import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
 
 import { TrackManager } from "@/app/core/roulette/BedParser";
-import { Roulette, RouletteConfig, RouletteOrientation } from "@/app/core/roulette/Roulette";
-import { defaultTrackHolder, mappings } from "@/app/ui/components/tracks/AbstractRouletteBrowser";
+import {
+  Roulette,
+  RouletteConfig,
+  RouletteOrientation,
+} from "@/app/core/roulette/Roulette";
+import {
+  defaultTrackHolder,
+  mappings,
+} from "@/app/ui/components/tracks/AbstractRouletteBrowser";
 import { Vector } from "@/app/core/roulette/tuple";
 import RouletteLayer from "@/app/ui/components/tracks/RouletteLevel.vue";
 
@@ -38,6 +37,7 @@ const initialized: Ref<boolean> = ref(false);
 
 watch(
   () => props.mapManager,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   (newManager, _) => {
     newManager?.addContrastSliderCallback(() => {
       if (roulette.value && !initialized.value) {
@@ -87,6 +87,7 @@ onMounted(() => {
 
   watch(
     () => props.mapManager?.contigDimensionHolder.contigDescriptors,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     (updated, _) => {
       if (!updated) {
         return;
@@ -115,15 +116,29 @@ function setupHorizontalRoulette(newDiv: Element) {
     )
   );
 
+  roulette.value?.init();
+
   console.log("Horizontal roulette:", roulette);
 }
 </script>
 
 <style scoped>
+.roulette-holder {
+  display: grid;
+}
+
 #horizontal-igv-track-div {
   /* background-color: blue; */
   width: 100%;
   height: 100%;
   border: 1px solid black;
+}
+
+#horizontal-p5-div {
+  height: auto;
+  min-height: 100%;
+  /*overflow: auto;*/
+  width: 100px;
+  align-content: center;
 }
 </style>

@@ -24,7 +24,7 @@ import { ref, watch, type Ref } from "vue";
 import { NetworkManager } from "@/app/core/net/NetworkManager";
 
 import WorkspaceComponent from "@/app/ui/components/workspace/WorkspaceComponent.vue";
-import { BedFormatParser, TracksHolder } from "@/app/ui/components/tracks_deprecated/ruler/bed-format-parser";
+import { BedParser, TrackManager } from "@/app/core/roulette/BedParser";
 
 // Reactively use these refs only inside component
 // Pass them to Map Manager on creation as values, not Refs as objects
@@ -37,8 +37,7 @@ const tileSize: Ref<number> = ref(256);
 const contigBorderColor: Ref<string> = ref("ffccee");
 const mapManager: Ref<ContactMapManager | undefined> = ref(undefined);
 const bedfilename: Ref<string | undefined> = ref("");
-const chromosome: Ref<string | undefined> = ref("chr1");
-const trackManager: Ref<TracksHolder | undefined> = ref(undefined);
+const trackManager: Ref<TrackManager | undefined> = ref(undefined);
 const networkManager: NetworkManager = new NetworkManager(
   "http://localhost:5000/",
   undefined
@@ -77,27 +76,17 @@ function displayNewMap() {
 
 function parseTrack() {
   const fname = bedfilename.value;
-  const chr = chromosome.value;
-  // TODO chromosome selection
-  if (!fname || !chr) {
-    throw new Error(
-      "Cannot open non-specified files: filename=" +
-        fname +
-        " for chromosome=" +
-        chr
-    );
+  if (!fname) {
+    throw new Error("Cannot open non-specified files: filename=" + fname);
   }
   networkManager.requestManager
-    .loadBedFile(fname, chr)
+    .loadBedFile(fname, "chr1")
     .then((LoadBedTrackResponse) => {
       mapManager.value?.dispose();
-      const bedTrackParser = new BedFormatParser(
-        LoadBedTrackResponse.tracks,
-        chr
-      );
-      trackManager.value = bedTrackParser.parse();
+      const bedTrackParser = new BedParser();
+      trackManager.value = bedTrackParser.parse(LoadBedTrackResponse.tracks);
 
-      console.log(`Track holder (${chr}):`, trackManager.value);
+      console.log("Track holder:", trackManager.value);
     })
     .catch(console.log);
 }

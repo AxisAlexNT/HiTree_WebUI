@@ -1,19 +1,18 @@
 import { ContigDirection } from "@/app/core/domain/common";
-import { Roulette, RouletteConfig, RouletteOrientation, Contig, RouletteComponent } from "@/app/core/roulette/Roulette";
+import { Roulette, RouletteConfig, RouletteOrientation, Contig, RouletteLayer } from "@/app/core/roulette/Roulette";
 import P5 from "p5";
 import { BedParser, TrackManager } from "@/app/core/roulette/BedParser";
-import { Ref } from "vue";
 import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
 import { Interval, Vector } from "@/app/core/roulette/tuple";
 
-export const defaultTrackHolder = new BedParser().parse([]);
+export const defaultTrackHolder = new BedParser().parse(["unknown", "0", "0"]);
 
 export function mappings(mapManager: ContactMapManager | undefined): any {
   const acceptContig = (e: number): Contig => {
     const prefixes =
       mapManager?.contigDimensionHolder.prefix_sum_px.get(
-        mapManager?.getLayersManager().currentViewState
-          .resolutionDesciptor.bpResolution
+        mapManager?.getLayersManager().currentViewState.resolutionDesciptor
+          .bpResolution
       ) ?? [];
 
     let l = -1;
@@ -30,8 +29,8 @@ export function mappings(mapManager: ContactMapManager | undefined): any {
     return {
       interval: new Interval(prefixes[l], prefixes[l + 1]),
       reversed: mapManager?.contigDimensionHolder.contigDescriptors.map(
-        (cd) => cd.direction
-      )[l] == ContigDirection.REVERSED,
+          (cd) => cd.direction
+        )[l] == ContigDirection.REVERSED,
     };
   };
 
@@ -51,8 +50,7 @@ export function mappings(mapManager: ContactMapManager | undefined): any {
   return [acceptContig, pixelToValue, valueToPixel];
 }
 
-// eslint-disable-next-line
-export function drawRoulette(layer: RouletteComponent<any>, p5: P5): void {
+export function drawRoulette(layer: RouletteLayer<never>, p5: P5): void {
   const horizontal = layer.isHorizontal();
 
   p5.background("white");

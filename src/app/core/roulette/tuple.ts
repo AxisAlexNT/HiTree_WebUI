@@ -11,6 +11,10 @@ class Pair {
     return this.y - this.x;
   }
 
+  public coords(): number[] {
+    return [this.x, this.y];
+  }
+
   public toString(): string {
     return `(${this.x}, ${this.y})`;
   }
@@ -52,6 +56,10 @@ export class Interval extends Pair {
       this.x - leftSize * (d - 1),
       this.y + rightSize * (d - 1)
     );
+  }
+
+  public resize(size: number): Interval {
+    return new Interval(this.x, this.x + size);
   }
 
   public intersect(other: Interval): Interval {

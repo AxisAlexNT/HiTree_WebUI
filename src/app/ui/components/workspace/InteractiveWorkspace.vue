@@ -4,16 +4,16 @@
       <TrackNames></TrackNames>
     </div>
     <div class="interactive-workspace_horizontal">
-      <HorizontalIGVTrack
+      <HorizontalRoulette
         :map-manager="props.mapManager"
-        :track-holder="props.trackManager"
-      ></HorizontalIGVTrack>
+        :track-manager="props.trackManager"
+      ></HorizontalRoulette>
     </div>
     <div class="interactive-workspace_vertical">
-      <VerticalIGVTrack
-        :map-manager="props.mapManager"
-        :track-holder="props.trackManager"
-      ></VerticalIGVTrack>
+<!--      <VerticalIGVTrack-->
+<!--        :map-manager="props.mapManager"-->
+<!--        :track-holder="props.trackManager"-->
+<!--      ></VerticalIGVTrack>-->
     </div>
     <div class="interactive-workspace_content">
       <ContactMap></ContactMap>
@@ -27,14 +27,14 @@ import {
   // type ContactMapManagerOptions,
 } from "@/app/core/mapmanagers/ContactMapManager";
 import TrackNames from "./TrackNames.vue";
-import HorizontalIGVTrack from "../tracks_deprecated/HorizontalIGVTrack.vue";
 import ContactMap from "../../contactmap/ContactMap.vue";
+import HorizontalRoulette from "@/app/ui/components/tracks/HorizontalRoulette.vue";
 import VerticalIGVTrack from "../tracks_deprecated/VerticalIGVTrack.vue";
-import { TracksHolder } from "@/app/ui/components/tracks_deprecated/ruler/bed-format-parser";
+import { TrackManager } from "@/app/core/roulette/BedParser";
 
 const props = defineProps<{
   mapManager: ContactMapManager | undefined;
-  trackManager: TracksHolder | undefined;
+  trackManager: TrackManager | undefined;
   filename?: string;
 }>();
 </script>
