@@ -1,11 +1,18 @@
 <template>
   <div class="roulette-holder" id="horizontal-p5-div">
-    <RouletteLayer
-      v-for="component of this.roulette?.layers() ?? []"
+    <RouletteComponent
+      v-for="component of this.roulette?.components ?? []"
       :key="component.name"
-      :roulette="this.roulette"
-      :layer="component"
+      :roulette="this.roulette!"
+      :component="component"
       :name="component.name"
+    />
+    <RouletteLayer
+      v-if="roulette !== undefined"
+      :roulette="this.roulette!"
+      name="ticks"
+      component-name="HorizontalRoulette"
+      :layer="this.roulette!.ticks"
     />
   </div>
 </template>
@@ -21,11 +28,12 @@ import {
   RouletteOrientation,
 } from "@/app/core/roulette/Roulette";
 import {
-  defaultTrackHolder,
+  defaultTrackManager,
   mappings,
 } from "@/app/ui/components/tracks/AbstractRouletteBrowser";
 import { Vector } from "@/app/core/roulette/tuple";
-import RouletteLayer from "@/app/ui/components/tracks/RouletteLevel.vue";
+import RouletteComponent from "@/app/ui/components/tracks/RouletteComponent.vue";
+import RouletteLayer from "@/app/ui/components/tracks/RouletteLayer.vue";
 
 const props = defineProps<{
   mapManager: ContactMapManager | undefined;
@@ -111,12 +119,13 @@ function setupHorizontalRoulette(newDiv: Element) {
       RouletteOrientation.HORIZONTAL,
       pixelToValue,
       valueToPixel,
-      acceptContig,
-      props.trackManager ?? defaultTrackHolder
+      acceptContig
     )
   );
 
   roulette.value?.init();
+
+  roulette.value?.addComponent(props.trackManager ?? defaultTrackManager);
 
   console.log("Horizontal roulette:", roulette);
 }

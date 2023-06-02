@@ -1,76 +1,86 @@
 import { Interval, Vector } from "@/app/core/roulette/tuple";
 import { TrackManager } from "@/app/core/roulette/BedParser";
 
-enum TypeRO {
-  PERIOD_STREAK,
-  HALF_STREAK,
-  TICK,
-  // DOT,
-  NO_DIRECTION_BOX,
-  FORWARD_BOX,
-  REVERSED_BOX,
-  DIAGRAM_COLUMN,
-}
+//<editor-fold desc="> Roulette object">
 
-abstract class RouletteObject {
-  readonly pos: number;
-  readonly color: string;
+// eslint-disable-next-line @typescript-eslint/no-namespace
+namespace RO /* roulette object */ {
+  export enum TypeRO {
+    PERIOD_STREAK,
+    HALF_STREAK,
+    TICK,
+    // DOT,
+    NO_DIRECTION_BOX,
+    FORWARD_BOX,
+    REVERSED_BOX,
+    DIAGRAM_COLUMN,
+  }
 
-  protected constructor(pos: number, color: string) {
-    this.pos = pos;
-    this.color = color;
+  export abstract class RouletteObject<T extends TypeRO> {
+    readonly pos: number;
+    readonly color: string;
+    readonly type: T;
+
+    protected constructor(pos: number, type: T, color: string) {
+      this.pos = pos;
+      this.color = color;
+      this.type = type;
+    }
+  }
+
+  export type TickType =
+    | TypeRO.PERIOD_STREAK
+    | TypeRO.HALF_STREAK
+    | TypeRO.TICK;
+  export type BoxType =
+    | TypeRO.FORWARD_BOX
+    | TypeRO.REVERSED_BOX
+    | TypeRO.NO_DIRECTION_BOX;
+  export type DiagramType = TypeRO.DIAGRAM_COLUMN;
+
+  export class TextRO extends RouletteObject<TickType> {
+    readonly text: string;
+
+    constructor(pos: number, text: string, type: TickType, color: string) {
+      super(pos, type, color);
+      this.text = text;
+    }
+  }
+
+  export class LongRO extends RouletteObject<BoxType> {
+    readonly size: number;
+
+    constructor(pos: number, size: number, type: BoxType, color: string) {
+      super(pos, type, color);
+      this.size = size;
+    }
+  }
+
+  export class AreaRO extends RouletteObject<DiagramType> {
+    readonly width: number;
+    readonly height: number;
+
+    constructor(
+      pos: number,
+      width: number,
+      height: number,
+      type: DiagramType,
+      color: string
+    ) {
+      super(pos, type, color);
+      this.width = width;
+      this.height = height;
+    }
   }
 }
 
-type TickType = TypeRO.PERIOD_STREAK | TypeRO.HALF_STREAK | TypeRO.TICK;
-type BoxType = TypeRO.FORWARD_BOX | TypeRO.REVERSED_BOX | TypeRO.NO_DIRECTION_BOX;
-type DiagramType = TypeRO.DIAGRAM_COLUMN;
+class RouletteObject extends RO.RouletteObject<RO.TypeRO> {}
+const TypeRO = RO.TypeRO;
+class TextRO extends RO.TextRO {}
+class LongRO extends RO.LongRO {}
+class AreaRO extends RO.AreaRO {}
 
-class TextRO extends RouletteObject {
-  readonly text: string;
-  readonly type: TickType;
-
-  constructor(pos: number, text: string, type: TickType, color: string) {
-    super(pos, color);
-    this.text = text;
-    this.type = type;
-  }
-}
-
-class LongRO extends RouletteObject {
-  readonly size: number;
-  readonly type: BoxType;
-
-  constructor(
-    pos: number,
-    size: number,
-    type: BoxType,
-    color: string
-  ) {
-    super(pos, color);
-    this.size = size;
-    this.type = type;
-  }
-}
-
-class AreaRO extends RouletteObject {
-  readonly width: number;
-  readonly height: number;
-  readonly type: DiagramType;
-
-  constructor(
-    pos: number,
-    width: number,
-    height: number,
-    type: DiagramType,
-    color: string
-  ) {
-    super(pos, color);
-    this.width = width;
-    this.height = height;
-    this.type = type;
-  }
-}
+//</editor-fold>
 
 export interface Contig {
   readonly interval: Interval;
@@ -84,7 +94,6 @@ export class RouletteConfig {
   public pixelToValue: (point: number) => number;
   public valueToPixel: (value: number) => number;
   public pixelToContig: (point: number) => Contig;
-  public trackManager: TrackManager;
 
   constructor(
     visualPosition: Vector,
@@ -92,8 +101,7 @@ export class RouletteConfig {
     horizontal: RouletteOrientation,
     pixelToValue: (point: number) => number,
     valueToPixel: (value: number) => number,
-    pixelToContig: (point: number) => Contig,
-    trackManager: TrackManager
+    pixelToContig: (point: number) => Contig
   ) {
     this.visualPosition = visualPosition;
     this.visibleLength = visibleLength;
@@ -101,7 +109,6 @@ export class RouletteConfig {
     this.pixelToValue = pixelToValue;
     this.valueToPixel = valueToPixel;
     this.pixelToContig = pixelToContig;
-    this.trackManager = trackManager;
   }
 
   public visible(): Interval {
@@ -156,6 +163,7 @@ class RouletteState {
   }
 }
 
+//<editor-fold desc="> Roulette layer">
 // FAIL WARNINGS
 /* eslint-disable */
 namespace RLN /* roulette layer namespace */ {
@@ -264,7 +272,7 @@ namespace RLN /* roulette layer namespace */ {
       };
     }
 
-    private createTick(pos: number, type: TickType): TextRO {
+    private createTick(pos: number, type: RO.TickType): TextRO {
       // visible start, visible end
       const [vs, ve] = this.config.visible().intersect(this.state.interval).shift(this.state.offset).coords();
       const start = this.config.pixelToValue(vs);
@@ -288,7 +296,7 @@ namespace RLN /* roulette layer namespace */ {
       const step = (end - start) / amount;
 
       for (let i = 0; i <= amount; i++) {
-        const tickType: TickType =
+        const tickType =
           i % 10 == 0 ? TypeRO.PERIOD_STREAK
             : i % 5 == 0 ? TypeRO.HALF_STREAK
               : TypeRO.TICK;
@@ -317,31 +325,83 @@ namespace RLN /* roulette layer namespace */ {
       }
     }
   }
+
+  // @RLN.register
+  // export class TracksRC extends RouletteLayer<LongRO> {
+  //   constructor() {
+  //     super("tracks");
+  //   }
+  // }
+  //
+  // @RLN.register
+  // export class DiagramRC extends RouletteLayer<AreaRO> {
+  //   constructor() {
+  //     super("diagram");
+  //   }
+  // }
 }
 /* eslint-enable */
 
 // eslint-disable-next-line prettier/prettier
-export abstract class RouletteLayer<RO extends RouletteObject> extends RLN.RouletteLayer<RO> {}
+export abstract class RouletteLayer extends RLN.RouletteLayer<RouletteObject> {}
 export class EmptyRC extends RLN.EmptyRC {}
 export class TicksRC extends RLN.TicksRC {}
+//</editor-fold>
+
+export class RouletteComponent {
+  private readonly _layers: Map<string, RouletteLayer>;
+
+  constructor(
+    trackManager: TrackManager,
+    config: RouletteConfig,
+    state: RouletteState
+  ) {
+    this._layers = new Map();
+
+    this.init(trackManager, config, state);
+  }
+
+  private init(
+    trackManager: TrackManager,
+    config: RouletteConfig,
+    state: RouletteState
+  ) {
+    this.layers.set("ticks", new TicksRC(config, state));
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    for (const [_, layer] of this._layers) {
+      (async () => layer.init())();
+    }
+  }
+
+  // public appendLevel(name: string): void {
+  //   const unreachable = (): never => {
+  //     throw "unreachable";
+  //   };
+  //
+  //   const componentConstructor =
+  //     RLN.glossary.get(name) ?? RLN.glossary.get(EmptyRC.name) ?? unreachable();
+  //
+  //   this._components.push(componentConstructor(this.config, this.state));
+  // }
+
+  get layers(): Map<string, RouletteLayer> {
+    return this._layers;
+  }
+
+  invalidate(): void {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    for (const [_, layer] of this._layers) {
+      (async () => layer.invalidate())();
+    }
+  }
+}
 
 export interface collapsedLength {
   readonly real: number;
   readonly v: number;
   readonly power: string;
 }
-
-// export class TracksRC extends RouletteLayer<LongRO> {
-//   constructor() {
-//     super("tracks");
-//   }
-// }
-//
-// export class DiagramRC extends RouletteLayer<AreaRO> {
-//   constructor() {
-//     super("diagram");
-//   }
-// }
 
 export enum RouletteOrientation {
   HORIZONTAL,
@@ -351,29 +411,29 @@ export enum RouletteOrientation {
 export class Roulette {
   private readonly config: RouletteConfig;
   private readonly state: RouletteState;
-  private readonly components: Array<RouletteLayer<RouletteObject>>;
+  private readonly _ticks: TicksRC;
+  private readonly _components: Array<RouletteComponent>;
 
   constructor(config: RouletteConfig) {
     this.config = config;
     this.state = new RouletteState();
-    this.components = [];
+    this._components = [];
 
-    this.appendLevel(TicksRC.name);
+    this._ticks = new TicksRC(this.config, this.state);
   }
 
-  public appendLevel(name: string): void {
-    const unreachable = (): never => {
-      throw "unreachable";
-    };
-
-    const componentConstructor =
-      RLN.glossary.get(name) ?? RLN.glossary.get(EmptyRC.name) ?? unreachable();
-
-    this.components.push(componentConstructor(this.config, this.state));
+  public addComponent(trackManager: TrackManager): void {
+    this._components.push(
+      new RouletteComponent(trackManager, this.config, this.state)
+    );
   }
 
-  public layers(): Array<RouletteLayer<RouletteObject>> {
-    return this.components;
+  get components(): Array<RouletteComponent> {
+    return this._components;
+  }
+
+  get ticks(): RouletteLayer {
+    return this._ticks;
   }
 
   public shift(d: number): void {
@@ -403,13 +463,11 @@ export class Roulette {
   }
 
   public init(): void {
-    for (const component of this.components) {
-      (async () => component.init())();
-    }
+    // do nothing
   }
 
   public invalidate(): void {
-    for (const component of this.components) {
+    for (const component of this._components) {
       (async () => component.invalidate())();
     }
   }

@@ -1,16 +1,20 @@
 <template>
-  <div class="roulette-layer" :id="props.name"></div>
+  <div
+    class="roulette-layer"
+    :id="props.componentName + '_' + props.name"
+  ></div>
 </template>
 
 <script setup lang="ts">
 import { Roulette, RouletteLayer } from "@/app/core/roulette/Roulette";
 import P5 from "p5";
 import { drawRoulette } from "@/app/ui/components/tracks/AbstractRouletteBrowser";
-import { onMounted, onUpdated, ref, watch } from "vue";
+import { onMounted, onUpdated, ref } from "vue";
 
 const props = defineProps<{
-  roulette: Roulette | undefined;
-  layer: RouletteLayer<never> | undefined;
+  roulette: Roulette;
+  layer: RouletteLayer;
+  componentName: string;
   name: string;
 }>();
 
@@ -22,23 +26,13 @@ const sketch = ref((p5: P5) => {
 });
 
 const hook = () => {
-  const newDiv = document.getElementById(props.name);
+  const newDiv = document.getElementById(`${props.componentName}_${props.name}`);
   if (!newDiv) {
-    alert(`FAILED: "newDiv" in RouletteLevel.vue for "${props.name}"`);
+    alert(
+      `FAILED: "newDiv" in RouletteLevel.vue for "${props.componentName}_${props.name}"`
+    );
     return;
   }
-
-  // watch(
-  //   () => props.roulette,
-  //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  //   (updated, _) => {
-  //     if (!updated) {
-  //       return;
-  //     }
-  //
-  //     setupLayer(newDiv);
-  //   }
-  // );
 
   setupLayer(newDiv);
 };
@@ -132,7 +126,7 @@ function setupLayer(newDiv: Element) {
   width: 100%;
   min-height: 3rem;
   border: 1px solid #000000;
-  margin: 0;
+  margin: 0.1rem;
   padding: 0;
 }
 </style>

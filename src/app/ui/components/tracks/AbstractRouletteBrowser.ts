@@ -5,7 +5,7 @@ import { BedParser, TrackManager } from "@/app/core/roulette/BedParser";
 import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
 import { Interval, Vector } from "@/app/core/roulette/tuple";
 
-export const defaultTrackHolder = new BedParser().parse(["unknown", "0", "0"]);
+export const defaultTrackManager = new BedParser().parse(["unknown", "0", "0"]);
 
 export function mappings(mapManager: ContactMapManager | undefined): any {
   const acceptContig = (e: number): Contig => {
