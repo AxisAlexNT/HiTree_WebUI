@@ -1,6 +1,10 @@
 import { Interval, Vector } from "@/app/core/roulette/tuple";
-import { TrackManager } from "@/app/core/roulette/BedParser";
+import {
+  ChromosomeDescription,
+  TrackManager,
+} from "@/app/core/roulette/BedParser";
 import { floor } from "ol/math";
+import { defaultTrackManager } from "@/app/ui/components/tracks/AbstractRouletteBrowser";
 
 //<editor-fold desc="> Roulette object">
 
@@ -14,6 +18,7 @@ namespace RO /* roulette object */ {
     NO_DIRECTION_BOX,
     FORWARD_BOX,
     REVERSED_BOX,
+    CHROMOSOME_TICK,
     DIAGRAM_COLUMN,
   }
 
@@ -41,6 +46,7 @@ namespace RO /* roulette object */ {
     | TypeRO.FORWARD_BOX
     | TypeRO.REVERSED_BOX
     | TypeRO.NO_DIRECTION_BOX;
+  export type ChromosomeType = TypeRO.CHROMOSOME_TICK;
   export type DiagramType = TypeRO.DIAGRAM_COLUMN;
 
   export class TextRO extends RouletteObject<TickType> {
@@ -54,10 +60,32 @@ namespace RO /* roulette object */ {
 
   export class LongRO extends RouletteObject<BoxType> {
     readonly size: number;
+    readonly chr: ChromosomeDescription;
 
-    constructor(pos: number, size: number, type: BoxType, color: string) {
-      super(pos, type, color);
+    constructor(pos: number, size: number, chr: ChromosomeDescription) {
+      super(
+        pos,
+        chr.strand === "+" ? RO.TypeRO.FORWARD_BOX
+          : chr.strand === "-" ? RO.TypeRO.REVERSED_BOX
+          : RO.TypeRO.NO_DIRECTION_BOX,
+        chr.strand === "+" ? "#cc0000"
+          : chr.strand === "-" ? "#0000cc"
+          : "#888888"
+      );
+
+      this.chr = chr;
       this.size = size;
+    }
+  }
+
+  export class ChromosomeRO extends RouletteObject<ChromosomeType> {
+    readonly size: number;
+    readonly name: string;
+
+    constructor(pos: number, size: number, name: string) {
+      super(pos, TypeRO.CHROMOSOME_TICK, "#000000");
+      this.size = size;
+      this.name = name;
     }
   }
 
@@ -83,6 +111,7 @@ class RouletteObject extends RO.RouletteObject<RO.TypeRO> {}
 const TypeRO = RO.TypeRO;
 class TextRO extends RO.TextRO {}
 class LongRO extends RO.LongRO {}
+class ChromosomeRO extends RO.ChromosomeRO {}
 class AreaRO extends RO.AreaRO {}
 
 //</editor-fold>
@@ -182,15 +211,15 @@ class RouletteState {
 // FAIL WARNINGS
 /* eslint-disable */
 namespace RLN /* roulette layer namespace */ {
-  export const glossary: Map<string, (config: RouletteConfig, state: RouletteState) => RouletteLayer<RouletteObject>> = new Map();
+  export const glossary: Map<string, (config: RouletteConfig, state: RouletteState, trackManager: TrackManager) => RouletteLayer<RouletteObject>> = new Map();
 
   export function register<
     T extends RouletteObject,
-    C extends new (config: RouletteConfig, state: RouletteState) => RouletteLayer<T>
+    C extends new (config: RouletteConfig, state: RouletteState, trackManager: TrackManager) => RouletteLayer<T>
   >(cnstr: C): void {
     glossary.set(
       cnstr.name,
-      (config: RouletteConfig, state: RouletteState) => new cnstr(config, state)
+      (config: RouletteConfig, state: RouletteState, trackManager: TrackManager) => new cnstr(config, state, trackManager)
     );
   }
 
@@ -201,17 +230,20 @@ namespace RLN /* roulette layer namespace */ {
     protected readonly objects: Array<T>;
     protected _layerConfig: RouletteLayerConfig;
     protected readonly state: RouletteState;
+    protected readonly trackManager: TrackManager;
     public initialized: boolean = false;
 
     protected constructor(
       name: string,
       config: RouletteConfig,
-      state: RouletteState
+      state: RouletteState,
+      trackManager: TrackManager
     ) {
       this.name = name;
       this.objects = [];
       this._layerConfig = new LayerConfigTempWrapper(new Vector(-1, -1), -1, config);
       this.state = state;
+      this.trackManager = trackManager;
     }
 
     public setLayerConfig(visualPosition: Vector, visualLength: number): void {
@@ -245,7 +277,7 @@ namespace RLN /* roulette layer namespace */ {
       this.initialized = true;
     }
 
-    protected initImpl(): void {}
+    protected abstract initImpl(): void;
 
     public invalidate(): void {
       this.initImpl();
@@ -260,6 +292,7 @@ namespace RLN /* roulette layer namespace */ {
       setColor: (color: string) => void
     ): void {
       for (const obj of this.objects) {
+        setColor(obj.color);
         this.drawItem(obj, drawLine, drawText, drawMark, drawPolygon, setColor);
       }
     }
@@ -277,8 +310,8 @@ namespace RLN /* roulette layer namespace */ {
 
   @RLN.register
   export class EmptyRC extends RouletteLayer<never> {
-    constructor(config: RouletteConfig, state: RouletteState) {
-      super("empty", config, state);
+    constructor(config: RouletteConfig, state: RouletteState, trackManager: TrackManager) {
+      super("empty", config, state, trackManager);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -293,8 +326,8 @@ namespace RLN /* roulette layer namespace */ {
 
   @RLN.register
   export class TicksRC extends RouletteLayer<TextRO> {
-    constructor(config: RouletteConfig, state: RouletteState) {
-      super("ticks", config, state);
+    constructor(config: RouletteConfig, state: RouletteState, trackManager: TrackManager) {
+      super("ticks", config, state, trackManager);
     }
 
     public collapseLength(x: number, visibleLength: number): collapsedLength {
@@ -358,7 +391,6 @@ namespace RLN /* roulette layer namespace */ {
       const pos = this.layerConfig.translate(obj.pos - this.state.offset)
         .add(this.layerConfig.rouletteConfig.orient(10).swap());
 
-      setColor(obj.color);
       const length = new Map([
         [RO.TypeRO.PERIOD_STREAK, 20],
         [RO.TypeRO.HALF_STREAK, 10],
@@ -369,18 +401,131 @@ namespace RLN /* roulette layer namespace */ {
       drawLine(pos, pos.add(shift))
 
       if ([RO.TypeRO.PERIOD_STREAK, RO.TypeRO.HALF_STREAK].includes(obj.type)) {
-        drawText(pos, obj.text);
+        drawText(pos, obj.text + "bp");
       }
     }
   }
 
-  // @RLN.register
-  // export class TracksRC extends RouletteLayer<LongRO> {
-  //   constructor() {
-  //     super("tracks");
-  //   }
-  // }
-  //
+  @RLN.register
+  export class TracksRC extends RouletteLayer<LongRO> {
+    constructor(config: RouletteConfig, state: RouletteState, trackManager: TrackManager) {
+      super("tracks", config, state, trackManager);
+    }
+
+    initImpl() {
+      let shift = 0;
+
+      for (const chromosome of this.trackManager.genome) {
+        for (const description of chromosome.description) {
+          const trackStart = this.layerConfig.rouletteConfig.valueToPixel(description.start + shift);
+          const trackEnd = this.layerConfig.rouletteConfig.valueToPixel(description.end + shift);
+
+          this.objects.push(new LongRO(trackStart, trackEnd - trackStart, description));
+        }
+
+        shift += chromosome.length();
+      }
+    }
+
+    invalidate() {
+      // do nothing
+    }
+
+    protected drawItem(
+      obj: LongRO,
+      drawLine: (start: Vector, end: Vector) => void,
+      drawText: (point: Vector, text: string) => void,
+      drawMark: (point: Vector) => void,
+      // eslint-disable-next-line
+      drawPolygon: (points: Array<Vector>, borders: boolean) => void,
+      setColor: (color: string) => void,
+    ) {
+      const baseShift = this.layerConfig.rouletteConfig.orient(
+        obj.type === TypeRO.FORWARD_BOX ? -10
+          : obj.type === TypeRO.REVERSED_BOX ? -5
+            : 0
+      ).swap()
+
+      const pos = this.layerConfig.translate(obj.pos * this.state.factor - this.state.offset);
+
+      const h = this.layerConfig.rouletteConfig.orient(obj.size * this.state.factor);
+      const w = this.layerConfig.rouletteConfig.orient(5).swap();
+
+      drawPolygon([
+        pos.add(baseShift),
+        pos.add(baseShift).add(h),
+        pos.add(baseShift).add(h).add(w),
+        pos.add(baseShift).add(w)
+      ], true);
+
+      const name = obj.chr.name as (string | undefined);
+
+      if (name && obj.size >= 40) {
+        drawText(pos.add(this.layerConfig.rouletteConfig.orient(10).swap()), name);
+      }
+    }
+  }
+
+  @RLN.register
+  export class ChromosomeRC extends RouletteLayer<ChromosomeRO> {
+    constructor(config: RouletteConfig, state: RouletteState, trackManager: TrackManager) {
+      super("tracks", config, state, trackManager);
+    }
+
+    initImpl() {
+      let shift = 0;
+
+      for (const chromosome of this.trackManager.genome) {
+        const trackStart = this.layerConfig.rouletteConfig.valueToPixel(shift);
+        const trackEnd = this.layerConfig.rouletteConfig.valueToPixel(shift + chromosome.length());
+
+        this.objects.push(new ChromosomeRO(trackStart, trackEnd - trackStart, chromosome.name));
+
+        shift += chromosome.length();
+      }
+    }
+
+    invalidate() {
+      // do nothing
+    }
+
+    draw(
+      drawLine: (start: Vector, end: Vector) => void,
+      drawText: (point: Vector, text: string) => void,
+      drawMark: (point: Vector) => void,
+      // eslint-disable-next-line
+      drawPolygon: (points: Array<Vector>, borders: boolean) => void,
+      setColor: (color: string) => void,
+    ) {
+      const pos = this.layerConfig.translate(0 - this.state.offset);
+      const baseShift = this.layerConfig.rouletteConfig.orient(-10).swap();
+
+      drawLine(pos, pos.add(baseShift));
+
+      super.draw(drawLine, drawText, drawMark, drawPolygon, setColor);
+    }
+
+    protected drawItem(
+      obj: ChromosomeRO,
+      drawLine: (start: Vector, end: Vector) => void,
+      drawText: (point: Vector, text: string) => void,
+      drawMark: (point: Vector) => void,
+      // eslint-disable-next-line
+      drawPolygon: (points: Array<Vector>, borders: boolean) => void,
+      setColor: (color: string) => void,
+    ) {
+      const halfLength = this.layerConfig.rouletteConfig.orient(obj.size * this.state.factor / 2);
+
+      const pos = this.layerConfig.translate(obj.pos * this.state.factor - this.state.offset)
+        .add(halfLength).add(halfLength);
+
+      const baseShift = this.layerConfig.rouletteConfig.orient(-10).swap();
+
+      drawLine(pos, pos.add(baseShift));
+      drawText(pos.add(baseShift.opposite()).add(halfLength.opposite()), obj.name);
+    }
+  }
+
   // @RLN.register
   // export class DiagramRC extends RouletteLayer<AreaRO> {
   //   constructor() {
@@ -394,6 +539,8 @@ namespace RLN /* roulette layer namespace */ {
 export abstract class RouletteLayer extends RLN.RouletteLayer<RouletteObject> {}
 export class EmptyRC extends RLN.EmptyRC {}
 export class TicksRC extends RLN.TicksRC {}
+export class TracksRC extends RLN.TracksRC {}
+export class ChromosomeRC extends RLN.ChromosomeRC {}
 //</editor-fold>
 
 export class RouletteComponent {
@@ -401,27 +548,24 @@ export class RouletteComponent {
   private readonly _layers: Map<string, RouletteLayer>;
 
   constructor(
-    trackManager: TrackManager,
     config: RouletteConfig,
-    state: RouletteState
+    state: RouletteState,
+    trackManager: TrackManager
   ) {
     this.name = trackManager.filename;
     this._layers = new Map();
 
-    this.init(trackManager, config, state);
+    this.init(config, state, trackManager);
   }
 
   init(
-    trackManager: TrackManager,
     config: RouletteConfig,
-    state: RouletteState
+    state: RouletteState,
+    trackManager: TrackManager
   ) {
-    this._layers.set("ticks", new TicksRC(config, state));
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    // for (const [_, layer] of this._layers) {
-    //   layer.init();
-    // }
+    this._layers.set("ticks", new TicksRC(config, state, trackManager));
+    this._layers.set("chromosomes", new ChromosomeRC(config, state, trackManager));
+    this._layers.set("tracks", new TracksRC(config, state, trackManager));
   }
 
   // public appendLevel(name: string): void {
@@ -472,12 +616,12 @@ export class Roulette {
     this.state = new RouletteState();
     this._components = [];
 
-    this._ticks = new TicksRC(this.config, this.state);
+    this._ticks = new TicksRC(this.config, this.state, defaultTrackManager);
   }
 
   public addComponent(trackManager: TrackManager): void {
     this._components.push(
-      new RouletteComponent(trackManager, this.config, this.state)
+      new RouletteComponent(this.config, this.state, trackManager)
     );
   }
 
@@ -504,7 +648,11 @@ export class Roulette {
   }
 
   public zoom(newShift: number, newLength: number): void {
-    const prevSize = this.state.interval.size() ?? newLength;
+    let prevSize = this.state.interval.size();
+
+    if (prevSize === 0) {
+      prevSize = newLength;
+    }
 
     this.moveTo(newShift);
     this.state.resize(newLength);

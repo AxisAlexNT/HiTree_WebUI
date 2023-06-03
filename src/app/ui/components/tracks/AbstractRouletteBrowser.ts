@@ -54,7 +54,7 @@ const drawHorizontalText = (p5: P5) => (p: Vector, t: string) => {
   p5.push();
 
   p5.strokeWeight(0);
-  p5.text(t + "bp", p.x, p.y - 30);
+  p5.text(t, p.x, p.y - 30);
 
   p5.pop();
 };
@@ -64,7 +64,7 @@ const drawVerticalText = (p5: P5) => (p: Vector, t: string) => {
 
   p5.translate(p.x, p.y);
   p5.rotate(p5.radians(270));
-  p5.text(t + "bp", 0, 20);
+  p5.text(t, 0, 20);
 
   p5.pop();
 };

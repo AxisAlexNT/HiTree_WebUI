@@ -1,10 +1,14 @@
 <template>
   <div class="roulette-component" :id="props.name">
     <div class="header">
-      <div style="margin-left: 1rem">
+      <div>
         <div v-if="!visible">{{ props.name }}</div>
         <ul v-if="visible" class="nav">
-          <li v-for="[name, enabled] of layerNames()" :key="name">
+          <li
+            v-for="[name, enabled] of layerNames()"
+            :key="name"
+            style="margin: 0 1rem"
+          >
             <a v-if="enabled" class="layer-enabled" @click="enable(name)">
               {{ name }}
             </a>

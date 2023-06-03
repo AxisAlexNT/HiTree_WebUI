@@ -154,7 +154,5 @@ function initializeLayer(newDiv: HTMLDivElement) {
 .roulette-layer {
   width: 100%;
   height: 50px;
-  //border: 1px solid #000000;
-  margin: 0.1rem 0 0;
 }
 </style>
