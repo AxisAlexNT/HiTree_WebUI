@@ -19,6 +19,8 @@ const props = defineProps<{
   name: string;
 }>();
 
+const height = 50;
+
 const sketch = ref((p5: P5) => {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   p5.setup = () => {};
@@ -71,11 +73,7 @@ function setupLayer(newDiv: HTMLDivElement) {
 }
 
 function updateSketch(newDiv: HTMLDivElement) {
-  const width = newDiv.offsetWidth;
-  const height = newDiv.offsetHeight;
-
-  // console.log("!!!!!!", newDiv, width, height)
-  // console.log(props.componentName, newDiv.clientWidth, newDiv.offsetWidth, newDiv.getBoundingClientRect().width, newDiv.style)
+  const width = newDiv.parentElement?.offsetWidth ?? newDiv.offsetWidth;
 
   sketch.value = (p5: P5) => {
     p5.setup = () => {
@@ -144,11 +142,7 @@ function updateSketch(newDiv: HTMLDivElement) {
 }
 
 function initializeLayer(newDiv: HTMLDivElement) {
-  const width = newDiv.offsetWidth;
-  const height = newDiv.offsetHeight;
-
-  // console.log("!!!!!!", newDiv, width, height)
-  // console.log(props.componentName, newDiv.clientWidth, newDiv.offsetWidth, newDiv.getBoundingClientRect().width, newDiv.style)
+  const width = newDiv.parentElement?.offsetWidth ?? newDiv.offsetWidth;
 
   props.layer.setLayerConfig(new Vector(0, (height * 3) / 4), width);
 
@@ -159,8 +153,8 @@ function initializeLayer(newDiv: HTMLDivElement) {
 <style scoped>
 .roulette-layer {
   width: 100%;
-  min-height: 3rem;
-  border: 1px solid #000000;
-  margin: 0.1rem;
+  height: 50px;
+  //border: 1px solid #000000;
+  margin: 0.1rem 0 0;
 }
 </style>

@@ -1,19 +1,21 @@
 <template>
   <div class="roulette-component" :id="props.name">
     <div class="header">
-      <div v-if="!visible">{{ props.name }}</div>
-      <ul v-if="visible" class="nav">
-        <li v-for="[name, enabled] of layerNames()" :key="name">
-          <a v-if="enabled" class="layer-enabled" @click="enable(name)">
-            {{ name }}
-          </a>
-          <a v-if="!enabled" class="layer-disabled" @click="enable(name)">
-            {{ name }}
-          </a>
-        </li>
-      </ul>
+      <div style="margin-left: 1rem">
+        <div v-if="!visible">{{ props.name }}</div>
+        <ul v-if="visible" class="nav">
+          <li v-for="[name, enabled] of layerNames()" :key="name">
+            <a v-if="enabled" class="layer-enabled" @click="enable(name)">
+              {{ name }}
+            </a>
+            <a v-if="!enabled" class="layer-disabled" @click="enable(name)">
+              {{ name }}
+            </a>
+          </li>
+        </ul>
+      </div>
 
-      <div>
+      <div style="margin-right: 1rem">
         <button
           v-if="visible"
           class="btn btn-outline-primary bi bi-chevron-down symbol-stroke"
@@ -29,6 +31,7 @@
           class="btn btn-outline-primary bi bi-x escape symbol-stroke"
           @click="deleteSelf()"
         ></button>
+        <i style="width: 1rem"></i>
       </div>
     </div>
     <div v-if="visible">
@@ -117,12 +120,13 @@ html {
 
 .roulette-component {
   width: 100%;
-  min-height: 3rem;
-  border: 2px solid var(--border-color);
+  height: auto;
+  border: 0 solid var(--border-color);
+  border-top-width: 2px;
   border-radius: 1rem;
   background-color: var(--bg-color);
-  margin: 0.2rem;
-  padding: 0.5rem;
+  margin: 0.05rem 0;
+  padding: 0.5rem 0 0 0;
 }
 
 .roulette-component > .header {

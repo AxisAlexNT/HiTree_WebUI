@@ -94,7 +94,7 @@ watch(
 watch(
   () => props.trackManagers.length,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  (_, __) => {
+  () => {
     for (const tm of props.trackManagers) {
       roulette.value?.addComponent(tm);
     }
@@ -116,7 +116,7 @@ const hook = () => {
         return;
       }
 
-      setupHorizontalRoulette(newDiv as HTMLDivElement);
+      setupHorizontalRoulette();
     }
   );
 };
@@ -124,10 +124,7 @@ const hook = () => {
 onMounted(hook);
 onUpdated(hook);
 
-function setupHorizontalRoulette(newDiv: HTMLDivElement) {
-  const width = newDiv.offsetWidth;
-  const height = newDiv.offsetHeight;
-
+function setupHorizontalRoulette() {
   const [acceptContig, pixelToValue, valueToPixel] = mappings(props.mapManager);
 
   roulette.value = new Roulette(
@@ -144,17 +141,13 @@ function setupHorizontalRoulette(newDiv: HTMLDivElement) {
 </script>
 
 <style scoped>
-#horizontal-igv-track-div {
-  /* background-color: blue; */
-  width: 100%;
-  height: 100%;
-  border: 1px solid black;
+.roulette-holder {
+  grid-auto-rows: max-content;
 }
 
 #horizontal-p5-div {
   width: 100%;
   height: auto;
-  min-height: 100%;
   display: grid;
   overflow: visible;
   align-content: center;
