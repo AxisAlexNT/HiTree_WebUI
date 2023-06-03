@@ -6,6 +6,7 @@
       :roulette="this.roulette!"
       :component="component"
       :name="component.name"
+      @delete-component="emit('delete-component', component.name)"
     />
     <RouletteLayer
       v-if="roulette !== undefined"
@@ -18,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, Ref, watch } from "vue";
+import { onMounted, onUpdated, ref, Ref, watch } from "vue";
 import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
 
 import { TrackManager } from "@/app/core/roulette/BedParser";
@@ -27,17 +28,17 @@ import {
   RouletteConfig,
   RouletteOrientation,
 } from "@/app/core/roulette/Roulette";
-import {
-  defaultTrackManager,
-  mappings,
-} from "@/app/ui/components/tracks/AbstractRouletteBrowser";
-import { Vector } from "@/app/core/roulette/tuple";
+import { mappings } from "@/app/ui/components/tracks/AbstractRouletteBrowser";
 import RouletteComponent from "@/app/ui/components/tracks/RouletteComponent.vue";
 import RouletteLayer from "@/app/ui/components/tracks/RouletteLayer.vue";
 
+const emit = defineEmits<{
+  (e: "delete-component", componentName: string): void;
+}>();
+
 const props = defineProps<{
   mapManager: ContactMapManager | undefined;
-  trackManager: TrackManager | undefined;
+  trackManagers: Array<TrackManager>;
 }>();
 
 const roulette: Ref<Roulette | undefined> = ref(undefined);
@@ -52,7 +53,11 @@ watch(
         props.mapManager
           ?.getLayersManager()
           .initHorizontalRoulette(roulette.value);
-        roulette.value.init();
+        roulette.value?.init();
+
+        for (const tm of props.trackManagers) {
+          roulette.value?.addComponent(tm);
+        }
 
         initialized.value = true;
       }
@@ -86,7 +91,17 @@ watch(
   }
 );
 
-onMounted(() => {
+watch(
+  () => props.trackManagers.length,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  (_, __) => {
+    for (const tm of props.trackManagers) {
+      roulette.value?.addComponent(tm);
+    }
+  }
+);
+
+const hook = () => {
   const newDiv = document.getElementById("horizontal-p5-div");
   if (!newDiv) {
     alert("FAILED: `newDiv` in HorizontalIGVTrack.vue");
@@ -101,21 +116,22 @@ onMounted(() => {
         return;
       }
 
-      setupHorizontalRoulette(newDiv);
+      setupHorizontalRoulette(newDiv as HTMLDivElement);
     }
   );
-});
+};
 
-function setupHorizontalRoulette(newDiv: Element) {
-  const width = newDiv.getBoundingClientRect().width;
-  const height = newDiv.getBoundingClientRect().height;
+onMounted(hook);
+onUpdated(hook);
+
+function setupHorizontalRoulette(newDiv: HTMLDivElement) {
+  const width = newDiv.offsetWidth;
+  const height = newDiv.offsetHeight;
 
   const [acceptContig, pixelToValue, valueToPixel] = mappings(props.mapManager);
 
   roulette.value = new Roulette(
     new RouletteConfig(
-      new Vector(0, (height * 3) / 4),
-      width,
       RouletteOrientation.HORIZONTAL,
       pixelToValue,
       valueToPixel,
@@ -123,19 +139,11 @@ function setupHorizontalRoulette(newDiv: Element) {
     )
   );
 
-  roulette.value?.init();
-
-  roulette.value?.addComponent(props.trackManager ?? defaultTrackManager);
-
   console.log("Horizontal roulette:", roulette);
 }
 </script>
 
 <style scoped>
-.roulette-holder {
-  display: grid;
-}
-
 #horizontal-igv-track-div {
   /* background-color: blue; */
   width: 100%;
@@ -144,10 +152,11 @@ function setupHorizontalRoulette(newDiv: Element) {
 }
 
 #horizontal-p5-div {
+  width: 100%;
   height: auto;
   min-height: 100%;
-  /*overflow: auto;*/
-  width: 100px;
+  display: grid;
+  overflow: visible;
   align-content: center;
 }
 </style>

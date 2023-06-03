@@ -1,12 +1,16 @@
 <template>
   <div class="interactive-workspace">
     <div class="interactive-workspace_tracknames">
-      <TrackNames></TrackNames>
+      <TrackNames
+        :filename="props.filename"
+        :track-managers="props.trackManagers"
+      ></TrackNames>
     </div>
     <div class="interactive-workspace_horizontal">
       <HorizontalRoulette
         :map-manager="props.mapManager"
-        :track-manager="props.trackManager"
+        :track-managers="props.trackManagers"
+        @delete-component="(componentName: string) => emit('delete-component', componentName)"
       ></HorizontalRoulette>
     </div>
     <div class="interactive-workspace_vertical">
@@ -32,10 +36,14 @@ import HorizontalRoulette from "@/app/ui/components/tracks/HorizontalRoulette.vu
 import VerticalIGVTrack from "../tracks_deprecated/VerticalIGVTrack.vue";
 import { TrackManager } from "@/app/core/roulette/BedParser";
 
+const emit = defineEmits<{
+  (e: "delete-component", componentName: string): void;
+}>();
+
 const props = defineProps<{
   mapManager: ContactMapManager | undefined;
-  trackManager: TrackManager | undefined;
-  filename?: string;
+  trackManagers: Array<TrackManager>;
+  filename: string;
 }>();
 </script>
 

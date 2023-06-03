@@ -3,8 +3,9 @@
     <ToolBar :mapManager="props.mapManager"></ToolBar>
     <InteractiveWorkspace
       :map-manager="props.mapManager"
-      :track-manager="props.trackManager"
-      :filename="filename"
+      :track-managers="props.trackManagers"
+      :filename="props.filename"
+      @delete-component="(componentName: string) => emit('delete-component', componentName)"
     ></InteractiveWorkspace>
     <SideBar :mapManager="props.mapManager"></SideBar>
   </div>
@@ -17,10 +18,14 @@ import ToolBar from "@/app/ui/components/toolbar/ToolBar.vue";
 import SideBar from "@/app/ui/components/sidebar/SideBar.vue";
 import { TrackManager } from "@/app/core/roulette/BedParser";
 
+const emit = defineEmits<{
+  (e: "delete-component", componentName: string): void;
+}>();
+
 const props = defineProps<{
   mapManager: ContactMapManager | undefined;
-  trackManager: TrackManager | undefined;
-  filename?: string;
+  trackManagers: Array<TrackManager>;
+  filename: string;
 }>();
 </script>
 

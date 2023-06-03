@@ -9,7 +9,8 @@
 import { Roulette, RouletteLayer } from "@/app/core/roulette/Roulette";
 import P5 from "p5";
 import { drawRoulette } from "@/app/ui/components/tracks/AbstractRouletteBrowser";
-import { onMounted, onUpdated, ref } from "vue";
+import { onMounted, onUpdated, ref, watch } from "vue";
+import { Vector } from "@/app/core/roulette/tuple";
 
 const props = defineProps<{
   roulette: Roulette;
@@ -26,7 +27,10 @@ const sketch = ref((p5: P5) => {
 });
 
 const hook = () => {
-  const newDiv = document.getElementById(`${props.componentName}_${props.name}`);
+  const newDiv = document.getElementById(
+    `${props.componentName}_${props.name}`
+  );
+
   if (!newDiv) {
     alert(
       `FAILED: "newDiv" in RouletteLevel.vue for "${props.componentName}_${props.name}"`
@@ -34,25 +38,44 @@ const hook = () => {
     return;
   }
 
-  setupLayer(newDiv);
+  setupLayer(newDiv as HTMLDivElement);
 };
 
-onMounted(() => {
-  hook();
-
-  new P5(sketch.value);
-});
+onMounted(hook);
 onUpdated(hook);
 
-function setupLayer(newDiv: Element) {
+function setupLayer(newDiv: HTMLDivElement) {
   const roulette = props.roulette;
   const layer = props.layer;
   if (!roulette || !layer) {
     return;
   }
 
-  const width = newDiv.getBoundingClientRect().width;
-  const height = newDiv.getBoundingClientRect().height;
+  updateSketch(newDiv);
+
+  watch(
+    () => roulette.initialized,
+    (isInit) => {
+      if (!isInit) {
+        return;
+      }
+
+      initializeLayer(newDiv);
+    }
+  );
+
+  // fixme hack: if already initialized
+  if (roulette.initialized) {
+    initializeLayer(newDiv);
+  }
+}
+
+function updateSketch(newDiv: HTMLDivElement) {
+  const width = newDiv.offsetWidth;
+  const height = newDiv.offsetHeight;
+
+  // console.log("!!!!!!", newDiv, width, height)
+  // console.log(props.componentName, newDiv.clientWidth, newDiv.offsetWidth, newDiv.getBoundingClientRect().width, newDiv.style)
 
   sketch.value = (p5: P5) => {
     p5.setup = () => {
@@ -63,7 +86,7 @@ function setupLayer(newDiv: Element) {
     // let onMouseObject: OnMouseObject | undefined = undefined;
 
     p5.draw = () => {
-      drawRoulette(layer, p5);
+      drawRoulette(props.layer, p5);
       p5.push()
       p5.line(0, 0, width, height);
       p5.pop()
@@ -119,6 +142,18 @@ function setupLayer(newDiv: Element) {
     // };
   };
 }
+
+function initializeLayer(newDiv: HTMLDivElement) {
+  const width = newDiv.offsetWidth;
+  const height = newDiv.offsetHeight;
+
+  // console.log("!!!!!!", newDiv, width, height)
+  // console.log(props.componentName, newDiv.clientWidth, newDiv.offsetWidth, newDiv.getBoundingClientRect().width, newDiv.style)
+
+  props.layer.setLayerConfig(new Vector(0, (height * 3) / 4), width);
+
+  new P5(sketch.value);
+}
 </script>
 
 <style scoped>
@@ -127,6 +162,5 @@ function setupLayer(newDiv: Element) {
   min-height: 3rem;
   border: 1px solid #000000;
   margin: 0.1rem;
-  padding: 0;
 }
 </style>

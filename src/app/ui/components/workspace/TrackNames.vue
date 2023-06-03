@@ -2,16 +2,26 @@
   <div class="track-names">
     <figure class="text-center">
       <blockquote class="blockquote-sm">
-        <p>Track names.</p>
+        <p>{{ props.filename }}</p>
       </blockquote>
-      <figcaption class="blockquote-footer">
-        Are <cite title="not important">not important</cite>
-      </figcaption>
+      <ul>
+        <li
+          v-for="track of props.trackManagers.map((t) => t.filename)"
+          :key="track"
+        >{{ track }}</li>
+      </ul>
     </figure>
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { TrackManager } from "@/app/core/roulette/BedParser";
+
+const props = defineProps<{
+  filename: string;
+  trackManagers: Array<TrackManager>;
+}>();
+</script>
 
 <style scoped>
 .track-names {

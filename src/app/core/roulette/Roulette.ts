@@ -1,5 +1,6 @@
 import { Interval, Vector } from "@/app/core/roulette/tuple";
 import { TrackManager } from "@/app/core/roulette/BedParser";
+import { floor } from "ol/math";
 
 //<editor-fold desc="> Roulette object">
 
@@ -25,6 +26,10 @@ namespace RO /* roulette object */ {
       this.pos = pos;
       this.color = color;
       this.type = type;
+    }
+
+    public toString(): string {
+      return `{pos: ${this.pos}, type: ${this.type}}`;
     }
   }
 
@@ -88,41 +93,51 @@ export interface Contig {
 }
 
 export class RouletteConfig {
-  public readonly visualPosition: Vector;
-  public visibleLength: number;
   public readonly horizontal: RouletteOrientation;
   public pixelToValue: (point: number) => number;
   public valueToPixel: (value: number) => number;
   public pixelToContig: (point: number) => Contig;
 
   constructor(
-    visualPosition: Vector,
-    visibleLength: number,
     horizontal: RouletteOrientation,
     pixelToValue: (point: number) => number,
     valueToPixel: (value: number) => number,
     pixelToContig: (point: number) => Contig
   ) {
-    this.visualPosition = visualPosition;
-    this.visibleLength = visibleLength;
     this.horizontal = horizontal;
     this.pixelToValue = pixelToValue;
     this.valueToPixel = valueToPixel;
     this.pixelToContig = pixelToContig;
   }
 
+  public orient(d: number): Vector {
+    return this.horizontal === RouletteOrientation.HORIZONTAL
+      ? new Vector(d, 0)
+      : new Vector(0, d);
+  }
+}
+
+export class RouletteLayerConfig {
+  public readonly visualPosition: Vector;
+  public visibleLength: number;
+  public readonly rouletteConfig: RouletteConfig;
+
+  constructor(
+    visualPosition: Vector,
+    visibleLength: number,
+    config: RouletteConfig
+  ) {
+    this.visualPosition = visualPosition;
+    this.visibleLength = visibleLength;
+    this.rouletteConfig = config;
+  }
+
   public visible(): Interval {
     return new Interval(0, this.visibleLength);
   }
 
-  public orient(d: number): Vector {
-    return this.horizontal == RouletteOrientation.HORIZONTAL
-      ? new Vector(d, 0)
-      : new Vector(0, d);
-  }
-
   public translate(c: number): Vector {
-    return this.orient(c).add(this.visualPosition);
+    return this.rouletteConfig.orient(c).add(this.visualPosition);
   }
 }
 
@@ -179,11 +194,14 @@ namespace RLN /* roulette layer namespace */ {
     );
   }
 
+  class LayerConfigTempWrapper extends RouletteLayerConfig {}
+
   export abstract class RouletteLayer<T extends RouletteObject> {
     public readonly name: string;
     protected readonly objects: Array<T>;
-    protected readonly config: RouletteConfig;
+    protected _layerConfig: RouletteLayerConfig;
     protected readonly state: RouletteState;
+    public initialized: boolean = false;
 
     protected constructor(
       name: string,
@@ -192,41 +210,65 @@ namespace RLN /* roulette layer namespace */ {
     ) {
       this.name = name;
       this.objects = [];
-      this.config = config;
+      this._layerConfig = new LayerConfigTempWrapper(new Vector(-1, -1), -1, config);
       this.state = state;
+    }
 
-      // const prototype = Object.getPrototypeOf(this);
-      //
-      // RLN.glossary.set(
-      //   prototype.name,
-      //   (config: RouletteConfig, state: RouletteState) => {
-      //     return new (prototype.constructor as RLN.RCConstr)(
-      //       this.name,
-      //       config,
-      //       state
-      //     );
-      //   }
-      // );
+    public setLayerConfig(visualPosition: Vector, visualLength: number): void {
+      this._layerConfig = new RouletteLayerConfig(visualPosition, visualLength, this._layerConfig.rouletteConfig);
+
+      this.init();
+    }
+
+    get layerConfig(): RouletteLayerConfig {
+      if (this._layerConfig instanceof LayerConfigTempWrapper) {
+        throw new Error(`Uninitialized "${this.name}"!`);
+      }
+
+      return this._layerConfig;
     }
 
     public baseShift(): Vector {
-      return this.config.translate(0);
+      return this.layerConfig.translate(0);
     }
 
     public isHorizontal(): boolean {
-      return this.config.horizontal == RouletteOrientation.HORIZONTAL;
+      return this.layerConfig.rouletteConfig.horizontal === RouletteOrientation.HORIZONTAL;
     }
 
-    public abstract init(): void;
+    public init(): void {
+      if (this.initialized) {
+        return;
+      }
+
+      this.initImpl();
+      this.initialized = true;
+    }
+
+    protected initImpl(): void {}
 
     public abstract invalidate(): void;
 
-    public abstract draw(
-      drawLine: (start: Vector, end: Vector, color: string) => void,
+    public draw(
+      drawLine: (start: Vector, end: Vector) => void,
       drawText: (point: Vector, text: string) => void,
       drawMark: (point: Vector) => void,
       // eslint-disable-next-line
-      drawPolygon: (points: Array<Vector>, color: string, borders: boolean) => void,
+      drawPolygon: (points: Array<Vector>, borders: boolean) => void,
+      setColor: (color: string) => void
+    ): void {
+      for (const obj of this.objects) {
+        this.drawItem(obj, drawLine, drawText, drawMark, drawPolygon, setColor);
+      }
+    }
+
+    protected abstract drawItem(
+      obj: T,
+      drawLine: (start: Vector, end: Vector) => void,
+      drawText: (point: Vector, text: string) => void,
+      drawMark: (point: Vector) => void,
+      // eslint-disable-next-line
+      drawPolygon: (points: Array<Vector>, borders: boolean) => void,
       setColor: (color: string) => void
     ): void;
   }
@@ -238,23 +280,17 @@ namespace RLN /* roulette layer namespace */ {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    init() {}
-
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     invalidate() {}
 
-    draw(): void {
-      console.log("Empty level found!");
+    drawItem() {
+      throw "Empty level found!";
     }
   }
 
   @RLN.register
   export class TicksRC extends RouletteLayer<TextRO> {
-    private ticks: Array<TextRO>;
-
     constructor(config: RouletteConfig, state: RouletteState) {
       super("ticks", config, state);
-      this.ticks = [];
     }
 
     public collapseLength(x: number, visibleLength: number): collapsedLength {
@@ -274,21 +310,22 @@ namespace RLN /* roulette layer namespace */ {
 
     private createTick(pos: number, type: RO.TickType): TextRO {
       // visible start, visible end
-      const [vs, ve] = this.config.visible().intersect(this.state.interval).shift(this.state.offset).coords();
-      const start = this.config.pixelToValue(vs);
-      const end = this.config.pixelToValue(ve);
+      const [vs, ve] = this.layerConfig.visible().intersect(this.state.interval).shift(this.state.offset).coords();
+      const start = this.layerConfig.rouletteConfig.pixelToValue(vs);
+      const end = this.layerConfig.rouletteConfig.pixelToValue(ve);
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { real, v, power } = this.collapseLength(
-        this.config.pixelToValue(pos),
+        this.layerConfig.rouletteConfig.pixelToValue(pos + this.state.offset),
         end - start
       );
 
       return new TextRO(pos, `${v}${power}`, type, "#000000");
     }
 
-    init() {
-      this.ticks = [];
+    protected initImpl() {
+      // fixme cheat to empty the array
+      this.objects.length = 0;
 
       const [start, end] = this.state.interval.coords();
 
@@ -301,28 +338,34 @@ namespace RLN /* roulette layer namespace */ {
             : i % 5 == 0 ? TypeRO.HALF_STREAK
               : TypeRO.TICK;
 
-        this.ticks.push(this.createTick(start + step * i, tickType));
+        this.objects.push(this.createTick(floor(start + step * i, 0), tickType));
       }
     }
 
-    invalidate() {
+    public invalidate() {
       this.init();
     }
 
-    draw(
-      drawLine: (start: Vector, end: Vector, color: string) => void,
+    protected drawItem(
+      obj: TextRO,
+      drawLine: (start: Vector, end: Vector) => void,
       drawText: (point: Vector, text: string) => void,
       drawMark: (point: Vector) => void,
       // eslint-disable-next-line
-      drawPolygon: (points: Array<Vector>, color: string, borders: boolean) => void,
+      drawPolygon: (points: Array<Vector>, borders: boolean) => void,
       setColor: (color: string) => void,
-    ): void {
-      for (const obj of this.objects) {
-        const pos = this.config.translate(obj.pos);
-        setColor(obj.color);
-        drawMark(pos);
-        drawText(pos, obj.text);
-      }
+    ) {
+      const pos = this.layerConfig.translate(obj.pos).add(this.layerConfig.rouletteConfig.orient(10).swap());
+      setColor(obj.color);
+      const length = new Map([
+        [RO.TypeRO.PERIOD_STREAK, 20],
+        [RO.TypeRO.HALF_STREAK, 10],
+        [RO.TypeRO.TICK, 5],
+      ]).get(obj.type) ?? 0;
+      const shift = this.layerConfig.rouletteConfig.orient(-length).swap();
+
+      drawLine(pos, pos.add(shift))
+      drawText(pos, obj.text);
     }
   }
 
@@ -349,6 +392,7 @@ export class TicksRC extends RLN.TicksRC {}
 //</editor-fold>
 
 export class RouletteComponent {
+  public readonly name: string;
   private readonly _layers: Map<string, RouletteLayer>;
 
   constructor(
@@ -356,22 +400,23 @@ export class RouletteComponent {
     config: RouletteConfig,
     state: RouletteState
   ) {
+    this.name = trackManager.filename;
     this._layers = new Map();
 
     this.init(trackManager, config, state);
   }
 
-  private init(
+  init(
     trackManager: TrackManager,
     config: RouletteConfig,
     state: RouletteState
   ) {
-    this.layers.set("ticks", new TicksRC(config, state));
+    this._layers.set("ticks", new TicksRC(config, state));
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    for (const [_, layer] of this._layers) {
-      (async () => layer.init())();
-    }
+    // for (const [_, layer] of this._layers) {
+    //   layer.init();
+    // }
   }
 
   // public appendLevel(name: string): void {
@@ -389,10 +434,10 @@ export class RouletteComponent {
     return this._layers;
   }
 
-  invalidate(): void {
+  invalidate() {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     for (const [_, layer] of this._layers) {
-      (async () => layer.invalidate())();
+      layer.invalidate();
     }
   }
 }
@@ -413,6 +458,7 @@ export class Roulette {
   private readonly state: RouletteState;
   private readonly _ticks: TicksRC;
   private readonly _components: Array<RouletteComponent>;
+  public initialized = false;
 
   constructor(config: RouletteConfig) {
     this.config = config;
@@ -463,12 +509,18 @@ export class Roulette {
   }
 
   public init(): void {
+    if (this.initialized) {
+      return;
+    }
+
     // do nothing
+
+    this.initialized = true;
   }
 
   public invalidate(): void {
     for (const component of this._components) {
-      (async () => component.invalidate())();
+      component.invalidate();
     }
   }
 }

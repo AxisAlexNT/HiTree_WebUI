@@ -5,7 +5,7 @@ import { BedParser, TrackManager } from "@/app/core/roulette/BedParser";
 import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
 import { Interval, Vector } from "@/app/core/roulette/tuple";
 
-export const defaultTrackManager = new BedParser().parse(["unknown", "0", "0"]);
+export const defaultTrackManager = new BedParser().parse("unknown", ["unknown", "0", "0"]);
 
 export function mappings(mapManager: ContactMapManager | undefined): any {
   const acceptContig = (e: number): Contig => {
@@ -50,7 +50,20 @@ export function mappings(mapManager: ContactMapManager | undefined): any {
   return [acceptContig, pixelToValue, valueToPixel];
 }
 
-export function drawRoulette(layer: RouletteLayer<never>, p5: P5): void {
+const drawHorizontalText = (p5: P5) => (p: Vector, t: string) =>
+  p5.text(t + "bp", p.x, p.y + 20);
+
+const drawVerticalText = (p5: P5) => (p: Vector, t: string) => {
+  p5.push();
+
+  p5.translate(p.x, p.y);
+  p5.rotate(p5.radians(270));
+  p5.text(t + "bp", 0, 20);
+
+  p5.pop();
+};
+
+export function drawRoulette(layer: RouletteLayer, p5: P5): void {
   const horizontal = layer.isHorizontal();
 
   p5.background("white");
@@ -60,15 +73,8 @@ export function drawRoulette(layer: RouletteLayer<never>, p5: P5): void {
   p5.textAlign("center", "center");
 
   layer.draw(
-    (s, e, c) => {
-      p5.push();
-
-      p5.stroke(c);
-      p5.line(s.x, s.y, e.x, e.y);
-
-      p5.pop();
-    },
-    (p, t) => p5.text(t + "bp", p.x, p.y + 20),
+    (s, e) => p5.line(s.x, s.y, e.x, e.y),
+    (horizontal ? drawHorizontalText : drawVerticalText)(p5),
     (p) => {
       p5.push();
 
@@ -77,14 +83,12 @@ export function drawRoulette(layer: RouletteLayer<never>, p5: P5): void {
 
       p5.pop();
     },
-    (ps, color, borders) => {
+    (ps, borders) => {
       p5.push();
 
-      if (!borders) {
-        p5.stroke(color);
+      if (borders) {
+        p5.stroke("#000000");
       }
-
-      p5.fill(color);
 
       p5.beginShape();
       ps.forEach((p) => p5.vertex(p.x, p.y));
@@ -102,7 +106,12 @@ export function drawRoulette(layer: RouletteLayer<never>, p5: P5): void {
 
   p5.strokeWeight(3);
   p5.stroke("#00FF00");
-  p5.line(p5.mouseX, layer.baseShift().y - 5, p5.mouseX, layer.baseShift().y + 5);
+
+  if (horizontal) {
+    p5.line(p5.mouseX, layer.baseShift().y - 5, p5.mouseX, layer.baseShift().y + 5);
+  } else {
+    p5.line(layer.baseShift().x - 5, p5.mouseY, layer.baseShift().x + 5, p5.mouseY);
+  }
 
   p5.pop();
 }

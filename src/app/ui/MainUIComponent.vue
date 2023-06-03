@@ -8,8 +8,9 @@
     ></UpperFrame>
     <WorkspaceComponent
       :mapManager="mapManager"
-      :trackManager="trackManager"
-      :filename="filename"
+      :trackManagers="trackManagers"
+      :filename="filename ?? ''"
+      @delete-component="onRouletteComponentDeleted"
     ></WorkspaceComponent>
   </div>
 </template>
@@ -26,6 +27,7 @@ import { NetworkManager } from "@/app/core/net/NetworkManager";
 import WorkspaceComponent from "@/app/ui/components/workspace/WorkspaceComponent.vue";
 import { BedParser, TrackManager } from "@/app/core/roulette/BedParser";
 
+
 // Reactively use these refs only inside component
 // Pass them to Map Manager on creation as values, not Refs as objects
 // Get notifications about state change using event handlers in MainComponent
@@ -37,7 +39,7 @@ const tileSize: Ref<number> = ref(256);
 const contigBorderColor: Ref<string> = ref("ffccee");
 const mapManager: Ref<ContactMapManager | undefined> = ref(undefined);
 const bedfilename: Ref<string | undefined> = ref("");
-const trackManager: Ref<TrackManager | undefined> = ref(undefined);
+const trackManagers: Ref<Array<TrackManager>> = ref([]);
 const networkManager: NetworkManager = new NetworkManager(
   "http://localhost:5000/",
   undefined
@@ -84,9 +86,11 @@ function parseTrack() {
     .then((LoadBedTrackResponse) => {
       mapManager.value?.dispose();
       const bedTrackParser = new BedParser();
-      trackManager.value = bedTrackParser.parse(LoadBedTrackResponse.tracks);
+      trackManagers.value.push(
+        bedTrackParser.parse(fname, LoadBedTrackResponse.tracks)
+      );
 
-      console.log("Track holder:", trackManager.value);
+      console.log("Track holder:", trackManagers.value);
     })
     .catch(console.log);
 }
@@ -122,12 +126,26 @@ function onFileSelected(newFilename: string) {
 }
 
 function onBedTrackSelected(newFilename: string) {
-  if (newFilename !== bedfilename.value) {
-    bedfilename.value = newFilename;
-    if (bedfilename.value && bedfilename.value !== "") {
-      parseTrack();
-    }
+  if (!filename.value) {
+    alert("You can not load track before the map");
+    return;
   }
+
+  if (trackManagers.value.map((t) => t.filename).includes(newFilename)) {
+    alert(
+      `You have already loaded "${newFilename}". You can not load it twice`
+    );
+    return;
+  }
+
+  bedfilename.value = newFilename;
+  if (bedfilename.value && bedfilename.value !== "") {
+    parseTrack();
+  }
+}
+
+function onRouletteComponentDeleted(componentName: string) {
+  trackManagers.value = trackManagers.value.filter((tm) => tm.filename !== componentName);
 }
 </script>
 

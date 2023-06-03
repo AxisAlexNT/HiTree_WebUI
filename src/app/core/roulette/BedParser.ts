@@ -47,11 +47,13 @@ export class Chromosome {
 }
 
 export class TrackManager {
-  readonly genome: Array<Chromosome> = [];
-  readonly fieldCount: number;
+  public readonly filename: string;
+  public readonly genome: Array<Chromosome> = [];
+  public readonly fieldCount: number;
   private score: Interval;
 
-  constructor(fieldCount: number) {
+  constructor(filename: string, fieldCount: number) {
+    this.filename = filename;
     this.fieldCount = fieldCount;
     this.score = new Interval(0, -1);
   }
@@ -108,7 +110,7 @@ export class TrackManager {
 }
 
 export class BedParser {
-  public parse(content: string[]): TrackManager {
+  public parse(filename: string, content: string[]): TrackManager {
     let manager: TrackManager | undefined = undefined;
     let fieldCount = -1;
 
@@ -138,7 +140,7 @@ export class BedParser {
       }
 
       if (!manager) {
-        manager = new TrackManager(fieldCount);
+        manager = new TrackManager(filename, fieldCount);
       }
 
       manager.appendDescription(name, description);
