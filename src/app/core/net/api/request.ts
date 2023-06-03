@@ -25,7 +25,6 @@ class LoadBedTrackRequest implements HiCTAPIRequest {
   public constructor(
     public readonly options: {
       readonly filename: string;
-      readonly chromosome?: string | undefined;
     }
   ) {}
 }

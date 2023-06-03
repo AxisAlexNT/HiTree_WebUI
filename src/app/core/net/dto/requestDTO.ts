@@ -136,7 +136,6 @@ class LoadBedTrackRequestDTO extends HiCTAPIRequestDTO<LoadBedTrackRequest> {
   toDTO(): Record<string, unknown> {
     return {
       filename: this.entity.options.filename,
-      chromosome: this.entity.options.chromosome,
     };
   }
 }

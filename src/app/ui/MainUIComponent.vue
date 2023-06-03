@@ -82,7 +82,7 @@ function parseTrack() {
     throw new Error("Cannot open non-specified files: filename=" + fname);
   }
   networkManager.requestManager
-    .loadBedFile(fname, "chr1")
+    .loadBedFile(fname)
     .then((LoadBedTrackResponse) => {
       mapManager.value?.dispose();
       const bedTrackParser = new BedParser();

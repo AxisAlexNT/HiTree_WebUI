@@ -57,13 +57,8 @@ class RequestManager {
       .then((json) => new OpenFileResponseDTO(json).toEntity());
   }
 
-  public async loadBedFile(
-    filename: string,
-    chromosome: string | undefined
-  ): Promise<LoadBedTrackResponse> {
-    return this.sendRequest(
-      new LoadBedTrackRequest({ filename: filename, chromosome: chromosome })
-    )
+  public async loadBedFile(filename: string): Promise<LoadBedTrackResponse> {
+    return this.sendRequest(new LoadBedTrackRequest({ filename: filename }))
       .then((response) => response.data)
       .then((json) => new LoadBedTrackResponseDTO(json).toEntity());
   }
