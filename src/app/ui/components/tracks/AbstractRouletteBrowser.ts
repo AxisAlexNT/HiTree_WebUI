@@ -50,8 +50,14 @@ export function mappings(mapManager: ContactMapManager | undefined): any {
   return [acceptContig, pixelToValue, valueToPixel];
 }
 
-const drawHorizontalText = (p5: P5) => (p: Vector, t: string) =>
-  p5.text(t + "bp", p.x, p.y + 20);
+const drawHorizontalText = (p5: P5) => (p: Vector, t: string) => {
+  p5.push();
+
+  p5.strokeWeight(0);
+  p5.text(t + "bp", p.x, p.y - 30);
+
+  p5.pop();
+};
 
 const drawVerticalText = (p5: P5) => (p: Vector, t: string) => {
   p5.push();

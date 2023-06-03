@@ -247,7 +247,9 @@ namespace RLN /* roulette layer namespace */ {
 
     protected initImpl(): void {}
 
-    public abstract invalidate(): void;
+    public invalidate(): void {
+      this.initImpl();
+    }
 
     public draw(
       drawLine: (start: Vector, end: Vector) => void,
@@ -280,7 +282,9 @@ namespace RLN /* roulette layer namespace */ {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    invalidate() {}
+    initImpl() {
+      throw new Error("Empty layer found!")
+    }
 
     drawItem() {
       throw "Empty level found!";
@@ -320,7 +324,7 @@ namespace RLN /* roulette layer namespace */ {
         end - start
       );
 
-      return new TextRO(pos, `${v}${power}`, type, "#000000");
+      return new TextRO(pos + this.state.offset , `${v}${power}`, type, "#000000");
     }
 
     protected initImpl() {
@@ -342,10 +346,6 @@ namespace RLN /* roulette layer namespace */ {
       }
     }
 
-    public invalidate() {
-      this.init();
-    }
-
     protected drawItem(
       obj: TextRO,
       drawLine: (start: Vector, end: Vector) => void,
@@ -355,7 +355,9 @@ namespace RLN /* roulette layer namespace */ {
       drawPolygon: (points: Array<Vector>, borders: boolean) => void,
       setColor: (color: string) => void,
     ) {
-      const pos = this.layerConfig.translate(obj.pos).add(this.layerConfig.rouletteConfig.orient(10).swap());
+      const pos = this.layerConfig.translate(obj.pos - this.state.offset)
+        .add(this.layerConfig.rouletteConfig.orient(10).swap());
+
       setColor(obj.color);
       const length = new Map([
         [RO.TypeRO.PERIOD_STREAK, 20],
@@ -365,7 +367,10 @@ namespace RLN /* roulette layer namespace */ {
       const shift = this.layerConfig.rouletteConfig.orient(-length).swap();
 
       drawLine(pos, pos.add(shift))
-      drawText(pos, obj.text);
+
+      if ([RO.TypeRO.PERIOD_STREAK, RO.TypeRO.HALF_STREAK].includes(obj.type)) {
+        drawText(pos, obj.text);
+      }
     }
   }
 
@@ -437,7 +442,9 @@ export class RouletteComponent {
   invalidate() {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     for (const [_, layer] of this._layers) {
-      layer.invalidate();
+      if (layer.initialized) {
+        layer.invalidate();
+      }
     }
   }
 }
@@ -500,12 +507,13 @@ export class Roulette {
     const prevSize = this.state.interval.size() ?? newLength;
 
     this.moveTo(newShift);
+    this.state.resize(newLength);
 
     this.scale(newLength / prevSize);
   }
 
   public resize(size: number): void {
-    this.state.resize(size);
+    this.zoom(this.state.interval.x, size);
   }
 
   public init(): void {
@@ -519,6 +527,10 @@ export class Roulette {
   }
 
   public invalidate(): void {
+    if (this.ticks.initialized) {
+      this.ticks.invalidate();
+    }
+
     for (const component of this._components) {
       component.invalidate();
     }
