@@ -140,18 +140,18 @@ html {
   align-items: center;
 }
 
-.roulette-component > .header > .nav {
+.roulette-component > .header .nav {
   display: flex;
   flex-direction: row;
   justify-content: left;
 }
 
-.roulette-component > .header > .nav .layer-enabled {
+.roulette-component > .header .nav .layer-enabled {
   color: var(--enabled-color);
   text-decoration: underline;
 }
 
-.roulette-component > .header > .nav .layer-disabled {
+.roulette-component > .header .nav .layer-disabled {
   color: var(--disabled-color);
   text-decoration: none;
 }
