@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="roulette-layer"
-    :id="props.componentName + '_' + props.name"
-  ></div>
+  <div class="roulette-layer" :id="props.componentName + '_' + props.name"></div>
 </template>
 
 <script setup lang="ts">
@@ -19,13 +16,23 @@ const props = defineProps<{
   name: string;
 }>();
 
+let previous = 0;
+
+
+const update_condition: () => boolean = () => {
+  const res = props.roulette.state.offset === previous;
+  previous = props.roulette.state.offset;
+
+  return res;
+};
+
 const height = 50;
 
 const sketch = ref((p5: P5) => {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  p5.setup = () => {};
+  p5.setup = () => { };
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  p5.draw = () => {};
+  p5.draw = () => { };
 });
 
 const hook = () => {
@@ -72,6 +79,9 @@ function setupLayer(newDiv: HTMLDivElement) {
   }
 }
 
+
+
+
 function updateSketch(newDiv: HTMLDivElement) {
   const width = newDiv.parentElement?.offsetWidth ?? newDiv.offsetWidth;
 
@@ -83,12 +93,14 @@ function updateSketch(newDiv: HTMLDivElement) {
 
     // let onMouseObject: OnMouseObject | undefined = undefined;
 
-    p5.draw = () => {
-      drawRoulette(props.layer, p5);
-      p5.push()
-      p5.line(0, 0, width, height);
-      p5.pop()
 
+    p5.draw = () => {
+      if (!update_condition()) {
+        return;
+      }
+
+      drawRoulette(props.layer, p5);
+      // console.log('hello')
       // if (!props.trackHolder) {
       //   return;
       // }

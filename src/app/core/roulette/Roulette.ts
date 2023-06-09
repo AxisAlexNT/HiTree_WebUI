@@ -606,7 +606,7 @@ export enum RouletteOrientation {
 
 export class Roulette {
   private readonly config: RouletteConfig;
-  private readonly state: RouletteState;
+  public readonly state: RouletteState;
   private readonly _ticks: TicksRC;
   private readonly _components: Array<RouletteComponent>;
   public initialized = false;

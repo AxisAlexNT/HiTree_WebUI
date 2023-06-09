@@ -1,18 +1,9 @@
 <template>
   <div class="main-ui-component">
-    <UpperFrame
-      :networkManager="networkManager"
-      :mapManager="mapManager"
-      @selected="onFileSelected"
-      @bedtrack="onBedTrackSelected"
-      @closed="onClosed"
-    ></UpperFrame>
-    <WorkspaceComponent
-      :mapManager="mapManager"
-      :trackManagers="trackManagers"
-      :filename="filename ?? ''"
-      @delete-component="onRouletteComponentDeleted"
-    ></WorkspaceComponent>
+    <UpperFrame :networkManager="networkManager" :mapManager="mapManager" @selected="onFileSelected"
+      @bedtrack="onBedTrackSelected" @closed="onClosed"></UpperFrame>
+    <WorkspaceComponent :mapManager="mapManager" :trackManagers="trackManagers" :filename="filename ?? ''"
+      @delete-component="onRouletteComponentDeleted"></WorkspaceComponent>
   </div>
 </template>
 
@@ -63,9 +54,9 @@ function displayNewMap() {
   if (!fname) {
     throw new Error(
       "Cannot open non-specified files: filename=" +
-        fname +
-        " fastaFilename=" +
-        ffname
+      fname +
+      " fastaFilename=" +
+      ffname
     );
   }
   networkManager.requestManager
@@ -96,7 +87,7 @@ function parseTrack() {
   networkManager.requestManager
     .loadBedFile(fname)
     .then((LoadBedTrackResponse) => {
-      mapManager.value?.dispose();
+      // mapManager.value?.dispose();
       const bedTrackParser = new BedParser();
       trackManagers.value.push(
         bedTrackParser.parse(fname, LoadBedTrackResponse.tracks)
