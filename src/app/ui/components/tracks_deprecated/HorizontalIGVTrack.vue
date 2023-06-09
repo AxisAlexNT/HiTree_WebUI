@@ -1,0 +1,370 @@
+<template>
+  <div
+    id="horizontal-p5-div"
+    style="height: auto; min-height: 100%; /*overflow: auto*/ width: 100px; align-content: center"
+  ></div>
+</template>
+
+<script setup lang="ts">
+import { onMounted, ref, Ref, watch } from "vue";
+import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
+
+import P5 from "p5";
+
+// import {
+//   Roulette,
+//   RouletteValidator,
+//   Interval,
+//   Point,
+// } from "@/app/ui/components/tracks/ruler/roulette";
+import {
+  Interval,
+  Vector,
+  Roulette,
+  RouletteConfig,
+  Contig,
+  OnMouseObject,
+} from "@/app/ui/components/tracks_deprecated/ruler/Roulette";
+import { ContigDirection } from "@/app/core/domain/common";
+import {
+  BedFormatParser,
+  EMPTY_TRACK,
+  SAMPLE_TRACK,
+  TracksHolder
+} from "@/app/ui/components/tracks_deprecated/ruler/bed-format-parser";
+
+const props = defineProps<{
+  mapManager: ContactMapManager | undefined;
+  trackHolder: TracksHolder | undefined;
+}>();
+
+const roulette: Ref<Roulette | undefined> = ref(undefined);
+const initialized: Ref<boolean> = ref(false);
+
+watch(
+  () => props.mapManager,
+  (newManager, _) => {
+    newManager?.addContrastSliderCallback(() => {
+      if (roulette.value && !initialized.value) {
+        props.mapManager
+          ?.getLayersManager()
+          .initHorizontalRoulette(roulette.value);
+        roulette.value.init();
+        roulette.value.invalidate(1);
+
+        initialized.value = true;
+      }
+    });
+
+    newManager?.viewAndLayersManager.resolutionChangedAsyncSubscribers.push(
+      async () => {
+        const newZoom = newManager?.getView().getZoom() ?? 0;
+        const newResolution = newManager
+          ?.getView()
+          .getResolutionForZoom(newZoom);
+
+        const pixel = newManager?.getMap().getPixelFromCoordinate([0, 0]);
+
+        const bpResolution =
+          newManager?.viewAndLayersManager?.currentViewState.resolutionDesciptor
+            .bpResolution;
+        const prefixSumPx =
+          newManager?.contigDimensionHolder.prefix_sum_px.get(bpResolution) ??
+          [];
+        const baseLength = prefixSumPx[prefixSumPx.length - 1];
+
+        const pixelResolution =
+          newManager?.getLayersManager().currentViewState.resolutionDesciptor
+            .pixelResolution; //newResolution;
+        // const basePixelResolution =
+        //   newManager?.viewAndLayersManager.pixelResolutionSet[
+        //     newManager?.viewAndLayersManager.currentViewState
+        //       .resolutionDesciptor.imageSizeIndex
+        //   ];
+
+        const size = Math.round(baseLength * (pixelResolution / newResolution));
+
+        // console.log(pixel);
+        // console.log(
+        //   "size",
+        //   size,
+        //   "pixelResolution",
+        //   pixelResolution,
+        //   "basePixelResolution",
+        //   basePixelResolution,
+        //   "bpResolution",
+        //   bpResolution,
+        //   "newResolution",
+        //   newResolution
+        // );
+
+        roulette.value?.zoom(pixel[0], size);
+      }
+    );
+  }
+);
+
+onMounted(() => {
+  const newDiv = document.getElementById("horizontal-p5-div");
+  if (!newDiv) {
+    alert("FAILED: `newDiv` in HorizontalIGVTrack.vue");
+    return;
+  }
+
+  watch(
+    () => props.mapManager?.contigDimensionHolder.contigDescriptors,
+    (updated, _) => {
+      if (!updated) {
+        return;
+      }
+
+      setupRoulette(newDiv);
+    }
+  );
+});
+
+function setupRoulette(newDiv: Element): void {
+  const WIDTH = newDiv.getBoundingClientRect().width;
+  const HEIGHT = newDiv.getBoundingClientRect().height;
+
+  // const roulette = new Roulette(
+  //   new Interval(0, WIDTH),
+  //   0,
+  //   400,
+  //   // 100_000_000,
+  //   200,
+  //   new RouletteValidator(
+  //     new Point(offset, HEIGHT / 2),
+  //     true,
+  //     (e) =>
+  //       e// props.mapManager?.contigDimensionHolder.getStartBpOfPx(
+  //       //   e,
+  //       //   props.mapManager?.viewAndLayersManager.currentViewState
+  //       //     .resolutionDesciptor.bpResolution
+  //       // ) ?? WIDTH
+  //   )
+  // );
+
+  // const drawLine = (s, e) => console.log(`${s} - ${e}`);
+  // const drawText = (p, t) => console.log(`${p}: ${t}`);
+  // const drawMark = (p) => console.log(`> ${p}`);
+
+  const acceptContig = (e: number) => {
+    const prefixes =
+      props.mapManager?.contigDimensionHolder.prefix_sum_px.get(
+        props.mapManager?.getLayersManager().currentViewState
+          .resolutionDesciptor.bpResolution
+      ) ?? [];
+
+    let l = -1;
+    let r = prefixes.length;
+    while (r - l > 1) {
+      const m = Math.round(l + (r - l) / 2);
+      if (prefixes[m] < e) {
+        l = m;
+      } else {
+        r = m;
+      }
+    }
+
+    // console.log(`prefixes: [${prefixes.join(", ")}]\ndirections: ${
+    //   props.mapManager?.contigDimensionHolder.contigDescriptors.map((cd) => cd.direction).join(", ")}\ne: ${e}\nl, r, size: (${l}, ${r}, ${prefixes.length})\n`);
+
+    return new Contig(
+      new Interval(prefixes[l], prefixes[l + 1]),
+      props.mapManager?.contigDimensionHolder.contigDescriptors.map(
+        (cd) => cd.direction
+      )[l] == ContigDirection.REVERSED
+    );
+  };
+
+  const defaultTrackHolder = new BedFormatParser(EMPTY_TRACK, "unknown").parse();
+
+  roulette.value = new Roulette(
+    new RouletteConfig(
+      new Vector(0, (HEIGHT * 3) / 4),
+      WIDTH,
+      true,
+      (e) =>
+        props.mapManager?.contigDimensionHolder.getStartBpOfPx(
+          e,
+          props.mapManager?.viewAndLayersManager.currentViewState
+            .resolutionDesciptor.bpResolution
+        ) ?? WIDTH,
+      (e) =>
+        props.mapManager?.contigDimensionHolder.getPxContainingBp(
+          e,
+          props.mapManager?.viewAndLayersManager.currentViewState
+            .resolutionDesciptor.bpResolution
+        ) ?? 0,
+      acceptContig,
+      props.trackHolder ?? defaultTrackHolder
+    ),
+    WIDTH
+  );
+
+  // const contigsPrefixSumArray =
+  //   props.mapManager?.contigDimensionHolder.prefix_sum_px.get(props.mapManager?.getLayersManager().currentViewState.resolutionDesciptor.bpResolution);
+  // const contigsPrefixSumArray =
+  //   props.mapManager?.contigDimensionHolder.contigDescriptors.map((cd) => cd.direction).
+
+  const sketch = (p5: P5) => {
+    p5.setup = () => {
+      const canvas = p5.createCanvas(WIDTH, HEIGHT);
+      canvas.parent(newDiv);
+
+      p5.background("white");
+    };
+
+    let onMouseObject: OnMouseObject | undefined = undefined;
+
+    p5.draw = () => {
+      p5.background("white");
+
+      p5.textAlign(p5.CENTER);
+      // p5.line(0, 0, WIDTH, HEIGHT);
+
+      if (!roulette.value) {
+        return;
+      }
+
+      const rlt = roulette.value as Roulette;
+
+      p5.textAlign("center", "center");
+
+      rlt.draw(
+        (s, e, color) => {
+          p5.push();
+
+          const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})?$/i.exec(color);
+          const c = result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16),
+                a: parseInt(result[4] ?? "FF", 16),
+              } : { r: 0, g: 0, b: 0, a: 0};
+
+          p5.stroke(c.r, c.g, c.b, c.a);
+          p5.line(s.x, s.y, e.x, e.y);
+
+          p5.pop();
+        },
+        (p, t) => p5.text(t + "bp", p.x, p.y + 20),
+        (p) => {
+          p5.push();
+
+          p5.strokeWeight(3);
+          p5.line(p.x, p.y - 5, p.x, p.y + 5);
+
+          p5.pop();
+        },
+        (ps, color, borders) => {
+          p5.push();
+
+          const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})?$/i.exec(color);
+          const c = result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16),
+                a: parseInt(result[4] ?? "FF", 16),
+              } : { r: 0, g: 0, b: 0, a: 0};
+          if (!borders) {
+            p5.stroke(c.r, c.g, c.b, c.a);
+          }
+
+          p5.fill(c.r, c.g, c.b, c.a);
+
+          p5.beginShape();
+          ps.forEach((p) => p5.vertex(p.x, p.y));
+          p5.endShape(p5.CLOSE);
+
+          p5.pop();
+        }
+      );
+
+      p5.push();
+
+      p5.strokeWeight(3);
+      p5.stroke("#00FF00");
+      p5.line(p5.mouseX, rlt.baseShift().y - 5, p5.mouseX, rlt.baseShift().y + 5);
+
+      p5.pop();
+
+      if (!props.trackHolder) {
+        return;
+      }
+
+      if (onMouseObject) {
+        // "chromosome",
+        // "start",
+        // "end",
+        // "name",
+        // "score",
+        // "strand",
+        // "thickStart",
+        // "thickEnd",
+        // "itemRgb",
+        // "blockCount",
+        // "blockSize",
+        // "blockStarts",
+
+        const description = [];
+
+        p5.textAlign("left", "top");
+
+        const contig = onMouseObject.contig;
+        const contPos = rlt.collapseLength(contig.start, contig.start);
+        const contSize = rlt.collapseLength(contig.end - contig.start, contig.end);
+
+        if (props.trackHolder.fieldCount >= 4) {
+          description.push(`Name: ${contig?.name}`);
+        }
+        description.push(`Position: ${contPos.v}${contPos.power}`);
+        description.push(`Size: ${contSize.v}${contSize.power}`);
+        if (props.trackHolder.fieldCount >= 5) {
+          description.push(`Score: ${contig?.score}`);
+        }
+        if (props.trackHolder.fieldCount >= 8) {
+          description.push(`Thick position: [${contig.thickStart}, ${contig.thickEnd}]`);
+        }
+
+        p5.text(description.join("\n"), onMouseObject.position.x, 0);
+      }
+    };
+
+    p5.mouseMoved = () => {
+      if (!roulette.value) {
+        return;
+      }
+
+      onMouseObject = roulette.value?.findOnMouse(p5.mouseX);
+    };
+  };
+
+  new P5(sketch);
+
+  console.log("Horizontal roulette:", roulette);
+
+  // watch(() => props.mapManager?.getLayersManager().layersHolder.hicDataLayers.length,
+  //   (newLength, _) => {
+  //     if (newLength) {
+  //       props.mapManager?.getLayersManager().initHorizontalRoulette(roulette);
+  //       roulette.invalidate();
+  //
+  //       console.log("#", props.mapManager?.getMap().getPixelFromCoordinate([0, 0]));
+  //     }
+  //   });
+
+  // props.mapManager?.getLayersManager().initHorizontalRoulette(roulette);
+  // roulette.invalidate();
+}
+</script>
+
+<style scoped>
+#horizontal-igv-track-div {
+  /* background-color: blue; */
+  width: 100%;
+  height: 100%;
+  border: 1px solid black;
+}
+</style>

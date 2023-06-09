@@ -17,13 +17,14 @@ import {
   SetContrastRangeRequest,
   GetCurrentSignalRangeRequest,
   SaveFileRequest,
-  GetAGPForAssemblyRequest,
+  GetAGPForAssemblyRequest, ListBedTracksRequest, LoadBedTrackRequest,
   ListCoolerFilesRequest,
   ConvertCoolerRequest,
   GetConverterStatusRequest,
   SplitContigRequest,
 } from "../api/request";
 import { OutboundDTO } from "./dto";
+import expandToHashMap from "@popperjs/core/lib/utils/expandToHashMap";
 
 abstract class HiCTAPIRequestDTO<
   T extends HiCTAPIRequest
@@ -71,10 +72,14 @@ abstract class HiCTAPIRequestDTO<
         );
       case entity instanceof OpenFileRequest:
         return new OpenFileRequestDTO(entity as OpenFileRequest);
+      case entity instanceof LoadBedTrackRequest:
+        return new LoadBedTrackRequestDTO(entity as LoadBedTrackRequest);
       case entity instanceof SaveFileRequest:
         return new SaveFileRequestDTO(entity as SaveFileRequest);
       case entity instanceof ListFilesRequest:
         return new ListFilesRequestDTO(entity);
+      case entity instanceof ListBedTracksRequest:
+        return new ListBedTracksRequestDTO(entity);
       case entity instanceof ListCoolerFilesRequest:
         return new ListCoolerFilesRequestDTO(entity);
       case entity instanceof GetConverterStatusRequest:
@@ -153,6 +158,14 @@ class OpenFileRequestDTO extends HiCTAPIRequestDTO<OpenFileRequest> {
     return {
       filename: this.entity.options.filename,
       fastaFilename: this.entity.options.fastaFilename,
+    };
+  }
+}
+
+class LoadBedTrackRequestDTO extends HiCTAPIRequestDTO<LoadBedTrackRequest> {
+  toDTO(): Record<string, unknown> {
+    return {
+      filename: this.entity.options.filename,
     };
   }
 }
@@ -242,6 +255,12 @@ class GetConverterStatusRequestDTO extends HiCTAPIRequestDTO<GetConverterStatusR
   }
 }
 
+class ListBedTracksRequestDTO extends HiCTAPIRequestDTO<ListBedTracksRequest> {
+  toDTO(): Record<string, unknown> {
+    return {};
+  }
+}
+
 class ListFASTAFilesRequestDTO extends HiCTAPIRequestDTO<ListFASTAFilesRequest> {
   toDTO(): Record<string, unknown> {
     return {};
@@ -285,6 +304,7 @@ export {
   HiCTAPIRequestDTO,
   OpenFileRequestDTO,
   ListFilesRequestDTO,
+  ListBedTracksRequestDTO,
   CloseFileRequestDTO,
   ConvertCoolerRequest,
   GetFastaForAssemblyRequestDTO,

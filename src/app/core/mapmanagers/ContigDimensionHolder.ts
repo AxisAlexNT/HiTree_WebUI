@@ -266,7 +266,10 @@ export default class ContigDimensionHolder {
 
   protected getStartBpOfPx_internal(px: number, resolution: number): number {
     const contig_ord = this.getContigOrderByPx(px, resolution);
-    const contig_direction = this.contigDescriptors[contig_ord].direction;
+    // console.log(
+    //   `${px}, ${contig_ord}, ${this.contigDescriptors.length}, ${this.contigDescriptors[contig_ord]}`
+    // );
+    const contig_direction = this.contigDescriptors[CommonUtils.clamp(contig_ord, 0,  this.contigDescriptors.length-1)].direction;
     const contig_start_bp = this.prefix_sum_bp[contig_ord];
     const contig_start_px = (this.prefix_sum_px.get(resolution) ?? [])[
       contig_ord

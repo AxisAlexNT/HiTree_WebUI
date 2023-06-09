@@ -20,10 +20,6 @@
                   >Open...</a
                 >
               </li>
-              <!-- <li>
-                <a class="dropdown-item" href="#" @click="onSaveClicked">Save</a>
-                <div v-if="saving" class="spinner-border ms-auto" role="status"></div>
-              </li> -->
               <li>
                 <a class="dropdown-item" href="#" @click="onCloseClicked"
                   >Close</a
@@ -37,6 +33,39 @@
                   >Convert Coolers</a
                 >
               </li>
+            </ul>
+          </li>
+          <!-- Load track -->
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link active dropdown-toggle"
+              data-bs-toggle="dropdown"
+              href="#"
+            >Load track</a
+            >
+            <ul class="dropdown-menu">
+              <li>
+                <a class="dropdown-item" href="#" @click="onLoadTrack"
+                  >Open...</a
+                >
+              </li>
+            </ul>
+          </li>
+          <!-- Load track -->
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link active dropdown-toggle"
+              data-bs-toggle="dropdown"
+              href="#"
+            >Load track</a
+            >
+            <ul class="dropdown-menu">
+              <li>
+                <a class="dropdown-item" href="#" @click="onLoadTrack"
+                  >Open...</a
+                >
+              </li>
+              <li><a class="dropdown-item" href="#">Close</a></li>
             </ul>
           </li>
           <!-- View -->
@@ -152,6 +181,12 @@
     @selected="onFileSelected"
     @dismissed="onFileDismissed"
   ></OpenFileSelector>
+  <BedTrackSelector
+    :network-manager="props.networkManager"
+    v-if="loadingTrack"
+    @selected="onBedTrackSelected"
+    @dismissed="onBedTrackDismissed"
+  ></BedTrackSelector>
   <FASTAFileSelector
     :network-manager="props.networkManager"
     v-if="openingFASTAFile"
@@ -170,6 +205,7 @@
 <script setup lang="ts">
 import type { NetworkManager } from "@/app/core/net/NetworkManager.js";
 import OpenFileSelector from "@/app/ui/components/upper_ribbon/OpenFileSelector.vue";
+import BedTrackSelector from "@/app/ui/components/upper_ribbon/BedTrackSelector.vue";
 import FASTAFileSelector from "@/app/ui/components/upper_ribbon/FASTAFileSelector.vue";
 import AGPFileSelector from "@/app/ui/components/upper_ribbon/AGPFileSelector.vue";
 import { Ref, ref } from "vue";
@@ -180,6 +216,7 @@ import {
 import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
 import CoolerConverter from "./CoolerConverter.vue";
 const openingFile = ref(false);
+const loadingTrack = ref(false);
 const openingFASTAFile = ref(false);
 const openingAGPFile = ref(false);
 const convertingCoolers = ref(false);
@@ -188,6 +225,7 @@ const gatewayAddress: Ref<string> = ref("http://localhost:5000/");
 
 const emit = defineEmits<{
   (e: "selected", filename: string): void;
+  (e: "bedtrack", filename: string): void;
   (e: "closed"): void;
 }>();
 
@@ -200,12 +238,20 @@ function onOpenFile() {
   openingFile.value = true;
 }
 
+function onLoadTrack() {
+  loadingTrack.value = true;
+}
+
 function onLoadAGP() {
   openingAGPFile.value = true;
 }
 
 function onFileDismissed() {
   openingFile.value = false;
+}
+
+function onBedTrackDismissed() {
+  loadingTrack.value = false;
 }
 
 function onSaveClicked(): void {
@@ -247,6 +293,13 @@ function onFileSelected(filename: string) {
   openingFile.value = false;
   if (filename && filename !== "") {
     emit("selected", filename);
+  }
+}
+
+function onBedTrackSelected(filename: string) {
+  loadingTrack.value = false;
+  if (filename && filename !== "") {
+    emit("bedtrack", filename);
   }
 }
 

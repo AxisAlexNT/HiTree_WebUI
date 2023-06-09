@@ -9,7 +9,7 @@ import type {
   ScaffoldBordersBP,
   ScaffoldDescriptor,
 } from "../../domain/ScaffoldDescriptor";
-import type { OpenFileResponse } from "../netcommon";
+import type { LoadBedTrackResponse, OpenFileResponse } from "../netcommon";
 
 abstract class InboundDTO<T> {
   constructor(public readonly json: Record<string, unknown>) {}
@@ -128,6 +128,14 @@ class OpenFileResponseDTO extends InboundDTO<OpenFileResponse> {
   }
 }
 
+class LoadBedTrackResponseDTO extends InboundDTO<LoadBedTrackResponse> {
+  public toEntity(): LoadBedTrackResponse {
+    return {
+      tracks: this.json.toString().split(/(\s*\r\n|\r|\n)\s*,\s*/).filter((line) => ! /^\s*$/.test(line)),
+    };
+  }
+}
+
 export {
   InboundDTO,
   OutboundDTO,
@@ -136,6 +144,7 @@ export {
   ScaffoldDescriptorDTO,
   AssemblyInfoDTO,
   OpenFileResponseDTO,
+  LoadBedTrackResponseDTO,
   queryLengthUnitFromDTO,
   contigDirectionFromDTO,
   contigHideTypeFromDTO,
