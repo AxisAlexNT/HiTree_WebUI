@@ -1,12 +1,12 @@
 <template>
   <aside class="sidebar">
     <div id="upper-block">
-      <MinimapBox v-if="props.mapManager" :map-manager="props.mapManager">
+      <div id="minimap">
         <MiniMap
           :map-manager="props.mapManager"
           v-if="props.mapManager"
         ></MiniMap>
-      </MinimapBox>
+      </div>
 
       <div id="color-range" v-if="props.mapManager">
         <ContrastSelector :map-manager="props.mapManager" />
@@ -26,7 +26,6 @@
         :getDefaultColor="layer.getStyle"
         @onColorChanged="onColorChanged"
         @onBorderStyleChanged="onBorderStyleChanged"
-        @onWeightChanged="onWeightChanged"
       ></LayerComponent>
     </div>
   </aside>
@@ -40,7 +39,6 @@ import { ref, type Ref } from "vue";
 import ContrastSelector from "./ContrastSelector.vue";
 import { CommonEventManager } from "@/app/core/mapmanagers/CommonEventManager";
 import { BorderStyle } from "@/app/core/tracks/Track2DSymmetric";
-import MinimapBox from "@/app/ui/components/sidebar/MinimapBox.vue";
 import Style from "ol/style/Style";
 import MiniMap from "@/app/ui/components/sidebar/MiniMap.vue";
 
@@ -94,20 +92,6 @@ function onBorderStyleChanged(layerName: string, style: BorderStyle) {
       break;
     case "Scaffolds":
       getEventManager()?.onScanffoldBorderStyleChanged(style);
-      break;
-    default:
-      alert(`Method for ${layerName} is undefined`);
-      console.error(`Method for ${layerName} is undefined`);
-  }
-}
-
-function onWeightChanged(layerName: string, weight: number) {
-  switch (layerName) {
-    case "Contigs":
-      getEventManager()?.onContigWeightChanged(weight);
-      break;
-    case "Scaffolds":
-      getEventManager()?.onScanffoldWeightChanged(weight);
       break;
     default:
       alert(`Method for ${layerName} is undefined`);

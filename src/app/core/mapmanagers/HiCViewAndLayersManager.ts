@@ -1,11 +1,6 @@
 import bounds from "binary-search-bounds";
 import { Extent, Select } from "ol/interaction";
-import {
-  getTransformFromProjections,
-  getUserProjection,
-  Projection,
-  transform,
-} from "ol/proj";
+import { Projection } from "ol/proj";
 import type Layer from "ol/layer/Layer";
 import type { ContactMapManager } from "./ContactMapManager";
 import { Collection, Feature, View } from "ol";
@@ -16,7 +11,7 @@ import VectorSource from "ol/source/Vector";
 import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
 import TileGrid from "ol/tilegrid/TileGrid";
-import { type Ref, ref, watch } from "vue";
+import { type Ref, ref } from "vue";
 import ContigMouseWheelZoom from "@/ContigMouseWheelZoom";
 import BinMousePosition from "@/BinMousePosition";
 import { VersionedXYZContactMapSource } from "../VersionedXYZSource";
@@ -34,7 +29,6 @@ import Fill from "ol/style/Fill";
 import { pointerMove, shiftKeyOnly, singleClick } from "ol/events/condition";
 import type { ContigDescriptor } from "../domain/ContigDescriptor";
 import { CurrentSignalRangeResponse } from "../net/api/response";
-import { Roulette } from "@/app/core/roulette/Roulette";
 import { SplitRulesInteraction } from "../interactions/SplitRulesInteraction";
 
 interface LayerResolutionBorders {
@@ -405,24 +399,6 @@ class HiCViewAndLayersManager {
     this.reloadTracks();
   }
 
-  public onContigWeightChanged(weight: number): void {
-    this.track2DHolder.contigBordersTrack.setLineWeight(weight);
-
-    this.track2DHolder.contigBordersTrack.style =
-      this.track2DHolder.contigBordersTrack.generateStyleFunction()();
-
-    this.reloadTracks();
-  }
-
-  public onScanffoldWeightChanged(weight: number): void {
-    this.track2DHolder.scaffoldBordersTrack.setLineWeight(weight);
-
-    this.track2DHolder.scaffoldBordersTrack.style =
-      this.track2DHolder.scaffoldBordersTrack.generateStyleFunction()();
-
-    this.reloadTracks();
-  }
-
   public getView(): View {
     return this.view;
   }
@@ -597,84 +573,25 @@ class HiCViewAndLayersManager {
   }
 
   public initializeMapControls(): void {
-    this.binMouse = new BinMousePosition({
-      projection: this.pixelProjection,
-      dimension_holder: this.mapManager.getContigDimensionHolder(),
+    this.mapManager.getMap().addControl(
+      new BinMousePosition({
+        projection: this.pixelProjection,
+        dimension_holder: this.mapManager.getContigDimensionHolder(),
         layers: this.layersHolder.hicDataLayers,
-    });
-
-    this.mapManager.getMap().addControl(this.binMouse);
-  }
-
-  private binMouse: BinMousePosition | undefined = undefined;
-  private mouseWheel: ContigMouseWheelZoom | undefined = undefined;
-
-  private horizontalRoulette: Roulette | undefined = undefined;
-  private verticalRoulette: Roulette | undefined = undefined;
-
-  public initHorizontalRoulette(roulette: Roulette): void {
-    this.horizontalRoulette = roulette;
-
-    this.binMouse?.setHorizontalRoulette(roulette);
-    this.mouseWheel?.setHorizontalRoulette(roulette);
-
-    const pixel = this.mapManager.getMap().getPixelFromCoordinate([0, 0]);
-
-    roulette.moveTo(pixel[0] ?? 0);
-
-    const bpResolution =
-      this.mapManager.viewAndLayersManager.currentViewState.resolutionDesciptor
-        .bpResolution;
-    const prefixSumPx =
-      this.mapManager.contigDimensionHolder.prefix_sum_px.get(bpResolution) ??
-      [];
-    const size = prefixSumPx[prefixSumPx.length - 1];
-
-    roulette.resize(size);
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    this.mapManager.getMap().on("pointerdrag", (_) => {
-      const newPixel = this.mapManager.getMap().getPixelFromCoordinate([0, 0]);
-      roulette.moveTo(newPixel[0] ?? 0);
-    });
-  }
-
-  public initVerticalRoulette(roulette: Roulette): void {
-    this.verticalRoulette = roulette;
-
-    this.mouseWheel?.setVerticalRoulette(roulette);
-
-    const pixel = this.mapManager.getMap().getPixelFromCoordinate([0, 0]);
-    roulette.moveTo(pixel[1] ?? 0);
-
-    const bpResolution =
-      this.mapManager.viewAndLayersManager.currentViewState.resolutionDesciptor
-        .bpResolution;
-    const prefixSumPx =
-      this.mapManager.contigDimensionHolder.prefix_sum_px.get(bpResolution) ??
-      [];
-    const size = prefixSumPx[prefixSumPx.length - 1];
-
-    roulette.resize(size);
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    this.mapManager.getMap().on("pointerdrag", (_) => {
-      const newPixel = this.mapManager.getMap().getPixelFromCoordinate([0, 0]);
-      roulette.moveTo(newPixel[1] ?? 0);
-    });
+      })
+    );
   }
 
   public initializeMapInteractions(): void {
-    this.mouseWheel = new ContigMouseWheelZoom({
-      mapManager: this.mapManager,
-      dimension_holder: this.mapManager.getContigDimensionHolder(),
-      resolutions: this.resolutions,
-      pixelResolutionSet: this.pixelResolutionSet,
-      global_projection: this.pixelProjection,
+    this.mapManager.getMap().addInteraction(
+      new ContigMouseWheelZoom({
+        dimension_holder: this.mapManager.getContigDimensionHolder(),
+        resolutions: this.resolutions,
+        pixelResolutionSet: this.pixelResolutionSet,
+        global_projection: this.pixelProjection,
         layers: this.layersHolder.hicDataLayers,
-    });
-
-    this.mapManager.getMap().addInteraction(this.mouseWheel);
+      })
+    );
     this.mapManager
       .getMap()
       .addInteraction(this.selectionInteractions.contigSelectionInteraction);

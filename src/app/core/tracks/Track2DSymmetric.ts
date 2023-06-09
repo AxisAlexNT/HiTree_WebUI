@@ -140,17 +140,6 @@ abstract class WithRing extends Track2DSymmetric {
   public setStyleType(style: BorderStyle): void {
     this.borderStyle = style;
   }
-
-  public setLineWeight(weight: number): void {
-    alert(weight);
-    if (weight < 0) {
-      alert("Invalid negative weight");
-      console.error("Invalid negative weight");
-      return;
-    }
-    this.options.width = weight;
-  }
-
   protected drawPolygon(
     topLeft: Array<number>,
     topRight: Array<number>,

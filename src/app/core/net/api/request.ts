@@ -19,16 +19,6 @@ class OpenFileRequest implements HiCTAPIRequest {
   ) {}
 }
 
-class LoadBedTrackRequest implements HiCTAPIRequest {
-  requestPath = "/load_bed_track";
-
-  public constructor(
-    public readonly options: {
-      readonly filename: string;
-    }
-  ) {}
-}
-
 class SaveFileRequest implements HiCTAPIRequest {
   requestPath = "/save";
 
@@ -42,10 +32,6 @@ class SaveFileRequest implements HiCTAPIRequest {
 
 class ListFilesRequest implements HiCTAPIRequest {
   requestPath = "/list_files";
-}
-
-class ListBedTracksRequest implements HiCTAPIRequest {
-  requestPath = "/list_bed_tracks";
 }
 
 class ListFASTAFilesRequest implements HiCTAPIRequest {
@@ -228,9 +214,7 @@ export {
   GetFastaForAssemblyRequest,
   GetAGPForAssemblyRequest,
   OpenFileRequest,
-  LoadBedTrackRequest,
   ListFilesRequest,
-  ListBedTracksRequest,
   GroupContigsIntoScaffoldRequest,
   UngroupContigsFromScaffoldRequest,
   ReverseSelectionRangeRequest,

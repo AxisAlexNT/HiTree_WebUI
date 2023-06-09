@@ -60,14 +60,6 @@ class CommonEventManager {
     this.mapManager.viewAndLayersManager.onScanffoldBorderStyleChanged(style);
   }
 
-  public onContigWeightChanged(weight: number): void {
-    this.mapManager.viewAndLayersManager.onContigWeightChanged(weight);
-  }
-
-  public onScanffoldWeightChanged(weight: number): void {
-    this.mapManager.viewAndLayersManager.onScanffoldWeightChanged(weight);
-  }
-
   public onNormalizationChanged(
     normalizationSettings: NormalizationSettings
   ): void {

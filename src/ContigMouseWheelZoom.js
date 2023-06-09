@@ -15,7 +15,6 @@ import TileLayer from "ol/layer/Tile";
 export default class ContigMouseWheelZoom extends MouseWheelZoom {
   constructor(opt_options) {
     super(opt_options);
-    this.mapManager = opt_options.mapManager;
     this.dimension_holder = opt_options.dimension_holder;
     this.resolutions = [...opt_options.resolutions];
     this.pixelResolutionSet = [...opt_options.pixelResolutionSet];
@@ -35,34 +34,7 @@ export default class ContigMouseWheelZoom extends MouseWheelZoom {
       return true;
     }
     const type = mapBrowserEvent.type;
-
-    switch (type) {
-      case "wheel":
-        break;
-      case "pointerdown":
-        this.lastMousePixelDrag = mapBrowserEvent.pixel;
-        return true;
-      case "pointerdrag": {
-        const now = mapBrowserEvent.pixel;
-
-        if (this.horizontalRoulette && this.verticalRoulette && this.lastMousePixelDrag) {
-          const dxdy = [
-            now[0] - this.lastMousePixelDrag[0],
-            now[1] - this.lastMousePixelDrag[1],
-          ];
-
-          // this.horizontalRoulette.shift(dxdy[0]);
-          // this.verticalRoulette.shift(dxdy[1]);
-        }
-
-        this.lastMousePixelDrag = now;
-        return true;
-      }
-      default:
-        return true;
-    }
-
-    if (type !== "wheel") {
+    if (type !== EventType.WHEEL) {
       return true;
     }
 
@@ -116,9 +88,6 @@ export default class ContigMouseWheelZoom extends MouseWheelZoom {
           Math.round(map.getSize()[1] / 2),
         ];
       }
-
-      // console.log(this.lastMouseBps)
-      // console.log(this.dimension_holder.getPxContainingBp(this.lastMouseBps[0]));
     }
 
     // Delta normalisation inspired by
@@ -188,14 +157,6 @@ export default class ContigMouseWheelZoom extends MouseWheelZoom {
     return false;
   }
 
-  setHorizontalRoulette(roulette) {
-    this.horizontalRoulette = roulette;
-  }
-
-  setVerticalRoulette(roulette) {
-    this.verticalRoulette = roulette;
-  }
-
   handleWheelZoom_(map) {
     const view = map.getView();
     if (view.getAnimating()) {
@@ -225,7 +186,6 @@ export default class ContigMouseWheelZoom extends MouseWheelZoom {
       !isNaN(this.lastMouseCoord[0])
     ) {
       const newZoom = view.getConstrainedZoom(currentZoom + delta);
-
       const newResolution = view.getResolutionForZoom(newZoom);
       const oldResolutionPreOrder = binarySearch(
         this.pixelResolutionSet,
@@ -247,8 +207,6 @@ export default class ContigMouseWheelZoom extends MouseWheelZoom {
           ? newResolutionPreOrder
           : -(newResolutionPreOrder + 1);
       const new_level_index = newResolutionOrder;
-
-
 
       if (new_level_index !== old_level_index) {
         const newResolutionSeq = this.resolutions[newResolutionOrder];
@@ -284,30 +242,7 @@ export default class ContigMouseWheelZoom extends MouseWheelZoom {
           anchor: this.lastMouseCoord,
         });
       }
-
-      // if (this.horizontalRoulette) {
-      //   // this.horizontalRoulette.zoom((1 + newZoom) / (1 + currentZoom), 0.5);
-      //   const pixel = this.mapManager.getMap().getPixelFromCoordinate([0, 0]);
-      //
-      //   const bpResolution = this.resolutions[newResolutionOrder];
-      //   const prefixSumPx =
-      //     this.mapManager.contigDimensionHolder.prefix_sum_px.get(bpResolution) ??
-      //     [];
-      //   const baseLength = prefixSumPx[prefixSumPx.length - 1];
-      //
-      //   const pixelResolution = this.mapManager?.getLayersManager().currentViewState.resolutionDesciptor.pixelResolution; //newResolution;
-      //   const basePixelResolution = this.pixelResolutionSet[old_level_index];
-      //
-      //   const size = Math.round(baseLength * (basePixelResolution / pixelResolution));
-      //
-      //   console.log(pixel);
-      //   console.log("size", size, "map", map, "pixelResolution", pixelResolution, "basePixelResolution", basePixelResolution, "bpResolution", bpResolution);
-      //
-      //   this.horizontalRoulette.zoom(pixel[0] * (basePixelResolution / pixelResolution), size);
-      // }
     }
-
-
 
     this.mode_ = undefined;
     this.totalDelta_ = 0;

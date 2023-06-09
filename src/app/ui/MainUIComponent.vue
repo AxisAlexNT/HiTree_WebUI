@@ -4,14 +4,11 @@
       :networkManager="networkManager"
       :mapManager="mapManager"
       @selected="onFileSelected"
-      @bedtrack="onBedTrackSelected"
       @closed="onClosed"
     ></UpperFrame>
     <WorkspaceComponent
       :mapManager="mapManager"
-      :trackManagers="trackManagers"
-      :filename="filename ?? ''"
-      @delete-component="onRouletteComponentDeleted"
+      :filename="filename"
     ></WorkspaceComponent>
   </div>
 </template>
@@ -26,8 +23,6 @@ import { ref, watch, type Ref } from "vue";
 import { NetworkManager } from "@/app/core/net/NetworkManager";
 
 import WorkspaceComponent from "@/app/ui/components/workspace/WorkspaceComponent.vue";
-import { BedParser, TrackManager } from "@/app/core/roulette/BedParser";
-
 
 // Reactively use these refs only inside component
 // Pass them to Map Manager on creation as values, not Refs as objects
@@ -39,8 +34,6 @@ const fastaFilename: Ref<string | undefined> = ref("");
 const tileSize: Ref<number> = ref(256);
 const contigBorderColor: Ref<string> = ref("ffccee");
 const mapManager: Ref<ContactMapManager | undefined> = ref(undefined);
-const bedfilename: Ref<string | undefined> = ref("");
-const trackManagers: Ref<Array<TrackManager>> = ref([]);
 const networkManager: NetworkManager = new NetworkManager(
   "http://localhost:5000/",
   undefined
@@ -88,25 +81,6 @@ function displayNewMap() {
     .catch(console.log);
 }
 
-function parseTrack() {
-  const fname = bedfilename.value;
-  if (!fname) {
-    throw new Error("Cannot open non-specified files: filename=" + fname);
-  }
-  networkManager.requestManager
-    .loadBedFile(fname)
-    .then((LoadBedTrackResponse) => {
-      mapManager.value?.dispose();
-      const bedTrackParser = new BedParser();
-      trackManagers.value.push(
-        bedTrackParser.parse(fname, LoadBedTrackResponse.tracks)
-      );
-
-      console.log("Track holder:", trackManagers.value);
-    })
-    .catch(console.log);
-}
-
 watch(
   () => tileSize.value,
   (newTileSize, oldTileSize) => {
@@ -135,29 +109,6 @@ function onFileSelected(newFilename: string) {
       displayNewMap();
     }
   }
-}
-
-function onBedTrackSelected(newFilename: string) {
-  if (!filename.value) {
-    alert("You can not load track before the map");
-    return;
-  }
-
-  if (trackManagers.value.map((t) => t.filename).includes(newFilename)) {
-    alert(
-      `You have already loaded "${newFilename}". You can not load it twice`
-    );
-    return;
-  }
-
-  bedfilename.value = newFilename;
-  if (bedfilename.value && bedfilename.value !== "") {
-    parseTrack();
-  }
-}
-
-function onRouletteComponentDeleted(componentName: string) {
-  trackManagers.value = trackManagers.value.filter((tm) => tm.filename !== componentName);
 }
 </script>
 

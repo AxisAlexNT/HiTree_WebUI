@@ -20,10 +20,6 @@ export default class BinMousePosition extends MousePosition {
     }
   }
 
-  setHorizontalRoulette(roulette) {
-    this.horizontalRoulette = roulette;
-  }
-
   updateHTML_(pixel) {
     let html = this.placeholder_;
     if (pixel && this.mapProjection_) {
@@ -89,11 +85,6 @@ export default class BinMousePosition extends MousePosition {
           //   "Center coordinate: " + map.getView().getCenter().map(Math.floor);
           // html = html + "<";
           // html = html + "br/>";
-
-          if (this.horizontalRoulette) {
-            // this.horizontalRoulette.lastShift = int_coordinates_px[0];
-            // this.horizontalRoulette.moveTo(int_coordinates_px[0]);
-          }
 
           if (fixed_coordinates) {
             html = html + "Bin resolution: 1:" + bpResolution;

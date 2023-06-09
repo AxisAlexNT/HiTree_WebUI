@@ -3,14 +3,14 @@ import axios, { type AxiosRequestConfig, type AxiosResponse } from "axios";
 import { ImageTile, Tile } from "ol";
 import TileState from "ol/TileState";
 import type { AssemblyInfo } from "../../domain/AssemblyInfo";
-import { AssemblyInfoDTO, LoadBedTrackResponseDTO, OpenFileResponseDTO } from "../dto/dto";
+import { AssemblyInfoDTO, OpenFileResponseDTO } from "../dto/dto";
 import { HiCTAPIRequestDTO } from "../dto/requestDTO";
 import {
   ConverterStatusResponseDTO,
   CurrentSignalRangeResponseDTO,
   TilePOSTResponseDTO,
 } from "../dto/responseDTO";
-import type { LoadBedTrackResponse, OpenFileResponse } from "../netcommon";
+import type { OpenFileResponse } from "../netcommon";
 import type { NetworkManager } from "../NetworkManager";
 import {
   ConvertCoolerRequest,
@@ -25,16 +25,14 @@ import {
   ListCoolerFilesRequest,
   ListFASTAFilesRequest,
   ListFilesRequest,
-  ListBedTracksRequest,
   LoadAGPRequest,
   MoveSelectionRangeRequest,
   OpenFileRequest,
   ReverseSelectionRangeRequest,
   SaveFileRequest,
   UngroupContigsFromScaffoldRequest,
-  LoadBedTrackRequest,
-  SplitContigRequest,
   type HiCTAPIRequest,
+  SplitContigRequest,
 } from "./request";
 import {
   ConverterStatusResponse,
@@ -66,12 +64,6 @@ class RequestManager {
       .then((json) => new OpenFileResponseDTO(json).toEntity());
   }
 
-  public async loadBedFile(filename: string): Promise<LoadBedTrackResponse> {
-    return this.sendRequest(new LoadBedTrackRequest({ filename: filename }))
-      .then((response) => response.data)
-      .then((json) => new LoadBedTrackResponseDTO(json).toEntity());
-  }
-
   public async getSignalRanges(
     tileVersion: number
   ): Promise<CurrentSignalRangeResponse> {
@@ -89,11 +81,6 @@ class RequestManager {
 
   public async listCoolers(): Promise<string[]> {
     const response = await this.sendRequest(new ListCoolerFilesRequest());
-    return response.data as string[];
-  }
-
-  public async listBedTracks(): Promise<string[]> {
-    const response = await this.sendRequest(new ListBedTracksRequest());
     return response.data as string[];
   }
 

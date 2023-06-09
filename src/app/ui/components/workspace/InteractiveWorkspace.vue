@@ -1,23 +1,13 @@
 <template>
   <div class="interactive-workspace">
     <div class="interactive-workspace_tracknames">
-      <TrackNames
-        :filename="props.filename"
-        :track-managers="props.trackManagers"
-      ></TrackNames>
+      <TrackNames></TrackNames>
     </div>
     <div class="interactive-workspace_horizontal">
-      <HorizontalRoulette
-        :map-manager="props.mapManager"
-        :track-managers="props.trackManagers"
-        @delete-component="(componentName: string) => emit('delete-component', componentName)"
-      ></HorizontalRoulette>
+      <HorizontalIGVTrack></HorizontalIGVTrack>
     </div>
     <div class="interactive-workspace_vertical">
-<!--      <VerticalIGVTrack-->
-<!--        :map-manager="props.mapManager"-->
-<!--        :track-holder="props.trackManager"-->
-<!--      ></VerticalIGVTrack>-->
+      <VerticalIGVTrack></VerticalIGVTrack>
     </div>
     <div class="interactive-workspace_content">
       <ContactMap></ContactMap>
@@ -31,19 +21,13 @@ import {
   // type ContactMapManagerOptions,
 } from "@/app/core/mapmanagers/ContactMapManager";
 import TrackNames from "./TrackNames.vue";
+import HorizontalIGVTrack from "../tracks/HorizontalIGVTrack.vue";
 import ContactMap from "../../contactmap/ContactMap.vue";
-import HorizontalRoulette from "@/app/ui/components/tracks/HorizontalRoulette.vue";
-import VerticalIGVTrack from "../tracks_deprecated/VerticalIGVTrack.vue";
-import { TrackManager } from "@/app/core/roulette/BedParser";
-
-const emit = defineEmits<{
-  (e: "delete-component", componentName: string): void;
-}>();
+import VerticalIGVTrack from "../tracks/VerticalIGVTrack.vue";
 
 const props = defineProps<{
   mapManager: ContactMapManager | undefined;
-  trackManagers: Array<TrackManager>;
-  filename: string;
+  filename?: string;
 }>();
 </script>
 
