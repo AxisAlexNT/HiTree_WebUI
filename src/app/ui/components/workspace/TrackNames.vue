@@ -1,4 +1,5 @@
 <template>
+  <div class="track-names"></div>
   <div class="track-names">
     <figure class="text-center">
       <blockquote class="blockquote-sm">
@@ -31,5 +32,6 @@ const props = defineProps<{
   border-right: solid 1px black;
   margin-bottom: 15px;
   margin-right: 15px;
+  border: 1px solid black;
 }
 </style>

@@ -15,6 +15,9 @@ export default class BinMousePosition extends MousePosition {
     if (opt_options.dimension_holder) {
       this.dimension_holder = opt_options.dimension_holder;
     }
+    if (opt_options.layers) {
+      this.layers = opt_options.layers;
+    }
   }
 
   setHorizontalRoulette(roulette) {
@@ -47,16 +50,16 @@ export default class BinMousePosition extends MousePosition {
         }
         this.transform_(coordinate, coordinate);
 
-        const layers = [];
-        map.forEachLayerAtPixel(pixel, function (layer) {
-          layers.push(layer);
-        });
+        const layers = this.layers.filter((l) => l.getData(pixel));
+        // map.forEachLayerAtPixel(pixel, function (layer) {
+        //   layers.push(layer);
+        // });
         const hovered_layer =
           layers.length === 0
             ? null
             : layers
                 .filter((l) => l instanceof TileLayer)
-                .sort((l1, l2) => l1.zIndex - l2.zIndex)[0];
+                .sort((l1, l2) => l1.getZIndex() - l2.getZIndex())[0];
         if (hovered_layer) {
           const layer_projection = hovered_layer.getSource().getProjection();
           const pixelResolution = hovered_layer.get("pixelResolution");

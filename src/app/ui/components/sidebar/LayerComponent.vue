@@ -44,6 +44,7 @@
         </select>
       </div> -->
       <ColorPickerRectangle
+        :getDefaultColor="getBaseColor"
         @onColorChanged="updateBackgroundColor"
       ></ColorPickerRectangle>
       <div class="tri-square border-style-btn" @click="updateBorderStyle">
@@ -64,11 +65,23 @@ import { type Ref, ref } from "vue";
 import { BorderStyle } from "@/app/core/tracks/Track2DSymmetric";
 import ColorPickerRectangle from "./ColorPickerRectangle.vue";
 import PencilEdit from "./PencilEdit.vue";
+import Style from "ol/style/Style";
+import { Color, asString } from "ol/color";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const props = defineProps({
-  layerName: String,
-});
+const props = defineProps<{
+  layerName: string;
+  getDefaultColor?: () => Style | undefined;
+}>();
+
+function getBaseColor() {
+  if (props.getDefaultColor) {
+    const color = props.getDefaultColor()?.getStroke()?.getColor() as Color;
+    if (color) {
+      return asString(color);
+    }
+  }
+}
 
 const emit = defineEmits<{
   (e: "onColorChanged", layerName: string, newColor: string): void;

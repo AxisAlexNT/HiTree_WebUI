@@ -21,16 +21,34 @@
                 >
               </li>
               <li>
-                <a class="dropdown-item" href="#" @click="onSaveClicked"
-                  >Save</a
+                <a class="dropdown-item" href="#" @click="onCloseClicked"
+                  >Close</a
                 >
-                <div
-                  v-if="saving"
-                  class="spinner-border ms-auto"
-                  role="status"
-                ></div>
               </li>
-              <li><a class="dropdown-item" href="#">Close</a></li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  href="#"
+                  @click="onConvertCoolersClicked"
+                  >Convert Coolers</a
+                >
+              </li>
+            </ul>
+          </li>
+          <!-- Load track -->
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link active dropdown-toggle"
+              data-bs-toggle="dropdown"
+              href="#"
+            >Load track</a
+            >
+            <ul class="dropdown-menu">
+              <li>
+                <a class="dropdown-item" href="#" @click="onLoadTrack"
+                  >Open...</a
+                >
+              </li>
             </ul>
           </li>
           <!-- Load track -->
@@ -146,7 +164,10 @@
           </li>
           <!-- Report a bug -->
           <li class="nav-item">
-            <a aria-current="page" class="nav-link active" href="#"
+            <a
+              aria-current="page"
+              class="nav-link active"
+              href="https://github.com/ctlab/HiCT/issues"
               >Report a bug</a
             >
           </li>
@@ -178,6 +199,7 @@
     @selected="onAGPFileSelected"
     @dismissed="onAGPFileDismissed"
   ></AGPFileSelector>
+  <CoolerConverter :network-manager="networkManager" v-if="convertingCoolers" @dismissed="onConvertCoolersDismissed"> </CoolerConverter>
 </template>
 
 <script setup lang="ts">
@@ -192,16 +214,19 @@ import {
   GetFastaForAssemblyRequest,
 } from "@/app/core/net/api/request";
 import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
+import CoolerConverter from "./CoolerConverter.vue";
 const openingFile = ref(false);
 const loadingTrack = ref(false);
 const openingFASTAFile = ref(false);
 const openingAGPFile = ref(false);
+const convertingCoolers = ref(false);
 const saving = ref(false);
 const gatewayAddress: Ref<string> = ref("http://localhost:5000/");
 
 const emit = defineEmits<{
   (e: "selected", filename: string): void;
   (e: "bedtrack", filename: string): void;
+  (e: "closed"): void;
 }>();
 
 const props = defineProps<{
@@ -234,6 +259,18 @@ function onSaveClicked(): void {
   props.networkManager.requestManager.save().finally(() => {
     saving.value = false;
   });
+}
+
+function onCloseClicked(): void {
+  emit("closed");
+}
+
+function onConvertCoolersClicked(): void {
+  convertingCoolers.value = true;
+}
+
+function onConvertCoolersDismissed(): void {
+  convertingCoolers.value = false;
 }
 
 function onOpenFASTAFile() {
@@ -271,7 +308,7 @@ function onFASTAFileSelected() {
 }
 
 function onAGPFileSelected() {
-  openingFASTAFile.value = false;
+  openingAGPFile.value = false;
 }
 
 function onAssemblyFASTARequest() {

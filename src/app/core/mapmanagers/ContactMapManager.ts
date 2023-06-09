@@ -1,10 +1,10 @@
 import { Map, View } from "ol";
-import { ZoomSlider, ScaleLine, Zoom } from "ol/control";
-import { DoubleClickZoom, DragPan, Select } from "ol/interaction";
+import { ZoomSlider, ScaleLine, Zoom, OverviewMap } from "ol/control";
+import { DoubleClickZoom, DragPan } from "ol/interaction";
 import TileLayer from "ol/layer/Tile";
 import ContigDimensionHolder from "./ContigDimensionHolder";
-import { ScaffoldHolder, type ScaffoldId } from "./ScaffoldHolder";
-import { ActiveTool, HiCViewAndLayersManager } from "./HiCViewAndLayersManager";
+import { ScaffoldHolder } from "./ScaffoldHolder";
+import { HiCViewAndLayersManager } from "./HiCViewAndLayersManager";
 import OSM from "ol/source/OSM";
 import type { OpenFileResponse } from "../net/netcommon";
 import type { NetworkManager } from "../net/NetworkManager";
@@ -88,13 +88,33 @@ class ContactMapManager {
     this.zoomSlider = new ZoomSlider();
 
     this.map.addControl(this.zoomSlider);
+    // this.map.addInteraction(
+    //   new SplitRulesInteraction({
+    //     mapManager: this,
+    //     selectionCallback: this.eventManager.onClickInScissorsMode,
+    //   })
+    // );
+    /*
+    // No more scale line in kilometers:
     this.map.addControl(
       new ScaleLine({
         bar: true,
         text: true,
       })
     );
+    */
     this.viewAndLayersManager.initializeMapControls();
+  }
+
+  public addOverviewMapTarget(target: HTMLElement | string) {
+    this.map.addControl(
+      new OverviewMap({
+        collapsed: false,
+        target: target,
+        layers: this.viewAndLayersManager.layersHolder.hicDataLayers,
+        collapsible: false,
+      })
+    );
   }
 
   public getOptions() {
@@ -126,7 +146,7 @@ class ContactMapManager {
   }
 
   public dispose() {
-    return;
+    this.map.setTarget(undefined);
   }
 
   public addOSM() {
@@ -155,11 +175,28 @@ class ContactMapManager {
     this.viewAndLayersManager.selectionInteractions.contigSelectionInteraction.setActive(
       true
     );
+    this.viewAndLayersManager.selectionInteractions.contigSelectExtent.setActive(
+      true
+    );
     this.viewAndLayersManager.selectionInteractions.translocationArrowSelectionInteraction.unset(
       "startContigId"
     );
     this.viewAndLayersManager.selectionInteractions.translocationArrowSelectionInteraction.unset(
       "endContigId"
+    );
+  }
+
+  public deactivateScissors(): void {
+    // Deactivate selection:
+    this.viewAndLayersManager.currentViewState.activeTool = undefined;
+    this.viewAndLayersManager.deferredInitializationInteractions.scissorsGuideInteraction?.setActive(
+      false
+    );
+    this.viewAndLayersManager.selectionInteractions.contigSelectionInteraction.setActive(
+      true
+    );
+    this.viewAndLayersManager.selectionInteractions.contigSelectExtent.setActive(
+      true
     );
   }
 

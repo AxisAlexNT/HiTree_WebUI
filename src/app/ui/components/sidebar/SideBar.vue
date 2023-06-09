@@ -1,9 +1,14 @@
 <template>
   <aside class="sidebar">
     <div id="upper-block">
-      <MinimapBox v-if="props.mapManager" :map-manager="props.mapManager"></MinimapBox>
+      <MinimapBox v-if="props.mapManager" :map-manager="props.mapManager">
+        <MiniMap
+          :map-manager="props.mapManager"
+          v-if="props.mapManager"
+        ></MiniMap>
+      </MinimapBox>
 
-      <div id="color-range">
+      <div id="color-range" v-if="props.mapManager">
         <ContrastSelector :map-manager="props.mapManager" />
       </div>
 
@@ -12,12 +17,13 @@
       </div>
     </div>
 
-    <div id="layers-block">
+    <div id="layers-block" v-if="props.mapManager">
       <!-- Instantiate layer components here using v-for -->
       <LayerComponent
         v-for="layer in layers"
         v-bind:key="layer.name"
         v-bind:layer-name="layer.name"
+        :getDefaultColor="layer.getStyle"
         @onColorChanged="onColorChanged"
         @onBorderStyleChanged="onBorderStyleChanged"
         @onWeightChanged="onWeightChanged"
@@ -35,24 +41,32 @@ import ContrastSelector from "./ContrastSelector.vue";
 import { CommonEventManager } from "@/app/core/mapmanagers/CommonEventManager";
 import { BorderStyle } from "@/app/core/tracks/Track2DSymmetric";
 import MinimapBox from "@/app/ui/components/sidebar/MinimapBox.vue";
+import Style from "ol/style/Style";
+import MiniMap from "@/app/ui/components/sidebar/MiniMap.vue";
 
 const props = defineProps<{
   mapManager?: ContactMapManager;
 }>();
 
 class LayerDescriptor {
-  name: string;
-  layer_manager: object | null;
-
-  constructor(name: string) {
-    this.name = name;
-    this.layer_manager = null;
-  }
+  constructor(
+    public name: string,
+    public getStyle?: () => Style | undefined,
+    public layer_manager?: unknown
+  ) {}
 }
 
-const layers: Ref<Array<LayerDescriptor>> = ref([
-  new LayerDescriptor("Contigs"),
-  new LayerDescriptor("Scaffolds"),
+const layers: Ref<LayerDescriptor[]> = ref([
+  new LayerDescriptor("Contigs", () =>
+    props.mapManager
+      ?.getLayersManager()
+      .track2DHolder.contigBordersTrack.getStyle()
+  ),
+  new LayerDescriptor("Scaffolds", () =>
+    props.mapManager
+      ?.getLayersManager()
+      .track2DHolder.scaffoldBordersTrack.getStyle()
+  ),
   new LayerDescriptor("Something"),
 ]);
 

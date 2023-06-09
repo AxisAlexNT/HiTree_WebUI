@@ -5,7 +5,6 @@ import { transform } from "ol/proj";
 import EventType from "ol/events/EventType.js";
 import { DEVICE_PIXEL_RATIO, FIREFOX } from "ol/has.js";
 import binarySearch from "binary-search";
-import { Mode } from "ol/interaction/MouseWheelZoom";
 import TileLayer from "ol/layer/Tile";
 
 /**
@@ -21,6 +20,8 @@ export default class ContigMouseWheelZoom extends MouseWheelZoom {
     this.resolutions = [...opt_options.resolutions];
     this.pixelResolutionSet = [...opt_options.pixelResolutionSet];
     this.global_projection = opt_options.global_projection;
+    this.layers = opt_options.layers;
+    this.isTrackPad = undefined;
   }
 
   /**
@@ -71,16 +72,15 @@ export default class ContigMouseWheelZoom extends MouseWheelZoom {
     );
     wheelEvent.preventDefault();
 
-    const layers = [];
-    map.forEachLayerAtPixel(mapBrowserEvent.pixel, function (layer) {
-      layers.push(layer);
-    });
-    const hovered_layer =
-      layers.length === 0
-        ? null
-        : layers
-            .filter((l) => l instanceof TileLayer)
-            .sort((l1, l2) => l1.zIndex - l2.zIndex)[0];
+    const layers = this.layers
+      .filter((l) => l instanceof TileLayer && l.getData(mapBrowserEvent.pixel))
+      .sort((l1, l2) => l1.zIndex - l2.zIndex); //[];
+    // map.forEachLayerAtPixel(mapBrowserEvent.pixel, function (layer) {
+    //   layers.push(layer);
+    // });
+    const hovered_layer = layers.length === 0 ? null : layers[0];
+    // .filter((l) => l instanceof TileLayer)
+    // .sort((l1, l2) => l1.zIndex - l2.zIndex)[0];
 
     if (hovered_layer) {
       const layer_projection = hovered_layer.getSource().getProjection();
@@ -146,13 +146,16 @@ export default class ContigMouseWheelZoom extends MouseWheelZoom {
       this.startTime_ = now;
     }
 
-    if (!this.mode_ || now - this.startTime_ > this.trackpadEventGap_) {
-      this.mode_ = Math.abs(delta) < 4 ? Mode.TRACKPAD : Mode.WHEEL;
+    if (
+      this.isTrackPad === undefined ||
+      now - this.startTime_ > this.trackpadEventGap_
+    ) {
+      this.isTrackPad = Math.abs(delta) < 4;
     }
 
     const view = map.getView();
     if (
-      this.mode_ === Mode.TRACKPAD &&
+      this.isTrackPad &&
       !(view.getConstrainResolution() || this.constrainResolution_)
     ) {
       if (this.trackpadTimeoutId_) {
@@ -310,7 +313,7 @@ export default class ContigMouseWheelZoom extends MouseWheelZoom {
     this.totalDelta_ = 0;
     this.startTime_ = undefined;
     this.timeoutId_ = undefined;
-    this.lastMousePixel = null;
-    this.lastCenterPixel = null;
+    // this.lastMousePixel = null;
+    // this.lastCenterPixel = null;
   }
 }

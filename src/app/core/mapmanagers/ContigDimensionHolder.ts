@@ -303,7 +303,11 @@ export default class ContigDimensionHolder {
   }
 
   public getStartBpOfPx(px: number, resolution: number): number {
-    const start_bp = this.getStartBpOfPx_internal(px, resolution);
+    const prefixSumPx = this.prefix_sum_px.get(resolution);
+    const clampedPx: number = prefixSumPx
+      ? CommonUtils.clamp(px, 0, prefixSumPx[this.contig_count] - 1)
+      : px;
+    const start_bp = this.getStartBpOfPx_internal(clampedPx, resolution);
     return CommonUtils.clamp(
       start_bp,
       0,

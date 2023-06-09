@@ -17,7 +17,11 @@ import {
   SetContrastRangeRequest,
   GetCurrentSignalRangeRequest,
   SaveFileRequest,
-  GetAGPForAssemblyRequest, ListBedTracksRequest, LoadBedTrackRequest
+  GetAGPForAssemblyRequest, ListBedTracksRequest, LoadBedTrackRequest,
+  ListCoolerFilesRequest,
+  ConvertCoolerRequest,
+  GetConverterStatusRequest,
+  SplitContigRequest,
 } from "../api/request";
 import { OutboundDTO } from "./dto";
 import expandToHashMap from "@popperjs/core/lib/utils/expandToHashMap";
@@ -50,6 +54,10 @@ abstract class HiCTAPIRequestDTO<
         return new GroupContigsIntoScaffoldRequestDTO(
           entity as GroupContigsIntoScaffoldRequest
         );
+      case entity instanceof SplitContigRequest:
+        return new SplitContigRequestDTO(entity as SplitContigRequest);
+      case entity instanceof ConvertCoolerRequest:
+        return new ConvertCoolerRequestDTO(entity as ConvertCoolerRequest);
       case entity instanceof UngroupContigsFromScaffoldRequest:
         return new UngroupContigsFromScaffoldRequestDTO(
           entity as UngroupContigsFromScaffoldRequest
@@ -72,6 +80,12 @@ abstract class HiCTAPIRequestDTO<
         return new ListFilesRequestDTO(entity);
       case entity instanceof ListBedTracksRequest:
         return new ListBedTracksRequestDTO(entity);
+      case entity instanceof ListCoolerFilesRequest:
+        return new ListCoolerFilesRequestDTO(entity);
+      case entity instanceof GetConverterStatusRequest:
+        return new GetConverterStatusRequestDTO(
+          entity as GetConverterStatusRequest
+        );
       case entity instanceof ListFASTAFilesRequest:
         return new ListFASTAFilesRequestDTO(entity);
       case entity instanceof LinkFASTARequest:
@@ -107,8 +121,15 @@ abstract class HiCTAPIRequestDTO<
 class ReverseSelectionRangeRequestDTO extends HiCTAPIRequestDTO<ReverseSelectionRangeRequest> {
   toDTO(): Record<string, unknown> {
     return {
-      startContigId: this.entity.options.startContigId,
-      endContigId: this.entity.options.endContigId,
+      startBP: this.entity.options.startBP,
+      endBP: this.entity.options.endBP,
+    };
+  }
+}
+class ConvertCoolerRequestDTO extends HiCTAPIRequestDTO<ConvertCoolerRequest> {
+  toDTO(): Record<string, unknown> {
+    return {
+      cooler_filename: this.entity.options.cooler_filename,
     };
   }
 }
@@ -116,9 +137,18 @@ class ReverseSelectionRangeRequestDTO extends HiCTAPIRequestDTO<ReverseSelection
 class MoveSelectionRangeRequestDTO extends HiCTAPIRequestDTO<MoveSelectionRangeRequest> {
   toDTO(): Record<string, unknown> {
     return {
-      startContigId: this.entity.options.startContigId,
-      endContigId: this.entity.options.endContigId,
-      targetStartOrder: this.entity.options.targetStartOrder,
+      startBP: this.entity.options.startBP,
+      endBP: this.entity.options.endBP,
+      targetStartBP: this.entity.options.targetStartBP,
+    };
+  }
+}
+
+class SplitContigRequestDTO extends HiCTAPIRequestDTO<SplitContigRequest> {
+  toDTO(): Record<string, unknown> {
+    return {
+      splitPx: this.entity.options.splitPx,
+      bpResolution: this.entity.options.bpResolution,
     };
   }
 }
@@ -147,6 +177,7 @@ class SaveFileRequestDTO extends HiCTAPIRequestDTO<SaveFileRequest> {
     };
   }
 }
+
 class LinkFASTARequestDTO extends HiCTAPIRequestDTO<LinkFASTARequest> {
   toDTO(): Record<string, unknown> {
     return {
@@ -165,8 +196,8 @@ class LoadAGPRequestDTO extends HiCTAPIRequestDTO<LoadAGPRequest> {
 class GroupContigsIntoScaffoldRequestDTO extends HiCTAPIRequestDTO<GroupContigsIntoScaffoldRequest> {
   toDTO(): Record<string, unknown> {
     return {
-      startContigId: this.entity.options.startContigId,
-      endContigId: this.entity.options.endContigId,
+      startBP: this.entity.options.startBP,
+      endBP: this.entity.options.endBP,
       scaffoldName: this.entity.options.newScaffoldName,
       spacerLength: this.entity.options.spacerLength,
     };
@@ -200,13 +231,25 @@ class GetCurrentSignalRangeRequestDTO extends HiCTAPIRequestDTO<GetCurrentSignal
 class UngroupContigsFromScaffoldRequestDTO extends HiCTAPIRequestDTO<UngroupContigsFromScaffoldRequest> {
   toDTO(): Record<string, unknown> {
     return {
-      startContigId: this.entity.options.startContigId,
-      endContigId: this.entity.options.endContigId,
+      startBP: this.entity.options.startBP,
+      endBP: this.entity.options.endBP,
     };
   }
 }
 
 class ListFilesRequestDTO extends HiCTAPIRequestDTO<ListFilesRequest> {
+  toDTO(): Record<string, unknown> {
+    return {};
+  }
+}
+
+class ListCoolerFilesRequestDTO extends HiCTAPIRequestDTO<ListCoolerFilesRequest> {
+  toDTO(): Record<string, unknown> {
+    return {};
+  }
+}
+
+class GetConverterStatusRequestDTO extends HiCTAPIRequestDTO<GetConverterStatusRequest> {
   toDTO(): Record<string, unknown> {
     return {};
   }
@@ -263,6 +306,7 @@ export {
   ListFilesRequestDTO,
   ListBedTracksRequestDTO,
   CloseFileRequestDTO,
+  ConvertCoolerRequest,
   GetFastaForAssemblyRequestDTO,
   GetAGPForAssemblyRequestDTO,
   GroupContigsIntoScaffoldRequestDTO,
@@ -272,4 +316,7 @@ export {
   SetContrastRangeRequestDTO,
   GetCurrentSignalRangeRequestDTO,
   SaveFileRequestDTO,
+  ListCoolerFilesRequestDTO,
+  GetConverterStatusRequestDTO,
+  SplitContigRequestDTO,
 };

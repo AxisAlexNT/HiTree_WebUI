@@ -1,16 +1,13 @@
-import type { ScaffoldDirection } from "./common";
-
 interface ScaffoldDescriptor {
   scaffoldId: number;
   scaffoldName: string;
-  scaffoldBorders: ScaffoldBorders | null;
-  direction: ScaffoldDirection;
   spacerLength: number;
+  scaffoldBordersBP: ScaffoldBordersBP | null;
 }
 
-interface ScaffoldBorders {
-  startContigId: number;
-  endContigId: number;
+interface ScaffoldBordersBP {
+  startBP: number;
+  endBP: number;
 }
 
-export { type ScaffoldDescriptor, type ScaffoldBorders };
+export { type ScaffoldDescriptor, type ScaffoldBordersBP };

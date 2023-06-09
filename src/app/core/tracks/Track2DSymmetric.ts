@@ -62,6 +62,10 @@ abstract class Track2DSymmetric extends Track2D {
     this.style = this.generateStyleFunction()();
   }
 
+  public getStyle(): Style {
+    return this.style;
+  }
+
   public generateStyleFunction(): () => Style {
     const style = new Style({
       stroke: new Stroke({
@@ -191,7 +195,7 @@ class ContigBordersTrack2D extends WithRing {
       },
       mapManager.getContigDimensionHolder(),
       {
-        borderColor: "rgba(100, 64, 255, 1.0)",
+        borderColor: "rgba(255, 64, 64, 1.0)",
         fillColor: "rgba(0, 127, 127, 0.0)",
         width: 2,
         zIndex: 11,
@@ -294,7 +298,7 @@ class ScaffoldBordersTrack2D extends WithRing {
       },
       mapManager.getContigDimensionHolder(),
       {
-        fillColor: "rgba(100, 100, 0, 0.0)",
+        fillColor: "rgba(64, 64, 255, 0.0)",
         borderColor: "rgba(255, 255, 0, 1)",
         width: 4,
         zIndex: 12,
@@ -311,25 +315,17 @@ class ScaffoldBordersTrack2D extends WithRing {
       this.mapManager.getLayersManager();
     this.mapManager.scaffoldHolder.scaffoldTable.forEach(
       (scaffoldDescriptor) => {
-        const borders = scaffoldDescriptor.scaffoldBorders;
+        const borders = scaffoldDescriptor.scaffoldBordersBP;
         if (!borders) {
           return;
         }
         this.contigDimensionHolder.prefix_sum_px.forEach(
           (prefix_sum_px, bpResolution) => {
-            const [startContigId, endContigId] = [
-              borders.startContigId,
-              borders.endContigId,
-            ];
+            const [startBP, endBP] = [borders.startBP, borders.endBP];
 
-            const [fromPx, toPx] = [
-              prefix_sum_px[
-                this.contigDimensionHolder.contigIdToOrd[startContigId]
-              ],
-              prefix_sum_px[
-                this.contigDimensionHolder.contigIdToOrd[endContigId] + 1
-              ] - 1,
-            ];
+            const [fromPx, toPx] = [startBP, endBP].map((bp) =>
+              this.contigDimensionHolder.getPxContainingBp(bp, bpResolution)
+            );
 
             if (toPx <= fromPx) {
               return;

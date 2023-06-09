@@ -7,7 +7,6 @@ import { CurrentSignalRangeResponseDTO } from "./net/dto/responseDTO";
 
 class VersionedXYZContactMapSource extends XYZ {
   protected sourceVersion: number;
-  // protected lastResponse?: Record<string, unknown>;
 
   constructor(
     protected readonly layersManager: HiCViewAndLayersManager,
@@ -26,21 +25,13 @@ class VersionedXYZContactMapSource extends XYZ {
       xhr.addEventListener("loadend", function (evt) {
         // console.log("Got XHR Response: ", this.response);
         const data = this.response;
-        if (data !== undefined && data.image !== undefined) {
+        if (data && data.image) {
           // image.src = URL.createObjectURL(data.image);
           // image.src = "data:image/png;base64," + data.image;
-          //this.lastResponse = this.response;
-          tile["lastResponse"] = data;
           image.src = data.image;
-          // console.log("Data.ranges is ", data.ranges);
-          // console.log(
-          //   "Constructed ranges DTO: ",
-          //   new CurrentSignalRangeResponseDTO(data.ranges)
-          // );
-          // console.log(
-          //   "Constructed ranges entity: ",
-          //   new CurrentSignalRangeResponseDTO(data.ranges).toEntity()
-          // );
+          tile.setState(TileState.LOADED);
+          // @ts-expect-error Adding field to object is ok in JS but not in TS
+          tile.lastResponse = data;
           layersManager.callbackFns.contrastSliderRangesCallbacks.forEach(
             (callbackFn) => {
               callbackFn(
@@ -48,14 +39,22 @@ class VersionedXYZContactMapSource extends XYZ {
               );
             }
           );
-        } else if (this.status >= 400) {
-          tile.setState(TileState.ERROR);
-        } else {
-          image.src = tile["lastResponse"].image;
+        } else /* if (this.status >= 400) */ {
+          // @ts-expect-error If tile was loaded successfully at least once, last response is saved
+          if (tile.lastResponse) {
+            // @ts-expect-error If tile was loaded successfully at least once, last response is saved
+            image.src = tile.lastResponse.image;
+          } else {
+            tile.setState(TileState.ERROR); // tile.setState(TileState.EMPTY);
+          }
         }
       });
       xhr.addEventListener("error", function () {
-        if (this.status >= 400) {
+        // @ts-expect-error If tile was loaded successfully at least once, last response is saved
+        if (tile.lastResponse) {
+          // @ts-expect-error If tile was loaded successfully at least once, last response is saved
+          image.src = tile.lastResponse.image;
+        } else {
           tile.setState(TileState.ERROR);
         }
       });
@@ -90,27 +89,6 @@ class VersionedXYZContactMapSource extends XYZ {
       );
     };
   }
-
-  // public getTile(
-  //   z: number,
-  //   x: number,
-  //   y: number,
-  //   pixelRatio: number,
-  //   projection: Projection
-  // ): ImageTile | ReprojTile {
-  //   this.layersManager.callbackFns.contrastSliderCallbacks.forEach(
-  //     (fnCallback) => {
-  //       console.log(
-  //         "Calling callbackFn: ",
-  //         fnCallback,
-  //         " with tile version ",
-  //         this.sourceVersion
-  //       );
-  //       fnCallback(this.sourceVersion);
-  //     }
-  //   );
-  //   return super.getTile(z, x, y, pixelRatio, projection);
-  // }
 }
 
 export { VersionedXYZContactMapSource };

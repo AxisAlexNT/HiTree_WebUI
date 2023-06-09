@@ -59,7 +59,7 @@
 
 <script setup lang="ts">
 import "@/app/ui/components/sidebar/contrast-slider.css";
-import { Ref, ref, unref, watch } from "vue";
+import { Ref, onMounted, ref, unref, watch } from "vue";
 import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
 import { CurrentSignalRangeResponse } from "@/app/core/net/api/response";
 // @ts-expect-error "The module has no typescript bindings provided"
@@ -78,7 +78,7 @@ const signalMax: Ref<number> = ref(1);
 const baseClassName = "contrast-slider";
 const lowerBound: Ref<number> = ref(signalMin.value);
 const upperBound: Ref<number> = ref(signalMax.value);
-const stepResolution: Ref<number> = ref(1000);
+const stepResolution: Ref<number> = ref(100);
 const stepLength: Ref<number> = ref(
   (signalMax.value - signalMin.value) / stepResolution.value
 );
@@ -96,36 +96,24 @@ watch(() => stepLength.value, recalculateStepLength);
 watch(() => signalMin.value, recalculateStepLength);
 watch(() => signalMax.value, recalculateStepLength);
 
-// const sliderParams: {
-//   min: Ref<number>;
-//   max: Ref<number>;
-//   min_value: Ref<number>;
-//   max_value: Ref<number>;
-//   step: Ref<number>;
-// } = {
-//   min: signalMin,
-//   max: signalMax,
-//   min_value: lowerBound,
-//   max_value: upperBound,
-//   step: stepLength,
-// };
-
-// console.log("Slider params:", sliderParams);
-
-watch(
-  () => props.mapManager,
-  (newManager, oldManager) => {
-    // console.log("MapManager changed from: ", oldManager, "to: ", newManager);
-    newManager?.addContrastSliderCallback(updateWithRanges);
-    newManager?.viewAndLayersManager.resolutionChangedAsyncSubscribers.push(
+function onMapManagerChanged(newMapManager: ContactMapManager | undefined) {
+  if (newMapManager) {
+    newMapManager.addContrastSliderCallback(updateWithRanges);
+    newMapManager.viewAndLayersManager.resolutionChangedAsyncSubscribers.push(
       () =>
         onZoomLevelChanged(
-          newManager?.viewAndLayersManager?.currentViewState.resolutionDesciptor
-            .imageSizeIndex ?? 0
+          newMapManager.viewAndLayersManager.currentViewState
+            .resolutionDesciptor.imageSizeIndex ?? 0
         )
     );
   }
-);
+}
+
+watch(() => props.mapManager, onMapManagerChanged);
+
+onMounted(() => {
+  onMapManagerChanged(props.mapManager);
+});
 
 function updateContrast(evt: {
   min: number;
@@ -218,14 +206,14 @@ async function onZoomLevelChanged(newIndex: number): Promise<void> {
     );
     console.log("SignalsMins: ", signalsMins, " Maxs: ", signalsMaxs);
   }
-  const oldRange = Math.max(1e-8, signalMax.value - signalMin.value);
-  const ratioLower = (lowerBound.value - signalMin.value) / oldRange;
-  const ratioUpper = (upperBound.value - signalMin.value) / oldRange;
-  if (debug) {
-    console.log(
-      `Contrast slider: OLD: min=${signalMin.value} max=${signalMax.value} range=${oldRange} lowerBound=${lowerBound.value} upperBound=${upperBound.value} lBratio=${ratioLower} uBratio=${ratioUpper}`
-    );
-  }
+  // const oldRange = Math.max(1e-8, signalMax.value - signalMin.value);
+  // const ratioLower = (lowerBound.value - signalMin.value) / oldRange;
+  // const ratioUpper = (upperBound.value - signalMin.value) / oldRange;
+  // if (debug) {
+  //   console.log(
+  //     `Contrast slider: OLD: min=${signalMin.value} max=${signalMax.value} range=${oldRange} lowerBound=${lowerBound.value} upperBound=${upperBound.value} lBratio=${ratioLower} uBratio=${ratioUpper}`
+  //   );
+  // }
   signalMin.value = signalsMins.value[1 + newIndex ?? 0];
   signalMax.value = signalsMaxs.value[1 + newIndex ?? 0];
   if (!isFinite(signalMin.value)) {
@@ -247,20 +235,20 @@ async function onZoomLevelChanged(newIndex: number): Promise<void> {
     console.log("Maximum value for slider is not finite: ", signalMin.value);
     signalMax.value = 1;
   }
-  const newRange = Math.max(0, signalMax.value - signalMin.value);
-  lowerBound.value = Math.max(
-    lowerBound.value,
-    signalMin.value + newRange * ratioLower
-  );
-  upperBound.value = Math.min(
-    upperBound.value,
-    signalMin.value + newRange * ratioUpper
-  );
-  if (debug) {
-    console.log(
-      `Contrast slider: NEW: min=${signalMin.value} max=${signalMax.value} range=${newRange} lowerBound=${lowerBound.value} upperBound=${upperBound.value}`
-    );
-  }
+  // const newRange = Math.max(0, signalMax.value - signalMin.value);
+  // lowerBound.value = Math.max(
+  //   lowerBound.value,
+  //   signalMin.value + newRange * ratioLower
+  // );
+  // upperBound.value = Math.min(
+  //   upperBound.value,
+  //   signalMin.value + newRange * ratioUpper
+  // );
+  // if (debug) {
+  //   console.log(
+  //     `Contrast slider: NEW: min=${signalMin.value} max=${signalMax.value} range=${newRange} lowerBound=${lowerBound.value} upperBound=${upperBound.value}`
+  //   );
+  // }
   currentZoomLevel.value = newIndex;
 }
 </script>

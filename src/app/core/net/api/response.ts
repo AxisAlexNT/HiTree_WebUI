@@ -14,4 +14,16 @@ class TilePOSTResponse {
   ) {}
 }
 
-export { CurrentSignalRangeResponse, TilePOSTResponse };
+class ConverterStatusResponse {
+  public constructor(
+    public readonly isConverting: boolean,
+    public readonly resolutionProgress: number,
+    public readonly totalProgress: number
+  ) {}
+}
+
+export {
+  CurrentSignalRangeResponse,
+  TilePOSTResponse,
+  ConverterStatusResponse,
+};

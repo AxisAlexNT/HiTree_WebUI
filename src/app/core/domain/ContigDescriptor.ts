@@ -7,7 +7,6 @@ interface ContigDescriptor {
   contigLengthBins: Map<number, number>;
   direction: ContigDirection;
   presenceAtResolution: Map<number, ContigHideType>;
-  scaffoldId?: number | undefined;
 }
 
 export { type ContigDescriptor };

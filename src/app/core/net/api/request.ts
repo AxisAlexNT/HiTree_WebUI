@@ -56,6 +56,14 @@ class ListAGPFilesRequest implements HiCTAPIRequest {
   requestPath = "/list_agp_files";
 }
 
+class ListCoolerFilesRequest implements HiCTAPIRequest {
+  requestPath = "/list_coolers";
+}
+
+class GetConverterStatusRequest implements HiCTAPIRequest {
+  requestPath = "/converter_status";
+}
+
 class CloseFileRequest implements HiCTAPIRequest {
   requestPath = "/close";
 }
@@ -73,8 +81,8 @@ class GroupContigsIntoScaffoldRequest implements HiCTAPIRequest {
 
   public constructor(
     public readonly options: {
-      readonly startContigId: number;
-      readonly endContigId: number;
+      readonly startBP: number;
+      readonly endBP: number;
       readonly newScaffoldName?: string;
       readonly spacerLength?: number;
     }
@@ -87,6 +95,16 @@ class SetNormalizationRequest implements HiCTAPIRequest {
   public constructor(
     public readonly options: {
       readonly normalizationSettings: NormalizationSettings;
+    }
+  ) {}
+}
+
+class ConvertCoolerRequest implements HiCTAPIRequest {
+  requestPath = "/convert_cooler";
+
+  public constructor(
+    public readonly options: {
+      readonly cooler_filename: string;
     }
   ) {}
 }
@@ -116,8 +134,8 @@ class UngroupContigsFromScaffoldRequest implements HiCTAPIRequest {
 
   public constructor(
     public readonly options: {
-      readonly startContigId: number;
-      readonly endContigId: number;
+      readonly startBP: number;
+      readonly endBP: number;
     }
   ) {}
 }
@@ -127,8 +145,8 @@ class ReverseSelectionRangeRequest implements HiCTAPIRequest {
 
   public constructor(
     public readonly options: {
-      readonly startContigId: number;
-      readonly endContigId: number;
+      readonly startBP: number;
+      readonly endBP: number;
     }
   ) {}
 }
@@ -138,9 +156,20 @@ class MoveSelectionRangeRequest implements HiCTAPIRequest {
 
   public constructor(
     public readonly options: {
-      readonly startContigId: number;
-      readonly endContigId: number;
-      readonly targetStartOrder: number;
+      readonly startBP: number;
+      readonly endBP: number;
+      readonly targetStartBP: number;
+    }
+  ) {}
+}
+
+class SplitContigRequest implements HiCTAPIRequest {
+  requestPath = "/split_contig_at_bin";
+
+  public constructor(
+    public readonly options: {
+      readonly splitPx: number;
+      readonly bpResolution: number;
     }
   ) {}
 }
@@ -194,6 +223,8 @@ class LoadAGPRequest implements HiCTAPIRequest {
 export {
   type HiCTAPIRequest,
   CloseFileRequest,
+  ListCoolerFilesRequest,
+  ConvertCoolerRequest,
   GetFastaForAssemblyRequest,
   GetAGPForAssemblyRequest,
   OpenFileRequest,
@@ -213,5 +244,7 @@ export {
   SetContrastRangeRequest,
   GetCurrentSignalRangeRequest,
   SaveFileRequest,
+  GetConverterStatusRequest,
+  SplitContigRequest,
   // TileLoadPOSTRequest,
 };

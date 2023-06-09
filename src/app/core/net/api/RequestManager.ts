@@ -6,19 +6,23 @@ import type { AssemblyInfo } from "../../domain/AssemblyInfo";
 import { AssemblyInfoDTO, LoadBedTrackResponseDTO, OpenFileResponseDTO } from "../dto/dto";
 import { HiCTAPIRequestDTO } from "../dto/requestDTO";
 import {
+  ConverterStatusResponseDTO,
   CurrentSignalRangeResponseDTO,
   TilePOSTResponseDTO,
 } from "../dto/responseDTO";
 import type { LoadBedTrackResponse, OpenFileResponse } from "../netcommon";
 import type { NetworkManager } from "../NetworkManager";
 import {
+  ConvertCoolerRequest,
   GetAGPForAssemblyRequest,
+  GetConverterStatusRequest,
   GetCurrentSignalRangeRequest,
   GetFastaForAssemblyRequest,
   GetFastaForSelectionRequest,
   GroupContigsIntoScaffoldRequest,
   LinkFASTARequest,
   ListAGPFilesRequest,
+  ListCoolerFilesRequest,
   ListFASTAFilesRequest,
   ListFilesRequest,
   ListBedTracksRequest,
@@ -28,9 +32,14 @@ import {
   ReverseSelectionRangeRequest,
   SaveFileRequest,
   UngroupContigsFromScaffoldRequest,
-  type HiCTAPIRequest, LoadBedTrackRequest
+  LoadBedTrackRequest,
+  SplitContigRequest,
+  type HiCTAPIRequest,
 } from "./request";
-import { CurrentSignalRangeResponse, TilePOSTResponse } from "./response";
+import {
+  ConverterStatusResponse,
+  CurrentSignalRangeResponse,
+} from "./response";
 
 class RequestManager {
   constructor(public readonly networkManager: NetworkManager) {}
@@ -78,6 +87,11 @@ class RequestManager {
     return response.data as string[];
   }
 
+  public async listCoolers(): Promise<string[]> {
+    const response = await this.sendRequest(new ListCoolerFilesRequest());
+    return response.data as string[];
+  }
+
   public async listBedTracks(): Promise<string[]> {
     const response = await this.sendRequest(new ListBedTracksRequest());
     return response.data as string[];
@@ -96,6 +110,20 @@ class RequestManager {
       .catch((err) => {
         throw new Error("Cannot link FASTA file: " + err);
       });
+  }
+
+  public async convertCooler(request: ConvertCoolerRequest): Promise<void> {
+    return this.sendRequest(request).then(() => {
+      return;
+    });
+  }
+
+  public async getConverterStatus(): Promise<ConverterStatusResponse> {
+    return this.sendRequest(new GetConverterStatusRequest(), {
+      timeout: 1000,
+    }).then((response) =>
+      new ConverterStatusResponseDTO(response.data).toEntity()
+    );
   }
 
   public async listAGPFiles(): Promise<string[]> {
@@ -183,6 +211,14 @@ class RequestManager {
 
   public async moveSelectionRange(
     request: MoveSelectionRangeRequest
+  ): Promise<AssemblyInfo> {
+    return this.sendRequest(request)
+      .then((response) => response.data)
+      .then((json) => new AssemblyInfoDTO(json).toEntity());
+  }
+
+  public async splitContigAtPx(
+    request: SplitContigRequest
   ): Promise<AssemblyInfo> {
     return this.sendRequest(request)
       .then((response) => response.data)

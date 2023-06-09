@@ -8,7 +8,6 @@ import {
 } from "ol/proj";
 import type Layer from "ol/layer/Layer";
 import type { ContactMapManager } from "./ContactMapManager";
-import Units from "ol/proj/Units";
 import { Collection, Feature, View } from "ol";
 import type { Geometry } from "ol/geom";
 import TileLayer from "ol/layer/Tile";
@@ -36,6 +35,7 @@ import { pointerMove, shiftKeyOnly, singleClick } from "ol/events/condition";
 import type { ContigDescriptor } from "../domain/ContigDescriptor";
 import { CurrentSignalRangeResponse } from "../net/api/response";
 import { Roulette } from "@/app/core/roulette/Roulette";
+import { SplitRulesInteraction } from "../interactions/SplitRulesInteraction";
 
 interface LayerResolutionBorders {
   minResolutionInclusive: number;
@@ -56,10 +56,13 @@ interface SelectionBorders {
   rightContigDescriptorInclusive?: ContigDescriptor;
   leftPx?: [number, number];
   rightPx?: [number, number];
+  leftBP?: [number, number];
+  rightBP?: [number, number];
 }
 
 enum ActiveTool {
   TRANSLOCATION,
+  SCISSORS,
 }
 
 interface CurrentHiCViewState {
@@ -152,6 +155,10 @@ class HiCViewAndLayersManager {
     readonly contigSelectExtent: Extent;
   };
 
+  public readonly deferredInitializationInteractions: {
+    scissorsGuideInteraction?: SplitRulesInteraction;
+  };
+
   public readonly callbackFns: {
     readonly contrastSliderRangesCallbacks: ((
       ranges: CurrentSignalRangeResponse
@@ -218,7 +225,7 @@ class HiCViewAndLayersManager {
     // Define projection:
     this.pixelProjection = new Projection({
       code: "pixelate",
-      units: Units.PIXELS,
+      units: "pixels",
       metersPerUnit: undefined,
       extent: maximum_global_extent,
       axisOrientation: "esu", // OK, axis orientation is changed in layer projections
@@ -268,6 +275,10 @@ class HiCViewAndLayersManager {
       scaffoldBordersTrack: new ScaffoldBordersTrack2D(this.mapManager),
     };
 
+    this.deferredInitializationInteractions = {
+      scissorsGuideInteraction: undefined,
+    };
+
     this.selectionInteractions = {
       contigSelectionInteraction: new Select({
         multi: false,
@@ -299,6 +310,10 @@ class HiCViewAndLayersManager {
         }),
         hitTolerance: 0,
         condition: pointerMove,
+        // filter: (feature, layer) => {
+        //   console.log("Hover over", feature, layer);
+        //   return true;
+        // },
       }),
       translocationArrowSelectionInteraction: new Select({
         multi: false,
@@ -585,6 +600,7 @@ class HiCViewAndLayersManager {
     this.binMouse = new BinMousePosition({
       projection: this.pixelProjection,
       dimension_holder: this.mapManager.getContigDimensionHolder(),
+        layers: this.layersHolder.hicDataLayers,
     });
 
     this.mapManager.getMap().addControl(this.binMouse);
@@ -655,6 +671,7 @@ class HiCViewAndLayersManager {
       resolutions: this.resolutions,
       pixelResolutionSet: this.pixelResolutionSet,
       global_projection: this.pixelProjection,
+        layers: this.layersHolder.hicDataLayers,
     });
 
     this.mapManager.getMap().addInteraction(this.mouseWheel);
@@ -677,6 +694,21 @@ class HiCViewAndLayersManager {
       .addInteraction(
         this.selectionInteractions.translocationArrowSelectionInteraction
       );
+    this.deferredInitializationInteractions.scissorsGuideInteraction =
+      new SplitRulesInteraction({
+        mapManager: this.mapManager,
+        selectionCallback: this.mapManager.eventManager.onClickInScissorsMode,
+        wrapX: false,
+        zIndex: this.layersZIndices.TRACK_2D_LAYER_Z_INDEX * 2 + 1,
+      });
+    this.mapManager
+      .getMap()
+      .addInteraction(
+        this.deferredInitializationInteractions.scissorsGuideInteraction
+      );
+    this.deferredInitializationInteractions.scissorsGuideInteraction.setActive(
+      this.currentViewState.activeTool === ActiveTool.SCISSORS
+    );
     this.selectionInteractions.contigSelectionInteraction.on(
       "select",
       (evt) => {
@@ -728,6 +760,8 @@ class HiCViewAndLayersManager {
           rightContigDescriptorInclusive: undefined,
           leftPx: undefined,
           rightPx: undefined,
+          leftBP: undefined,
+          rightBP: undefined,
         };
         return;
       }
@@ -787,6 +821,26 @@ class HiCViewAndLayersManager {
         rightContigDescriptorInclusive: rightContigDescriptorInclusive,
         leftPx: [x0_px, y0_px],
         rightPx: [x1_px, y1_px],
+        leftBP: [
+          this.mapManager.contigDimensionHolder.getStartBpOfPx(
+            x0_px,
+            bpResolution
+          ),
+          this.mapManager.contigDimensionHolder.getStartBpOfPx(
+            y0_px,
+            bpResolution
+          ),
+        ],
+        rightBP: [
+          this.mapManager.contigDimensionHolder.getStartBpOfPx(
+            x1_px,
+            bpResolution
+          ),
+          this.mapManager.contigDimensionHolder.getStartBpOfPx(
+            y1_px,
+            bpResolution
+          ),
+        ],
       };
 
       const activeContigBordersLayer =
