@@ -49,22 +49,6 @@
                   >Open...</a
                 >
               </li>
-            </ul>
-          </li>
-          <!-- Load track -->
-          <li class="nav-item dropdown">
-            <a
-              class="nav-link active dropdown-toggle"
-              data-bs-toggle="dropdown"
-              href="#"
-            >Load track</a
-            >
-            <ul class="dropdown-menu">
-              <li>
-                <a class="dropdown-item" href="#" @click="onLoadTrack"
-                  >Open...</a
-                >
-              </li>
               <li><a class="dropdown-item" href="#">Close</a></li>
             </ul>
           </li>

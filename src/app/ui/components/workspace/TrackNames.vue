@@ -1,5 +1,4 @@
 <template>
-  <div class="track-names"></div>
   <div class="track-names">
     <figure class="text-center">
       <blockquote class="blockquote-sm">
