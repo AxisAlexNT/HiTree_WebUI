@@ -62,11 +62,59 @@ class SplitRulesInteraction extends PointerInteraction {
   protected handlePointerMove(mapBrowserEvent: MapBrowserEvent<UIEvent>): void {
     const pixel = mapBrowserEvent.pixel;
 
-    const coordinate = this.getMap()?.getCoordinateFromPixelInternal(
+    const map = this.getMap();
+    if (!map) {
+      return;
+    }
+    const coordinate = map.getCoordinateFromPixelInternal(pixel);
+    if (!coordinate) {
+      return;
+    }
+
+    const layers =
+      this.options.mapManager.viewAndLayersManager.layersHolder.hicDataLayers.filter(
+        (l) => l.getData(pixel)
+      );
+
+    const hovered_layer =
+      layers.length === 0
+        ? null
+        : layers
+            .filter((l) => l instanceof TileLayer)
+            .sort((l1, l2) => l1.getZIndex() - l2.getZIndex())[0];
+    if (!hovered_layer) {
+      return;
+    }
+    const layer_projection = hovered_layer.getSource()?.getProjection();
+    if (!layer_projection) {
+      return;
+    }
+    const pixelResolution = hovered_layer.get("pixelResolution");
+    const fixed_coordinates = transform(
+      coordinate,
+      map.getView().getProjection(),
+      layer_projection
+    ).map((c) => Math.ceil(c / pixelResolution));
+    const bpResolutionString = hovered_layer.get("bpResolution");
+    const bpResolution = Number(bpResolutionString);
+    const int_coordinates_px =
+      this.mapManager.contigDimensionHolder.clampPxCoordinatesAtResolution(
+        [Math.floor(fixed_coordinates[0]), -Math.floor(fixed_coordinates[1])],
+        bpResolution
+      );
+
+    const coordinateFromPixel = this.getMap()?.getCoordinateFromPixelInternal(
       mapBrowserEvent.pixel
     ) ?? [0, 0];
 
-    console.log("pixel:", mapBrowserEvent.pixel, "coordinate:", coordinate);
+    console.log(
+      "pixel:",
+      mapBrowserEvent.pixel,
+      "coordinateFromPixel:",
+      coordinateFromPixel,
+      "fixed integer coordinates:",
+      int_coordinates_px
+    );
 
     this.createOrUpdateRules(pixel);
   }
@@ -150,56 +198,66 @@ class SplitRulesInteraction extends PointerInteraction {
       case MapBrowserEventType.DBLCLICK:
         {
           mapBrowserEvent.preventDefault();
-          const coordinate = this.getMap()?.getCoordinateFromPixelInternal(
-            mapBrowserEvent.pixel
-          ) ?? [0, 0];
 
-          const pixelResolution =
-            this.mapManager.viewAndLayersManager.currentViewState
-              .resolutionDesciptor.pixelResolution;
+          const pixel = mapBrowserEvent.pixel;
+
+          const map = this.getMap();
+          if (!map) {
+            return true;
+          }
+          const coordinate = map.getCoordinateFromPixelInternal(pixel);
+          if (!coordinate) {
+            return true;
+          }
 
           const layers =
-            this.mapManager.viewAndLayersManager.layersHolder.hicDataLayers;
+            this.options.mapManager.viewAndLayersManager.layersHolder.hicDataLayers.filter(
+              (l) => l.getData(pixel)
+            );
+
           const hovered_layer =
             layers.length === 0
               ? null
               : layers
                   .filter((l) => l instanceof TileLayer)
                   .sort((l1, l2) => l1.getZIndex() - l2.getZIndex())[0];
-          if (hovered_layer) {
-            const layer_projection = hovered_layer.getSource()?.getProjection();
-            if (layer_projection) {
-              const fixed_coordinates = transform(
-                coordinate,
-                this.getMap()?.getView()?.getProjection(),
-                layer_projection
-              ).map((c) => Math.ceil(c / pixelResolution));
-              const bpResolutionString = hovered_layer.get("bpResolution");
-              const bpResolution = Number(bpResolutionString);
-              const int_coordinates_px =
-                this.mapManager.contigDimensionHolder.clampPxCoordinatesAtResolution(
-                  [
-                    Math.floor(fixed_coordinates[0]),
-                    -Math.floor(fixed_coordinates[1]),
-                  ],
-                  bpResolution
-                );
-              this.setActive(false);
-              this.ruleFeatures.forEach((f) => {
-                if (f) {
-                  this.ruleOverlayLayer.getSource()?.removeFeature(f);
-                }
-              });
-              this.ruleFeatures = [undefined, undefined];
-              this.options.selectionCallback(
-                int_coordinates_px,
-                this.mapManager.viewAndLayersManager.currentViewState
-                  .resolutionDesciptor.bpResolution
-              );
-              return false;
-            }
+          if (!hovered_layer) {
+            return true;
           }
-          return true;
+          const layer_projection = hovered_layer.getSource()?.getProjection();
+          if (!layer_projection) {
+            return true;
+          }
+          const pixelResolution = hovered_layer.get("pixelResolution");
+          const fixed_coordinates = transform(
+            coordinate,
+            map.getView().getProjection(),
+            layer_projection
+          ).map((c) => Math.ceil(c / pixelResolution));
+          const bpResolutionString = hovered_layer.get("bpResolution");
+          const bpResolution = Number(bpResolutionString);
+          const int_coordinates_px =
+            this.mapManager.contigDimensionHolder.clampPxCoordinatesAtResolution(
+              [
+                Math.floor(fixed_coordinates[0]),
+                -Math.floor(fixed_coordinates[1]),
+              ],
+              bpResolution
+            );
+
+          this.setActive(false);
+          this.ruleFeatures.forEach((f) => {
+            if (f) {
+              this.ruleOverlayLayer.getSource()?.removeFeature(f);
+            }
+          });
+          this.ruleFeatures = [undefined, undefined];
+          this.options.selectionCallback(
+            int_coordinates_px,
+            this.mapManager.viewAndLayersManager.currentViewState
+              .resolutionDesciptor.bpResolution
+          );
+          return false;
         }
         break;
       case MapBrowserEventType.POINTERMOVE:
