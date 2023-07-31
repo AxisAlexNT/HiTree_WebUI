@@ -13,6 +13,7 @@ import {
   SetNormalizationRequest,
   SetContrastRangeRequest,
   SplitContigRequest,
+  MoveSelectionToDebrisRequest,
 } from "../net/api/request";
 import { ContactMapManager } from "./ContactMapManager";
 import { ActiveTool } from "./HiCViewAndLayersManager";
@@ -89,6 +90,7 @@ class CommonEventManager {
   public onAddScaffoldClicked(): void {
     this.mapManager.viewAndLayersManager.currentViewState.activeTool =
       undefined;
+    /*
     const [startBP, endBP] = [
       this.mapManager.viewAndLayersManager.currentViewState.selectionBorders.leftBP?.reduce(
         (a, b) => Math.min(a, b)
@@ -96,6 +98,31 @@ class CommonEventManager {
       this.mapManager.viewAndLayersManager.currentViewState.selectionBorders.rightBP?.reduce(
         (a, b) => Math.max(a, b)
       ),
+    ];
+    */
+    const selectedArray =
+      this.mapManager.viewAndLayersManager.selectionCollections.selectedContigFeatures
+        .getArray()
+        .map((cd) => cd.get("contigDescriptor") as ContigDescriptor);
+    const prefixSumBp = this.mapManager.contigDimensionHolder.prefix_sum_bp;
+    const idToOrder = this.mapManager.contigDimensionHolder.contigIdToOrd;
+    const [lcd, rcd] = [
+      selectedArray.reduce((accumulator, element) =>
+        idToOrder[accumulator.contigId] < idToOrder[element.contigId]
+          ? accumulator
+          : element
+      ),
+      selectedArray.reduce((accumulator, element) =>
+        idToOrder[accumulator.contigId] > idToOrder[element.contigId]
+          ? accumulator
+          : element
+      ),
+    ];
+    const [lord, rord] = [lcd, rcd].map((cd) => 1 + idToOrder[cd.contigId]);
+
+    const [startBP, endBP] = [
+      lord > 0 ? prefixSumBp[lord - 1] : 0,
+      prefixSumBp[rord],
     ];
 
     if (startBP === undefined || endBP === undefined) {
@@ -129,13 +156,29 @@ class CommonEventManager {
   public onRemoveScaffoldClicked(): void {
     this.mapManager.viewAndLayersManager.currentViewState.activeTool =
       undefined;
+    const selectedArray =
+      this.mapManager.viewAndLayersManager.selectionCollections.selectedContigFeatures
+        .getArray()
+        .map((cd) => cd.get("contigDescriptor") as ContigDescriptor);
+    const prefixSumBp = this.mapManager.contigDimensionHolder.prefix_sum_bp;
+    const idToOrder = this.mapManager.contigDimensionHolder.contigIdToOrd;
+    const [lcd, rcd] = [
+      selectedArray.reduce((accumulator, element) =>
+        idToOrder[accumulator.contigId] < idToOrder[element.contigId]
+          ? accumulator
+          : element
+      ),
+      selectedArray.reduce((accumulator, element) =>
+        idToOrder[accumulator.contigId] > idToOrder[element.contigId]
+          ? accumulator
+          : element
+      ),
+    ];
+    const [lord, rord] = [lcd, rcd].map((cd) => 1 + idToOrder[cd.contigId]);
+
     const [startBP, endBP] = [
-      this.mapManager.viewAndLayersManager.currentViewState.selectionBorders.leftBP?.reduce(
-        (a, b) => Math.min(a, b)
-      ),
-      this.mapManager.viewAndLayersManager.currentViewState.selectionBorders.rightBP?.reduce(
-        (a, b) => Math.max(a, b)
-      ),
+      lord > 0 ? prefixSumBp[lord - 1] : 0,
+      prefixSumBp[rord],
     ];
 
     if (startBP === undefined || endBP === undefined) {
@@ -166,18 +209,89 @@ class CommonEventManager {
       });
   }
 
+  public onMoveToDebrisClicked(): void {
+    this.mapManager.viewAndLayersManager.currentViewState.activeTool =
+      undefined;
+    const selectedArray =
+      this.mapManager.viewAndLayersManager.selectionCollections.selectedContigFeatures
+        .getArray()
+        .map((cd) => cd.get("contigDescriptor") as ContigDescriptor);
+    const prefixSumBp = this.mapManager.contigDimensionHolder.prefix_sum_bp;
+    const idToOrder = this.mapManager.contigDimensionHolder.contigIdToOrd;
+    const [lcd, rcd] = [
+      selectedArray.reduce((accumulator, element) =>
+        idToOrder[accumulator.contigId] < idToOrder[element.contigId]
+          ? accumulator
+          : element
+      ),
+      selectedArray.reduce((accumulator, element) =>
+        idToOrder[accumulator.contigId] > idToOrder[element.contigId]
+          ? accumulator
+          : element
+      ),
+    ];
+    const [lord, rord] = [lcd, rcd].map((cd) => 1 + idToOrder[cd.contigId]);
+
+    const [startBP, endBP] = [
+      lord > 0 ? prefixSumBp[lord - 1] : 0,
+      prefixSumBp[rord],
+    ];
+
+    if (startBP === undefined || endBP === undefined) {
+      console.log(
+        "Not ungrouping contigs from selection: left border bp is",
+        startBP,
+        " right border bp is ",
+        endBP
+      );
+      return;
+    }
+    this.mapManager.networkManager.requestManager
+      .moveSelectionToDebris(
+        new MoveSelectionToDebrisRequest({
+          startBP: startBP,
+          endBP: endBP,
+        })
+      )
+      .then((asmInfo) => {
+        this.mapManager.contigDimensionHolder.updateContigData(
+          asmInfo.contigDescriptors
+        );
+        this.mapManager.scaffoldHolder.updateScaffoldData(
+          asmInfo.scaffoldDescriptors
+        );
+        this.resetSelection();
+        this.reloadTracks();
+      });
+  }
+
   public onReverseSelectionClicked(): void {
     this.mapManager.viewAndLayersManager.currentViewState.activeTool =
       undefined;
-    const [startBP, endBP] = [
-      this.mapManager.viewAndLayersManager.currentViewState.selectionBorders.leftBP?.reduce(
-        (a, b) => Math.min(a, b)
+    const selectedArray =
+      this.mapManager.viewAndLayersManager.selectionCollections.selectedContigFeatures
+        .getArray()
+        .map((cd) => cd.get("contigDescriptor") as ContigDescriptor);
+    const prefixSumBp = this.mapManager.contigDimensionHolder.prefix_sum_bp;
+    const idToOrder = this.mapManager.contigDimensionHolder.contigIdToOrd;
+    const [lcd, rcd] = [
+      selectedArray.reduce((accumulator, element) =>
+        idToOrder[accumulator.contigId] < idToOrder[element.contigId]
+          ? accumulator
+          : element
       ),
-      this.mapManager.viewAndLayersManager.currentViewState.selectionBorders.rightBP?.reduce(
-        (a, b) => Math.max(a, b)
+      selectedArray.reduce((accumulator, element) =>
+        idToOrder[accumulator.contigId] > idToOrder[element.contigId]
+          ? accumulator
+          : element
       ),
     ];
+    const [lord, rord] = [lcd, rcd].map((cd) => 1 + idToOrder[cd.contigId]);
 
+    const [startBP, endBP] = [
+      lord > 0 ? prefixSumBp[lord - 1] : 0,
+      prefixSumBp[rord],
+    ];
     if (startBP === undefined || endBP === undefined) {
       console.log(
         "Not reversing selection: left border bp is",
@@ -212,13 +326,29 @@ class CommonEventManager {
     if (activeTool === ActiveTool.TRANSLOCATION) {
       this.mapManager.deactivateTranslocation();
     } else {
+      const selectedArray =
+        this.mapManager.viewAndLayersManager.selectionCollections.selectedContigFeatures
+          .getArray()
+          .map((cd) => cd.get("contigDescriptor") as ContigDescriptor);
+      const prefixSumBp = this.mapManager.contigDimensionHolder.prefix_sum_bp;
+      const idToOrder = this.mapManager.contigDimensionHolder.contigIdToOrd;
+      const [lcd, rcd] = [
+        selectedArray.reduce((accumulator, element) =>
+          idToOrder[accumulator.contigId] < idToOrder[element.contigId]
+            ? accumulator
+            : element
+        ),
+        selectedArray.reduce((accumulator, element) =>
+          idToOrder[accumulator.contigId] > idToOrder[element.contigId]
+            ? accumulator
+            : element
+        ),
+      ];
+      const [lord, rord] = [lcd, rcd].map((cd) => 1 + idToOrder[cd.contigId]);
+
       const [startBP, endBP] = [
-        this.mapManager.viewAndLayersManager.currentViewState.selectionBorders.leftBP?.reduce(
-          (a, b) => Math.min(a, b)
-        ),
-        this.mapManager.viewAndLayersManager.currentViewState.selectionBorders.rightBP?.reduce(
-          (a, b) => Math.max(a, b)
-        ),
+        lord > 0 ? prefixSumBp[lord - 1] : 0,
+        prefixSumBp[rord],
       ];
 
       if (startBP === undefined || endBP === undefined) {
@@ -303,6 +433,9 @@ class CommonEventManager {
       this.mapManager.viewAndLayersManager.selectionInteractions
         .translocationArrowSelectionInteraction;
 
+    const prefixSumBp = this.mapManager.contigDimensionHolder.prefix_sum_bp;
+    const idToOrder = this.mapManager.contigDimensionHolder.contigIdToOrd;
+
     const features = interaction.getFeatures();
 
     const clickedArrow = features.getArray()[0];
@@ -319,33 +452,36 @@ class CommonEventManager {
     ].map((key) => clickedArrow.get(key) as ContigDescriptor | undefined);
 
     let targetOrder: number;
+    let targetBP: number;
     if (leftContigDescriptor && rightContigDescriptor) {
-      targetOrder =
-        this.mapManager.contigDimensionHolder.contigIdToOrd[
-          rightContigDescriptor.contigId
-        ];
+      targetOrder = idToOrder[leftContigDescriptor.contigId];
+      targetBP = prefixSumBp[1 + targetOrder];
     } else if (rightContigDescriptor) {
       targetOrder = 0;
+      targetBP = -1;
     } else {
       targetOrder = this.mapManager.contigDimensionHolder.contig_count;
+      targetBP = prefixSumBp[prefixSumBp.length - 1] + 1;
     }
 
     console.log(
       "Click in Translocation mode:",
       "leftContigDescriptor:",
       leftContigDescriptor,
+      "left contig order: ",
+      idToOrder[leftContigDescriptor?.contigId ?? 0],
+      "left contig start bp: ",
+      prefixSumBp[idToOrder[leftContigDescriptor?.contigId ?? 0]],
       "rightContigDescirptor:",
       rightContigDescriptor,
+      "right contig order: ",
+      idToOrder[rightContigDescriptor?.contigId ?? 0],
+      "right contig start bp: ",
+      prefixSumBp[idToOrder[rightContigDescriptor?.contigId ?? 0]],
       "targetOrder:",
-      targetOrder
-    );
-
-    const targetBP = CommonUtils.clamp(
-      this.mapManager.contigDimensionHolder.prefix_sum_bp[targetOrder],
-      0,
-      this.mapManager.contigDimensionHolder.prefix_sum_bp[
-        this.mapManager.contigDimensionHolder.prefix_sum_bp.length - 1
-      ]
+      targetOrder,
+      "targetBP:",
+      targetBP
     );
 
     const [startBP, endBP] = ["startBP", "endBP"].map(

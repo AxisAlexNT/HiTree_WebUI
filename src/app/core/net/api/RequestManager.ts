@@ -33,6 +33,7 @@ import {
   UngroupContigsFromScaffoldRequest,
   type HiCTAPIRequest,
   SplitContigRequest,
+  MoveSelectionToDebrisRequest,
 } from "./request";
 import {
   ConverterStatusResponse,
@@ -182,6 +183,14 @@ class RequestManager {
 
   public async ungroupContigsFromScaffold(
     request: UngroupContigsFromScaffoldRequest
+  ): Promise<AssemblyInfo> {
+    return this.sendRequest(request)
+      .then((response) => response.data)
+      .then((json) => new AssemblyInfoDTO(json).toEntity());
+  }
+
+  public async moveSelectionToDebris(
+    request: MoveSelectionToDebrisRequest
   ): Promise<AssemblyInfo> {
     return this.sendRequest(request)
       .then((response) => response.data)
