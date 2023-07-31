@@ -3,7 +3,11 @@
     <button class="btn btn-outline-primary" type="button">
       <i class="bi bi-bookmark-plus"></i>
     </button>
-    <button class="btn btn-outline-primary" type="button">
+    <button
+      class="btn btn-outline-primary"
+      type="button"
+      @click="moveToDebrisClicked"
+    >
       <i class="bi bi-trash"></i>
     </button>
     <button class="btn btn-outline-primary" type="button">
@@ -15,7 +19,17 @@
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import type { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
+
+const props = defineProps<{
+  mapManager?: ContactMapManager | undefined;
+}>();
+
+function moveToDebrisClicked() {
+  props.mapManager?.eventManager.onMoveToDebrisClicked();
+}
+</script>
 
 <style scoped>
 .block-of-buttons {

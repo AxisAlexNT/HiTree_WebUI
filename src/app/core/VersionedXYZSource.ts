@@ -39,7 +39,7 @@ class VersionedXYZContactMapSource extends XYZ {
               );
             }
           );
-        } else /* if (this.status >= 400) */ {
+        } /* if (this.status >= 400) */ else {
           // @ts-expect-error If tile was loaded successfully at least once, last response is saved
           if (tile.lastResponse) {
             // @ts-expect-error If tile was loaded successfully at least once, last response is saved

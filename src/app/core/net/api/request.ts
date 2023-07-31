@@ -126,6 +126,17 @@ class UngroupContigsFromScaffoldRequest implements HiCTAPIRequest {
   ) {}
 }
 
+class MoveSelectionToDebrisRequest implements HiCTAPIRequest {
+  requestPath = "/move_selection_to_debris";
+
+  public constructor(
+    public readonly options: {
+      readonly startBP: number;
+      readonly endBP: number;
+    }
+  ) {}
+}
+
 class ReverseSelectionRangeRequest implements HiCTAPIRequest {
   requestPath = "/reverse_selection_range";
 
@@ -231,4 +242,5 @@ export {
   GetConverterStatusRequest,
   SplitContigRequest,
   // TileLoadPOSTRequest,
+  MoveSelectionToDebrisRequest,
 };

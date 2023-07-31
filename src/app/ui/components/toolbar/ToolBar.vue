@@ -6,7 +6,7 @@
         :map-manager="props.mapManager"
       ></RearrangementButtons>
       <ScaffoldingButtons :map-manager="props.mapManager"></ScaffoldingButtons>
-      <ThirdBlock></ThirdBlock>
+      <ThirdBlock :map-manager="props.mapManager"></ThirdBlock>
     </div>
     <div class="toolbar-bottom">
       <BottomButtons></BottomButtons>

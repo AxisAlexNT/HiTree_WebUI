@@ -22,6 +22,7 @@ import {
   ConvertCoolerRequest,
   GetConverterStatusRequest,
   SplitContigRequest,
+  MoveSelectionToDebrisRequest,
 } from "../api/request";
 import { OutboundDTO } from "./dto";
 
@@ -60,6 +61,10 @@ abstract class HiCTAPIRequestDTO<
       case entity instanceof UngroupContigsFromScaffoldRequest:
         return new UngroupContigsFromScaffoldRequestDTO(
           entity as UngroupContigsFromScaffoldRequest
+        );
+      case entity instanceof MoveSelectionToDebrisRequest:
+        return new MoveSelectionRangeRequestDTO(
+          entity as MoveSelectionRangeRequest
         );
       case entity instanceof SetNormalizationRequest:
         return new SetNormalizationRequestDTO(
@@ -224,6 +229,15 @@ class UngroupContigsFromScaffoldRequestDTO extends HiCTAPIRequestDTO<UngroupCont
   }
 }
 
+class MoveSelectionToDebrisRequestDTO extends HiCTAPIRequestDTO<MoveSelectionToDebrisRequest> {
+  toDTO(): Record<string, unknown> {
+    return {
+      startBP: this.entity.options.startBP,
+      endBP: this.entity.options.endBP,
+    };
+  }
+}
+
 class ListFilesRequestDTO extends HiCTAPIRequestDTO<ListFilesRequest> {
   toDTO(): Record<string, unknown> {
     return {};
@@ -299,4 +313,5 @@ export {
   ListCoolerFilesRequestDTO,
   GetConverterStatusRequestDTO,
   SplitContigRequestDTO,
+  MoveSelectionToDebrisRequestDTO,
 };

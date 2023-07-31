@@ -12,7 +12,17 @@ import type {
 import type { OpenFileResponse } from "../netcommon";
 
 abstract class InboundDTO<T> {
-  constructor(public readonly json: Record<string, unknown>) {}
+  public readonly error?: string;
+  public readonly warning?: string;
+  public readonly info?: string;
+  public readonly message?: string;
+
+  constructor(public readonly json: Record<string, unknown>) {
+    this.error = (json["error"] as string) ?? undefined;
+    this.warning = (json["warning"] as string) ?? undefined;
+    this.info = (json["info"] as string) ?? undefined;
+    this.message = (json["message"] as string) ?? undefined;
+  }
 
   public abstract toEntity(): T;
 }
