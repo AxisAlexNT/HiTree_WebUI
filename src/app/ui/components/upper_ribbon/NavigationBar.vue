@@ -164,7 +164,12 @@
     @selected="onAGPFileSelected"
     @dismissed="onAGPFileDismissed"
   ></AGPFileSelector>
-  <CoolerConverter :network-manager="networkManager" v-if="convertingCoolers" @dismissed="onConvertCoolersDismissed"> </CoolerConverter>
+  <CoolerConverter
+    :network-manager="networkManager"
+    v-if="convertingCoolers"
+    @dismissed="onConvertCoolersDismissed"
+  >
+  </CoolerConverter>
 </template>
 
 <script setup lang="ts">

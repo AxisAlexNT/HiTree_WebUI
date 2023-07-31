@@ -48,7 +48,7 @@ function onClosed(): void {
   /* width: 1840px; */
   width: 100%;
   /* TODO: Константа глобальная */
-  height: 109px; 
+  height: 109px;
   left: 0px;
   top: 0px;
 }
