@@ -55,27 +55,210 @@
 
 <script setup lang="ts">
 import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
+import { toast } from "vue-sonner";
+import { onMounted, ref, watch } from "vue";
+import { Coordinate } from "ol/coordinate";
 
 const props = defineProps<{
   readonly mapManager?: ContactMapManager | undefined;
 }>();
 
-function zoomOut() {
-  if (props.mapManager) {
-    const map = props.mapManager?.map;
-    const view = map?.getView();
-    if (map && view) {
-      view.animate({ zoom: 0 });
+watch(
+  () => props.mapManager,
+  (newManager) => {
+    if (newManager) {
+      const mapMinSize = newManager
+        ?.getMap()
+        ?.getSize()
+        ?.reduce((a, b) => Math.min(a, b));
+      PRECISION_THRESHOLD_PX.value = Math.min(100, (mapMinSize ?? 1000) / 10);
+      toast.message(
+        "Sensitivity threshold for slide to diagonal is set to " +
+          PRECISION_THRESHOLD_PX.value
+      );
     }
   }
-}
+);
+
+const PRECISION_THRESHOLD_PX = ref(150);
+
+const lastVerticalSlideCenterPosition = ref({
+  x_bp: 0,
+  y_bp: 0,
+  zoom: 0,
+  bpResolution: 1000,
+});
+const lastHorizontalSlideCenterPosition = ref({
+  x_bp: 0,
+  y_bp: 0,
+  zoom: 0,
+  bpResolution: 1000,
+});
+const lastCounterDiagonalSlideCenterPosition = ref({
+  x_bp: 0,
+  y_bp: 0,
+  zoom: 0,
+  bpResolution: 1000,
+});
+const lastZoomInCenterPosition = ref({
+  x_bp: 0,
+  y_bp: 0,
+  zoom: 0,
+  bpResolution: 1000,
+  lastCenterCoordinate: [0, 0] as Coordinate,
+});
+const lastZoomOutCenterPosition = ref({
+  x_bp: 0,
+  y_bp: 0,
+  zoom: 0,
+  bpResolution: 1000,
+  lastCenterCoordinate: [0, 0] as Coordinate,
+});
+
 function zoomIn() {
   if (props.mapManager) {
     const map = props.mapManager?.map;
     const view = map?.getView();
-    // const center = view?.getCenter();
-    if (map && view) {
-      view.animate({ zoom: 10e10 });
+    const center = view?.getCenter();
+    if (map && view && center) {
+      const currentResolutionDescriptor =
+        props.mapManager?.viewAndLayersManager.currentViewState
+          .resolutionDesciptor;
+      const minBpResolution =
+        props.mapManager?.viewAndLayersManager?.resolutions.reduce((a, b) =>
+          Math.min(a, b)
+        );
+      const [x_px, y_px] = [center[0], -center[1]].map((p) =>
+        Math.floor(p / currentResolutionDescriptor.pixelResolution)
+      );
+      const [x_bp, y_bp] = [x_px, y_px].map((px) =>
+        props.mapManager
+          ?.getContigDimensionHolder()
+          .getStartBpOfPx(px, currentResolutionDescriptor.bpResolution)
+      );
+
+      const [x_target_px, y_target_px] = [x_bp, y_bp].map(
+        (bp) =>
+          props.mapManager?.contigDimensionHolder.getPxContainingBp(
+            bp ?? 0,
+            minBpResolution
+          ) ?? 0
+      );
+
+      if (currentResolutionDescriptor.bpResolution !== minBpResolution) {
+        lastZoomInCenterPosition.value = {
+          x_bp: x_bp ?? 0,
+          y_bp: y_bp ?? 0,
+          zoom: view.getZoom() ?? 10e10,
+          bpResolution: currentResolutionDescriptor.bpResolution,
+          lastCenterCoordinate: center,
+        };
+        toast("Zooming all the way in");
+        view.animate({
+          center: [x_target_px, -y_target_px],
+          zoom: 10e10,
+        });
+      } else {
+        const [last_x_px, last_y_px] = [
+          lastVerticalSlideCenterPosition.value.x_bp,
+          lastVerticalSlideCenterPosition.value.y_bp,
+        ].map(
+          (bp) =>
+            props.mapManager
+              ?.getContigDimensionHolder()
+              .getPxContainingBp(
+                bp,
+                currentResolutionDescriptor.bpResolution
+              ) ?? 0
+        );
+
+        if (
+          Math.abs(last_x_px - x_px) < PRECISION_THRESHOLD_PX.value &&
+          Math.abs(last_y_px - y_px) < PRECISION_THRESHOLD_PX.value
+        ) {
+          toast("Zooming back out");
+          view.animate({
+            center: lastZoomInCenterPosition.value.lastCenterCoordinate,
+            zoom: lastZoomInCenterPosition.value.zoom,
+          });
+        } else {
+          toast("Already at the highest resolution");
+        }
+      }
+    }
+  }
+}
+
+function zoomOut() {
+  if (props.mapManager) {
+    const map = props.mapManager?.map;
+    const view = map?.getView();
+    const center = view?.getCenter();
+    if (map && view && center) {
+      const currentResolutionDescriptor =
+        props.mapManager?.viewAndLayersManager.currentViewState
+          .resolutionDesciptor;
+      const maxBpResolution =
+        props.mapManager?.viewAndLayersManager?.resolutions.reduce((a, b) =>
+          Math.max(a, b)
+        );
+      const [x_px, y_px] = [center[0], -center[1]].map((p) =>
+        Math.floor(p / currentResolutionDescriptor.pixelResolution)
+      );
+      const [x_bp, y_bp] = [x_px, y_px].map((px) =>
+        props.mapManager
+          ?.getContigDimensionHolder()
+          .getStartBpOfPx(px, currentResolutionDescriptor.bpResolution)
+      );
+
+      const [x_target_px, y_target_px] = [x_bp, y_bp].map(
+        (bp) =>
+          props.mapManager?.contigDimensionHolder.getPxContainingBp(
+            bp ?? 0,
+            maxBpResolution
+          ) ?? 0
+      );
+
+      if (currentResolutionDescriptor.bpResolution !== maxBpResolution) {
+        lastZoomInCenterPosition.value = {
+          x_bp: x_bp ?? 0,
+          y_bp: y_bp ?? 0,
+          zoom: view.getZoom() ?? 0,
+          bpResolution: currentResolutionDescriptor.bpResolution,
+          lastCenterCoordinate: center,
+        };
+        toast("Zooming out");
+        view.animate({
+          center: [x_target_px, -y_target_px],
+          zoom: 0,
+        });
+      } else {
+        const [last_x_px, last_y_px] = [
+          lastVerticalSlideCenterPosition.value.x_bp,
+          lastVerticalSlideCenterPosition.value.y_bp,
+        ].map(
+          (bp) =>
+            props.mapManager
+              ?.getContigDimensionHolder()
+              .getPxContainingBp(
+                bp,
+                currentResolutionDescriptor.bpResolution
+              ) ?? 0
+        );
+
+        if (
+          Math.abs(last_x_px - x_px) < PRECISION_THRESHOLD_PX.value &&
+          Math.abs(last_y_px - y_px) < PRECISION_THRESHOLD_PX.value
+        ) {
+          toast("Zooming back in");
+          view.animate({
+            center: lastZoomInCenterPosition.value.lastCenterCoordinate,
+            zoom: lastZoomInCenterPosition.value.zoom,
+          });
+        } else {
+          toast("Already at the lowest resolution");
+        }
+      }
     }
   }
 }
@@ -86,10 +269,64 @@ function slideVertically() {
     const view = map?.getView();
     const center = view?.getCenter();
     if (map && view && center) {
-      view.animate({
-        center: [center[0], -center[0]],
-        zoom: view.getZoom(),
-      });
+      const currentResolutionDescriptor =
+        props.mapManager?.viewAndLayersManager.currentViewState
+          .resolutionDesciptor;
+      const [x_px, y_px] = [center[0], -center[1]].map((p) =>
+        Math.floor(p / currentResolutionDescriptor.pixelResolution)
+      );
+      const [x_bp, y_bp] = [x_px, y_px].map((px) =>
+        props.mapManager
+          ?.getContigDimensionHolder()
+          .getStartBpOfPx(px, currentResolutionDescriptor.bpResolution)
+      );
+      const [last_x_px, last_y_px] = [
+        lastVerticalSlideCenterPosition.value.x_bp,
+        lastVerticalSlideCenterPosition.value.y_bp,
+      ].map((bp) =>
+        props.mapManager
+          ?.getContigDimensionHolder()
+          .getPxContainingBp(bp, currentResolutionDescriptor.bpResolution)
+      );
+
+      if (
+        x_bp &&
+        y_bp &&
+        Math.abs(x_px - y_px) < PRECISION_THRESHOLD_PX.value
+      ) {
+        // Are now close to the main diagonal
+        if (
+          (lastVerticalSlideCenterPosition.value.x_bp === 0 &&
+            lastVerticalSlideCenterPosition.value.y_bp === 0) ||
+          !(last_x_px && last_y_px) ||
+          Math.abs(last_x_px - last_y_px) < PRECISION_THRESHOLD_PX.value
+        ) {
+          // Old position is not set or close to the main diagonal at current resolution
+          toast.success("Already close to the main diagonal");
+        } else {
+          toast("Returning to the previous position vertically");
+          view.animate({
+            center: [
+              last_x_px * currentResolutionDescriptor.pixelResolution,
+              -last_y_px * currentResolutionDescriptor.pixelResolution,
+            ],
+            zoom: view.getZoom(),
+          });
+        }
+      } else {
+        // Was far away from the main diagonal
+        lastVerticalSlideCenterPosition.value = {
+          x_bp: x_bp ?? 0,
+          y_bp: y_bp ?? 0,
+          zoom: view.getZoom() ?? 0,
+          bpResolution: currentResolutionDescriptor.bpResolution,
+        };
+        toast("Sliding vertically to the main diagonal");
+        view.animate({
+          center: [center[0], -center[0]],
+          zoom: view.getZoom(),
+        });
+      }
     }
   }
 }
@@ -100,10 +337,64 @@ function slideHorizontally() {
     const view = map?.getView();
     const center = view?.getCenter();
     if (map && view && center) {
-      view.animate({
-        center: [-center[1], center[1]],
-        zoom: view.getZoom(),
-      });
+      const currentResolutionDescriptor =
+        props.mapManager?.viewAndLayersManager.currentViewState
+          .resolutionDesciptor;
+      const [x_px, y_px] = [center[0], -center[1]].map((p) =>
+        Math.floor(p / currentResolutionDescriptor.pixelResolution)
+      );
+      const [x_bp, y_bp] = [x_px, y_px].map((px) =>
+        props.mapManager
+          ?.getContigDimensionHolder()
+          .getStartBpOfPx(px, currentResolutionDescriptor.bpResolution)
+      );
+      const [last_x_px, last_y_px] = [
+        lastHorizontalSlideCenterPosition.value.x_bp,
+        lastHorizontalSlideCenterPosition.value.y_bp,
+      ].map((bp) =>
+        props.mapManager
+          ?.getContigDimensionHolder()
+          .getPxContainingBp(bp, currentResolutionDescriptor.bpResolution)
+      );
+
+      if (
+        x_bp &&
+        y_bp &&
+        Math.abs(x_px - y_px) < PRECISION_THRESHOLD_PX.value
+      ) {
+        // Are now close to the main diagonal
+        if (
+          (lastHorizontalSlideCenterPosition.value.x_bp === 0 &&
+            lastHorizontalSlideCenterPosition.value.y_bp === 0) ||
+          !(last_x_px && last_y_px) ||
+          Math.abs(last_x_px - last_y_px) < PRECISION_THRESHOLD_PX.value
+        ) {
+          // Old position is not set or close to the main diagonal at current resolution
+          toast.success("Already close to the main diagonal");
+        } else {
+          toast("Returning to the previous position horizontally");
+          view.animate({
+            center: [
+              last_x_px * currentResolutionDescriptor.pixelResolution,
+              -last_y_px * currentResolutionDescriptor.pixelResolution,
+            ],
+            zoom: view.getZoom(),
+          });
+        }
+      } else {
+        // Was far away from the main diagonal
+        lastHorizontalSlideCenterPosition.value = {
+          x_bp: x_bp ?? 0,
+          y_bp: y_bp ?? 0,
+          zoom: view.getZoom() ?? 0,
+          bpResolution: currentResolutionDescriptor.bpResolution,
+        };
+        toast("Sliding horizontally to the main diagonal");
+        view.animate({
+          center: [-center[1], center[1]],
+          zoom: view.getZoom(),
+        });
+      }
     }
   }
 }
@@ -114,10 +405,64 @@ function slideByCounterDiagonal() {
     const view = map?.getView();
     const center = view?.getCenter();
     if (map && view && center) {
-      view.animate({
-        center: [(center[0] - center[1]) / 2, -(center[0] - center[1]) / 2],
-        zoom: view.getZoom(),
-      });
+      const currentResolutionDescriptor =
+        props.mapManager?.viewAndLayersManager.currentViewState
+          .resolutionDesciptor;
+      const [x_px, y_px] = [center[0], -center[1]].map((p) =>
+        Math.floor(p / currentResolutionDescriptor.pixelResolution)
+      );
+      const [x_bp, y_bp] = [x_px, y_px].map((px) =>
+        props.mapManager
+          ?.getContigDimensionHolder()
+          .getStartBpOfPx(px, currentResolutionDescriptor.bpResolution)
+      );
+      const [last_x_px, last_y_px] = [
+        lastCounterDiagonalSlideCenterPosition.value.x_bp,
+        lastCounterDiagonalSlideCenterPosition.value.y_bp,
+      ].map((bp) =>
+        props.mapManager
+          ?.getContigDimensionHolder()
+          .getPxContainingBp(bp, currentResolutionDescriptor.bpResolution)
+      );
+
+      if (
+        x_bp &&
+        y_bp &&
+        Math.abs(x_px - y_px) < PRECISION_THRESHOLD_PX.value
+      ) {
+        // Are now close to the main diagonal
+        if (
+          (lastCounterDiagonalSlideCenterPosition.value.x_bp === 0 &&
+            lastCounterDiagonalSlideCenterPosition.value.y_bp === 0) ||
+          !(last_x_px && last_y_px) ||
+          Math.abs(last_x_px - last_y_px) < PRECISION_THRESHOLD_PX.value
+        ) {
+          // Old position is not set or close to the main diagonal at current resolution
+          toast.success("Already close to the main diagonal");
+        } else {
+          toast("Returning to the previous position along counter-diagonal");
+          view.animate({
+            center: [
+              last_x_px * currentResolutionDescriptor.pixelResolution,
+              -last_y_px * currentResolutionDescriptor.pixelResolution,
+            ],
+            zoom: view.getZoom(),
+          });
+        }
+      } else {
+        // Was far away from the main diagonal
+        lastCounterDiagonalSlideCenterPosition.value = {
+          x_bp: x_bp ?? 0,
+          y_bp: y_bp ?? 0,
+          zoom: view.getZoom() ?? 0,
+          bpResolution: currentResolutionDescriptor.bpResolution,
+        };
+        toast("Sliding to the main diagonal");
+        view.animate({
+          center: [(center[0] - center[1]) / 2, -(center[0] - center[1]) / 2],
+          zoom: view.getZoom(),
+        });
+      }
     }
   }
 }
