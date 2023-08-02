@@ -1,4 +1,6 @@
 <template>
+  <Toaster position="bottom-right" />
+  <!-- <button @click="() => toast('My first toast')">Render a toast</button> -->
   <div class="main-ui-component">
     <UpperFrame
       :networkManager="networkManager"
@@ -10,6 +12,10 @@
       :mapManager="mapManager"
       :filename="filename"
     ></WorkspaceComponent>
+    <div
+      class="toast-container position-absolute top-0 end-0 p-3"
+      id="toasts-container"
+    ></div>
   </div>
 </template>
 
@@ -23,6 +29,7 @@ import { ref, watch, type Ref } from "vue";
 import { NetworkManager } from "@/app/core/net/NetworkManager";
 
 import WorkspaceComponent from "@/app/ui/components/workspace/WorkspaceComponent.vue";
+import { Toaster, toast } from "vue-sonner";
 
 // Reactively use these refs only inside component
 // Pass them to Map Manager on creation as values, not Refs as objects
@@ -54,12 +61,13 @@ function displayNewMap() {
   const fname = filename.value;
   const ffname = fastaFilename.value;
   if (!fname) {
-    throw new Error(
+    const message =
       "Cannot open non-specified files: filename=" +
-        fname +
-        " fastaFilename=" +
-        ffname
-    );
+      fname +
+      " fastaFilename=" +
+      ffname;
+    toast.error(message);
+    throw new Error(message);
   }
   networkManager.requestManager
     .openFile(fname, ffname)
@@ -77,8 +85,12 @@ function displayNewMap() {
       mapManager.value = newManager;
       networkManager.mapManager = mapManager.value;
       newManager.initializeMap();
+      toast.success("Opened file " + fname);
     })
-    .catch(console.log);
+    .catch((a) => {
+      console.log(a);
+      toast.error(a);
+    });
 }
 
 watch(

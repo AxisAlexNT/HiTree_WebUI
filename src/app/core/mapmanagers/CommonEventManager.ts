@@ -19,6 +19,7 @@ import { ContactMapManager } from "./ContactMapManager";
 import { ActiveTool } from "./HiCViewAndLayersManager";
 import { BorderStyle } from "@/app/core/tracks/Track2DSymmetric";
 import { Coordinate } from "ol/coordinate";
+import { toast } from "vue-sonner";
 
 class CommonEventManager {
   public constructor(public readonly mapManager: ContactMapManager) {}
@@ -324,8 +325,13 @@ class CommonEventManager {
     const activeTool =
       this.mapManager.viewAndLayersManager.currentViewState.activeTool;
     if (activeTool === ActiveTool.TRANSLOCATION) {
+      toast.success("Translocation mode deactivated");
       this.mapManager.deactivateTranslocation();
     } else {
+      toast.message(
+        "You've entered translocation mode. Click on arrow at the contig boxes to put selection before or after that arrow. Click again on translocation mode button to leave translocation mode.",
+        { duration: 10000 }
+      );
       const selectedArray =
         this.mapManager.viewAndLayersManager.selectionCollections.selectedContigFeatures
           .getArray()

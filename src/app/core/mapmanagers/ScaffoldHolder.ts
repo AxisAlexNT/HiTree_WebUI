@@ -1,3 +1,4 @@
+import { toast } from "vue-sonner";
 import type {
   ScaffoldBordersBP,
   ScaffoldDescriptor,
@@ -51,6 +52,7 @@ class ScaffoldHolder {
     if (descriptor) {
       return descriptor;
     } else {
+      toast.error(`Unknown scaffold with id=${scaffoldId}`);
       throw new Error(`Unknown scaffold with id=${scaffoldId}`);
     }
   }

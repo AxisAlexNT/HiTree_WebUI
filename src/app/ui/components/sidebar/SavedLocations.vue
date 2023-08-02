@@ -27,6 +27,9 @@
       id="save-button"
       class="btn btn-outline-primary"
       type="button"
+      data-bs-toggle="tooltip"
+      data-bs-placement="bottom"
+      title="Save current viewport"
       @click="saveLocation"
     >
       <i class="bi bi-bookmark-plus"></i>

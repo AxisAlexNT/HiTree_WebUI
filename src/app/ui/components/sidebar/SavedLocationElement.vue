@@ -12,6 +12,8 @@
         class="btn btn-outline-primary"
         type="button"
         title="Go to saved location"
+        data-bs-toggle="tooltip"
+        data-bs-placement="bottom"
         @click="$emit('goto', props.location_id)"
       >
         <i class="bi bi-box-arrow-in-right"></i>
@@ -20,6 +22,8 @@
         class="btn btn-outline-danger"
         type="button"
         title="Remove saved location"
+        data-bs-toggle="tooltip"
+        data-bs-placement="bottom"
         @click="$emit('remove', props.location_id)"
       >
         <i class="bi bi-x-square-fill"></i>

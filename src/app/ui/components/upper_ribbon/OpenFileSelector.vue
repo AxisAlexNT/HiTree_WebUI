@@ -66,6 +66,7 @@
 import { type Ref, ref, onMounted } from "vue";
 import { Modal } from "bootstrap";
 import type { NetworkManager } from "@/app/core/net/NetworkManager.js";
+import { toast } from "vue-sonner";
 
 const emit = defineEmits<{
   (e: "selected", filename: string): void;
@@ -125,6 +126,7 @@ onMounted(() => {
       filenames.value = lst;
     })
     .catch((e) => {
+      toast.error(e);
       errorMessage.value = e;
     })
     .finally(() => {

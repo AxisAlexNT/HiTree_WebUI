@@ -3,6 +3,9 @@
     <button
       class="btn btn-outline-primary"
       type="button"
+      data-bs-toggle="tooltip"
+      data-bs-placement="right"
+      title="Group selection into scaffold"
       @click="addScaffoldClicked"
     >
       <i class="bi bi-box-arrow-in-down-right"></i>
@@ -10,6 +13,9 @@
     <button
       class="btn btn-outline-primary"
       type="button"
+      data-bs-toggle="tooltip"
+      data-bs-placement="right"
+      title="Remove all scaffolds in selection"
       @click="removeScaffoldClicked"
     >
       <i class="bi bi-box-arrow-up-left"></i>
@@ -18,6 +24,9 @@
     <button
       class="btn btn-outline-primary"
       type="button"
+      data-bs-toggle="tooltip"
+      data-bs-placement="right"
+      title="Export FASTA for selection"
       @click="exportFASTAForSelectionClicked"
     >
       <i class="bi bi-type"></i>

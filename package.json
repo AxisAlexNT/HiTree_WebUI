@@ -36,7 +36,8 @@
     "normalize.css": "^8.0.1",
     "ol": "^7.1.0",
     "vue": "^3.2.41",
-    "vue-color-kit": "^1.0.5"
+    "vue-color-kit": "^1.0.5",
+    "vue-sonner": "^0.4.2"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.2.0",

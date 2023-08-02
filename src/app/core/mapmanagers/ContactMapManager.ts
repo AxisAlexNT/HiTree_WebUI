@@ -20,6 +20,7 @@ class ContactMapManager {
   public readonly networkManager: NetworkManager;
   public readonly eventManager: CommonEventManager;
   public sizeObserver?: ResizeObserver;
+  public readonly toastHandlers: (() => void)[] = [];
 
   constructor(
     protected readonly options: {

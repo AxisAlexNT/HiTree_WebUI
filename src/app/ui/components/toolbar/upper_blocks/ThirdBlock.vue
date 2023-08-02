@@ -1,11 +1,20 @@
 <template>
   <div class="block-of-buttons">
-    <button class="btn btn-outline-primary" type="button">
+    <button
+      class="btn btn-outline-primary"
+      type="button"
+      data-bs-toggle="tooltip"
+      data-bs-placement="right"
+      title="Save current location"
+    >
       <i class="bi bi-bookmark-plus"></i>
     </button>
     <button
       class="btn btn-outline-primary"
       type="button"
+      data-bs-toggle="tooltip"
+      data-bs-placement="right"
+      title="Move selection to debris"
       @click="moveToDebrisClicked"
     >
       <i class="bi bi-trash"></i>
