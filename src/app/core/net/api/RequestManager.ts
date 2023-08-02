@@ -3,7 +3,7 @@ import axios, { type AxiosRequestConfig, type AxiosResponse } from "axios";
 import { ImageTile, Tile } from "ol";
 import TileState from "ol/TileState";
 import type { AssemblyInfo } from "../../domain/AssemblyInfo";
-import { AssemblyInfoDTO, OpenFileResponseDTO } from "../dto/dto";
+import { AssemblyInfoDTO, InboundDTO, OpenFileResponseDTO } from "../dto/dto";
 import { HiCTAPIRequestDTO } from "../dto/requestDTO";
 import {
   ConverterStatusResponseDTO,
@@ -39,6 +39,7 @@ import {
   ConverterStatusResponse,
   CurrentSignalRangeResponse,
 } from "./response";
+import { toast } from "vue-sonner";
 
 class RequestManager {
   constructor(public readonly networkManager: NetworkManager) {}
@@ -47,11 +48,34 @@ class RequestManager {
     request: HiCTAPIRequest,
     axiosConfig?: AxiosRequestConfig | undefined
   ): Promise<AxiosResponse> {
-    return axios.post(
-      `${this.networkManager.host}/${request.requestPath}`,
-      HiCTAPIRequestDTO.toDTOClass(request).toDTO(),
-      axiosConfig ?? undefined
-    );
+    return axios
+      .post(
+        `${this.networkManager.host}/${request.requestPath}`,
+        HiCTAPIRequestDTO.toDTOClass(request).toDTO(),
+        axiosConfig ?? undefined
+      )
+      .then((req) => {
+        if (req instanceof InboundDTO) {
+          if (req.error) {
+            toast.error(req.error);
+          }
+          if (req.info) {
+            toast.success(req.info);
+          }
+          if (req.message) {
+            toast(req.message);
+          }
+          if (req.warning) {
+            toast(req.warning, {
+              style: {
+                "background-color": "lightyellow",
+                color: "black",
+              },
+            });
+          }
+        }
+        return req;
+      });
   }
 
   public async openFile(

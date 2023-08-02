@@ -1,7 +1,7 @@
 <template>
   <div class="toolbar-outer">
     <div class="toolbar-upper">
-      <FirstBlock></FirstBlock>
+      <FirstBlock :map-manager="props.mapManager"></FirstBlock>
       <RearrangementButtons
         :map-manager="props.mapManager"
       ></RearrangementButtons>

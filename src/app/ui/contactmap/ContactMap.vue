@@ -10,5 +10,6 @@ import "ol/ol.css";
 .hic-contact-map {
   width: 100%;
   height: 100%;
+  padding-right: 15px;
 }
 </style>

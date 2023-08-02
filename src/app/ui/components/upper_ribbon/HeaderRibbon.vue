@@ -19,19 +19,37 @@
         </div>
       </div>
       <div class="mb-3">
-        <select class="form-select form-select-sm">
-          <option selected>Contigs All</option>
-          <option value="1">ctgA</option>
-          <option value="2">ctgB</option>
-          <option value="3">ctgC</option>
+        <select
+          class="form-select form-select-sm"
+          v-model.lazy="rowContigId"
+          @change="checkOptionsAndSnapToContigIntersection"
+        >
+          <option selected value="null">All Rows</option>
+          <option
+            v-for="cd in mapManager?.getContigDimensionHolder()
+              .contigDescriptors"
+            :key="cd.contigId"
+            :value="cd.contigId"
+          >
+            {{ cd.contigName }}
+          </option>
         </select>
       </div>
       <div class="mb-3">
-        <select class="form-select form-select-sm">
-          <option selected value="0">Contigs All</option>
-          <option value="1">ctgA</option>
-          <option value="2">ctgB</option>
-          <option value="3">ctgC</option>
+        <select
+          class="form-select form-select-sm"
+          v-model.lazy="columnContigId"
+          @change="checkOptionsAndSnapToContigIntersection"
+        >
+          <option selected value="null">All Columns</option>
+          <option
+            v-for="cd in mapManager?.getContigDimensionHolder()
+              .contigDescriptors"
+            :key="cd.contigId"
+            :value="cd.contigId"
+          >
+            {{ cd.contigName }}
+          </option>
         </select>
       </div>
       <div class="mb-3">
@@ -73,10 +91,83 @@
 <script setup lang="ts">
 import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
 import NormalizationSelector from "./NormalizationSelector.vue";
+import { Ref, ref } from "vue";
 
 const props = defineProps<{
   mapManager?: ContactMapManager;
 }>();
+
+const rowContigId: Ref<number | null> = ref(null);
+const columnContigId: Ref<number | null> = ref(null);
+
+function checkOptionsAndSnapToContigIntersection() {
+  // alert("Row " + rowContigId.value + " Column " + columnContigId.value);
+  const rowCtgId = rowContigId.value;
+  const colCtgId = columnContigId.value;
+  if (rowCtgId && colCtgId && props.mapManager) {
+    const mapManager = props.mapManager;
+    const map = props.mapManager?.getMap();
+    const view = map?.getView();
+    if (mapManager && map && view) {
+      const mapSize = map.getSize() ?? [100, 100];
+      const rowContigSizes =
+        mapManager.getContigDimensionHolder().contigDescriptors[rowCtgId]
+          .contigLengthBins;
+      const colContigSizes =
+        mapManager.getContigDimensionHolder().contigDescriptors[colCtgId]
+          .contigLengthBins;
+      const minWidth = Math.min(200, mapSize[0]);
+      const minHeight = Math.min(200, mapSize[1]);
+      let bpResolutionToSnapAt: number = rowContigSizes.keys().next().value;
+      for (const [res, rowCtgLen] of rowContigSizes) {
+        const colCtgLen = colContigSizes.get(res) ?? 1;
+        if (
+          minWidth < colCtgLen &&
+          colCtgLen < mapSize[0] &&
+          minHeight < rowCtgLen &&
+          rowCtgLen < mapSize[1]
+        ) {
+          bpResolutionToSnapAt = res;
+          break;
+        }
+      }
+      const [lu_x, lu_y] =
+        mapManager.viewAndLayersManager.bpCoordinatesToGlobalCoordinates(
+          [
+            mapManager.getContigDimensionHolder().prefix_sum_bp[
+              mapManager.getContigDimensionHolder().contigIdToOrd[colCtgId]
+            ],
+            mapManager.getContigDimensionHolder().prefix_sum_bp[
+              mapManager.getContigDimensionHolder().contigIdToOrd[rowCtgId]
+            ],
+          ],
+          bpResolutionToSnapAt
+        );
+      const [br_x, br_y] =
+        mapManager.viewAndLayersManager.bpCoordinatesToGlobalCoordinates(
+          [
+            mapManager.getContigDimensionHolder().prefix_sum_bp[
+              mapManager.getContigDimensionHolder().contigIdToOrd[1 + colCtgId]
+            ],
+            mapManager.getContigDimensionHolder().prefix_sum_bp[
+              mapManager.getContigDimensionHolder().contigIdToOrd[1 + rowCtgId]
+            ],
+          ],
+          bpResolutionToSnapAt
+        );
+      const centerCoordiate = [(lu_x + br_x) / 2, (lu_y + br_y) / 2];
+      view.animate({
+        center: centerCoordiate,
+        resolution:
+          mapManager.viewAndLayersManager.resolutionToPixelResolution.get(
+            bpResolutionToSnapAt
+          ),
+      });
+
+      //([lu_x, lu_y, br_x, br_y], {minResolution: bpResolutionToSnapAt})
+    }
+  }
+}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 // const emit = defineEmits<{
