@@ -13,7 +13,10 @@
       </div>
 
       <div id="saved-locations">
-        <SavedLocations></SavedLocations>
+        <SavedLocations
+          :map-manager="props.mapManager"
+          v-if="props.mapManager"
+        ></SavedLocations>
       </div>
     </div>
 
