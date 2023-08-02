@@ -506,6 +506,19 @@ class HiCViewAndLayersManager {
     }
   }
 
+  public bpCoordinatesToGlobalCoordinates(
+    [x, y]: [number, number],
+    bpResolution: number
+  ): [number, number] {
+    const [x_pix, y_pix] = [x, y].map((bp) =>
+      this.mapManager.contigDimensionHolder.getPxContainingBp(bp, bpResolution)
+    );
+    const [x_glc, y_glc] = [x_pix, y_pix].map(
+      (p) => p * (this.resolutionToPixelResolution.get(bpResolution) ?? 1.0)
+    );
+    return [x_glc, -y_glc];
+  }
+
   public viewResolutionToBpResolution(viewResolution: number) {
     return this.viewResolutionToResolutionDescriptor(viewResolution)
       .bpResolution;
