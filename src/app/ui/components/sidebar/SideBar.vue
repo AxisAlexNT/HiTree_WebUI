@@ -10,6 +10,7 @@
 
       <div id="color-range" v-if="props.mapManager">
         <ContrastSelector :map-manager="props.mapManager" />
+        <!-- <GradientEditor /> -->
       </div>
 
       <div id="saved-locations">
@@ -29,7 +30,8 @@
         :getDefaultColor="layer.getStyle"
         @onColorChanged="onColorChanged"
         @onBorderStyleChanged="onBorderStyleChanged"
-      ></LayerComponent>
+      >
+      </LayerComponent>
     </div>
   </aside>
 </template>
@@ -40,6 +42,7 @@ import LayerComponent from "@/app/ui/components/sidebar/LayerComponent.vue";
 import SavedLocations from "@/app/ui/components/sidebar/SavedLocations.vue";
 import { ref, type Ref } from "vue";
 import ContrastSelector from "./ContrastSelector.vue";
+import GradientEditor from "./GradientEditor.vue";
 import { CommonEventManager } from "@/app/core/mapmanagers/CommonEventManager";
 import { BorderStyle } from "@/app/core/tracks/Track2DSymmetric";
 import Style from "ol/style/Style";
@@ -68,7 +71,7 @@ const layers: Ref<LayerDescriptor[]> = ref([
       ?.getLayersManager()
       .track2DHolder.scaffoldBordersTrack.getStyle()
   ),
-  new LayerDescriptor("Something"),
+  new LayerDescriptor("Gridlines"),
 ]);
 
 function onColorChanged(layerName: string, newColor: string) {
