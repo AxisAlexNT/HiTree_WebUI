@@ -10,8 +10,9 @@
 
       <div id="color-range" v-if="props.mapManager">
         <ContrastSelector :map-manager="props.mapManager" />
-        <!-- <GradientEditor /> -->
       </div>
+
+      <GradientEditor />
 
       <div id="saved-locations">
         <SavedLocations
@@ -47,6 +48,11 @@ import { CommonEventManager } from "@/app/core/mapmanagers/CommonEventManager";
 import { BorderStyle } from "@/app/core/tracks/Track2DSymmetric";
 import Style from "ol/style/Style";
 import MiniMap from "@/app/ui/components/sidebar/MiniMap.vue";
+import { toast } from "vue-sonner";
+import Stroke from "ol/style/Stroke";
+import { useStyleStore } from "@/app/stores/styleStore";
+
+const stylesStore = useStyleStore();
 
 const props = defineProps<{
   mapManager?: ContactMapManager;
@@ -72,6 +78,15 @@ const layers: Ref<LayerDescriptor[]> = ref([
       .track2DHolder.scaffoldBordersTrack.getStyle()
   ),
   new LayerDescriptor("Gridlines"),
+  new LayerDescriptor(
+    "Background",
+    () =>
+      new Style({
+        stroke: new Stroke({
+          color: "rgb(255,255,255)",
+        }),
+      })
+  ),
 ]);
 
 function onColorChanged(layerName: string, newColor: string) {
@@ -82,8 +97,12 @@ function onColorChanged(layerName: string, newColor: string) {
     case "Scaffolds":
       getEventManager()?.onScanffoldBorderColorChanged(newColor);
       break;
+    case "Background":
+      stylesStore.setMapBackground(newColor);
+      break;
     default:
-      alert(`Method for ${layerName} is undefined`);
+      toast.error(`Method for ${layerName} is undefined`);
+      console.log(`Method for ${layerName} is undefined`);
       console.error(`Method for ${layerName} is undefined`);
   }
 
@@ -121,7 +140,7 @@ function getEventManager(): CommonEventManager | undefined {
   flex-direction: column;
   gap: 1px;
 
-  width: 232px;
+  width: 350px;
 
   right: 0px;
   top: 109px;
@@ -158,8 +177,7 @@ function getEventManager(): CommonEventManager | undefined {
   padding: 16px;
   gap: 8px;
 
-  width: 232px;
-  height: 108px;
+  height: fit-content;
 
   /* Global/09. White */
   background: #ffffff;
@@ -187,6 +205,8 @@ function getEventManager(): CommonEventManager | undefined {
   padding: 16px;
   gap: 12px;
 
+  height: fit-content;
+
   /* Global/09. White */
   background: #ffffff;
 
@@ -207,6 +227,8 @@ function getEventManager(): CommonEventManager | undefined {
   flex-direction: column;
   padding: 16px 0px;
   gap: 8px;
+
+  height: fit-content;
 
   /* Global/09. White */
   background: #ffffff;

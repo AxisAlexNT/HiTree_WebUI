@@ -63,6 +63,7 @@ import { BorderStyle } from "@/app/core/tracks/Track2DSymmetric";
 import ColorPickerRectangle from "./ColorPickerRectangle.vue";
 import Style from "ol/style/Style";
 import { Color, asString } from "ol/color";
+import { toast } from "vue-sonner";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const props = defineProps<{
@@ -113,7 +114,7 @@ function updateBorderStyle() {
   // (Object.values(BorderStyle) as Array<BorderStyle>)[bordersStyle.value]
 }
 function editLayer() {
-  alert("Edit layer?");
+  toast.error("Editing layer is not implemented for " + props.layerName);
 }
 </script>
 

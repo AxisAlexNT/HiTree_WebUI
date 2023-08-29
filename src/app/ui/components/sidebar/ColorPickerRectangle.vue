@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div
+    <!-- <div
       class="color-picker"
       v-bind:style="colorSelectorStyleObject"
       @mousedown="toggleShown"
@@ -11,13 +11,20 @@
         :color="currentColor"
         @changeColor="updateBackgroundColor"
       />
-    </div>
+    </div> -->
+    <toolcool-color-picker
+      ref="tcPicker"
+      :color="currentColor"
+      popup-position="right"
+    ></toolcool-color-picker>
   </div>
 </template>
 <script setup lang="ts">
-import { Ref, ref } from "vue";
-import { ColorPicker } from "vue-color-kit";
-import "vue-color-kit/dist/vue-color-kit.css";
+import { Ref, onMounted, ref } from "vue";
+// import { ColorPicker } from "vue-color-kit";
+import "toolcool-color-picker";
+import ColorPicker from "toolcool-color-picker";
+// import "vue-color-kit/dist/vue-color-kit.css";
 
 const props = defineProps<{
   getDefaultColor: () => string | undefined;
@@ -33,7 +40,20 @@ const emit = defineEmits<{
   (e: "onColorChanged", newColor: string): void;
 }>();
 
-const currentColor = ref(props.getDefaultColor() || "#000000");
+const currentColor = ref(props.getDefaultColor());
+
+const tcPicker: Ref<HTMLElement | null> = ref(null);
+
+onMounted(() => {
+  if (!currentColor.value) {
+    currentColor.value = "#000000";
+  }
+  if (tcPicker.value) {
+    const picker = tcPicker.value as ColorPicker;
+    picker.color = currentColor.value;
+    picker.addEventListener("change", updateBackgroundColorTC);
+  }
+});
 
 function updateBackgroundColor(evt: {
   hex: string;
@@ -43,6 +63,14 @@ function updateBackgroundColor(evt: {
   currentColor.value = `rgba(${evt.rgba.r},${evt.rgba.g},${evt.rgba.b},${evt.rgba.a})`;
   // console.log("onColorChanged: ", evt);
   colorSelectorStyleObject.value.background = currentColor.value;
+  emit("onColorChanged", currentColor.value);
+}
+
+function updateBackgroundColorTC(evt: Event) {
+  const customEvent = evt as CustomEvent;
+  // updateBackgroundColor(customEvent.detail.rgba);
+  // console.log(customEvent.detail.rgba);
+  currentColor.value = customEvent.detail.rgba;
   emit("onColorChanged", currentColor.value);
 }
 
