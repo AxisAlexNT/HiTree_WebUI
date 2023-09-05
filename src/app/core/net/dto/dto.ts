@@ -9,6 +9,9 @@ import type {
   ScaffoldBordersBP,
   ScaffoldDescriptor,
 } from "../../domain/ScaffoldDescriptor";
+import Colormap from "../../visualization/colormap/Colormap";
+import SimpleLinearGradient from "../../visualization/colormap/SimpleLinearGradient";
+import VisualizationOptions from "../../visualization/VisualizationOptions";
 import type { OpenFileResponse } from "../netcommon";
 
 abstract class InboundDTO<T> {
@@ -138,6 +141,72 @@ class OpenFileResponseDTO extends InboundDTO<OpenFileResponse> {
   }
 }
 
+class SimpleLinearGradientDTO extends InboundDTO<SimpleLinearGradient> {
+  public static fromEntity(e: SimpleLinearGradient) {
+    return new SimpleLinearGradientDTO({
+      startColorRGBAString: e.startColorRGBAString,
+      endColorRGBAString: e.endColorRGBAString,
+      minSignal: e.minSignal,
+      maxSignal: e.maxSignal,
+    });
+  }
+
+  public toEntity(): SimpleLinearGradient {
+    return new SimpleLinearGradient(
+      this.json["startColorRGBAString"] as string,
+      this.json["endColorRGBAString"] as string,
+      this.json["minSignal"] as number,
+      this.json["maxSignal"] as number
+    );
+  }
+}
+
+class ColormapDTO extends InboundDTO<Colormap> {
+  public static fromEntity(e: Colormap) {
+    switch (e.colormapType) {
+      case "SimpleLinearGradient":
+        return new ColormapDTO({
+          colormapType: e.colormapType,
+          ...SimpleLinearGradientDTO.fromEntity(e as SimpleLinearGradient).json,
+        });
+      default:
+        throw new Error("Unknown colormap type: " + e.colormapType);
+    }
+  }
+
+  public toEntity(): Colormap {
+    const colormapType = this.json["colormapType"] as string;
+    switch (colormapType) {
+      case "SimpleLinearGradient":
+        return new SimpleLinearGradientDTO(this.json).toEntity();
+      default:
+        throw new Error("Unknown colormap type: " + colormapType);
+    }
+  }
+}
+
+class VisualizationOptionsDTO extends InboundDTO<VisualizationOptions> {
+  public static fromEntity(e: VisualizationOptions) {
+    return new VisualizationOptionsDTO({
+      preLogBase: e.preLogBase,
+      postLogBase: e.postLogBase,
+      applyCoolerWeights: e.applyCoolerWeights,
+      colormap: ColormapDTO.fromEntity(e.colormap),
+    });
+  }
+
+  public toEntity(): VisualizationOptions {
+    return new VisualizationOptions(
+      this.json["preLogBase"] as number,
+      this.json["postLogBase"] as number,
+      this.json["applyCoolerWeights"] as boolean,
+      new ColormapDTO(
+        this.json["colormap"] as Record<string, unknown>
+      ).toEntity()
+    );
+  }
+}
+
 export {
   InboundDTO,
   OutboundDTO,
@@ -149,4 +218,7 @@ export {
   queryLengthUnitFromDTO,
   contigDirectionFromDTO,
   contigHideTypeFromDTO,
+  SimpleLinearGradientDTO,
+  ColormapDTO,
+  VisualizationOptionsDTO,
 };

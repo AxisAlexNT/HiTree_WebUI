@@ -109,6 +109,12 @@
 <script setup lang="ts">
 import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
 import { Ref, ref } from "vue";
+import { useVisualizationOptionsStore } from "@/app/stores/visualizationOptionsStore";
+import { storeToRefs } from "pinia";
+const visualizationOptionsStore = useVisualizationOptionsStore();
+const { preLogBase, applyCoolerWeights, postLogBase, colormap } = storeToRefs(
+  visualizationOptionsStore
+);
 
 const props = defineProps<{
   mapManager?: ContactMapManager;
@@ -116,13 +122,13 @@ const props = defineProps<{
 
 const applyPreLog: Ref<boolean> = ref(false);
 
-const applyCoolerWeights: Ref<boolean> = ref(false);
+// const applyCoolerWeights: Ref<boolean> = ref(false);
 
 const applyPostLog: Ref<boolean> = ref(true);
 
-const preLogBase: Ref<number> = ref(10);
+// const preLogBase: Ref<number> = ref(10);
 
-const postLogBase: Ref<number> = ref(10);
+// const postLogBase: Ref<number> = ref(10);
 
 function resetAttributes(): void {
   applyPreLog.value = false;
@@ -133,11 +139,14 @@ function resetAttributes(): void {
 }
 
 function applySettings(): void {
-  props.mapManager?.eventManager.onNormalizationChanged({
-    applyCoolerWeights: applyCoolerWeights.value,
-    preLogBase: applyPreLog.value ? preLogBase.value : -1,
-    postLogBase: applyPostLog.value ? postLogBase.value : -1,
-  });
+  // props.mapManager?.eventManager.onNormalizationChanged({
+  //   applyCoolerWeights: applyCoolerWeights.value,
+  //   preLogBase: applyPreLog.value ? preLogBase.value : -1,
+  //   postLogBase: applyPostLog.value ? postLogBase.value : -1,
+  // });
+  props.mapManager?.visualizationManager
+    .sendVisualizationOptionsToServer()
+    .then(() => props.mapManager?.reloadTiles());
 }
 </script>
 

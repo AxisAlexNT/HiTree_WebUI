@@ -1,0 +1,10 @@
+import Colormap from "./colormap/Colormap";
+
+export default class VisualizationOptions {
+  public constructor(
+    public readonly preLogBase: number,
+    public readonly postLogBase: number,
+    public readonly applyCoolerWeights: boolean,
+    public readonly colormap: Colormap
+  ) {}
+}

@@ -4,6 +4,8 @@ import {
 } from "@/app/ui/components/ComponentCommon";
 import assert from "assert";
 import { ImageTile, Tile } from "ol";
+import { VisualizationOptionsDTO } from "../dto/dto";
+import VisualizationOptions from "../../visualization/VisualizationOptions";
 interface HiCTAPIRequest {
   requestPath: string;
 }
@@ -204,6 +206,22 @@ class LoadAGPRequest implements HiCTAPIRequest {
   ) {}
 }
 
+class GetVisualizationOptionsRequest implements HiCTAPIRequest {
+  requestPath = "/get_visualization_options";
+
+  public constructor(public readonly options: Record<string, never>) {}
+}
+
+class SetVisualizationOptionsRequest implements HiCTAPIRequest {
+  requestPath = "/set_visualization_options";
+
+  public constructor(
+    public readonly options: {
+      options: VisualizationOptions;
+    }
+  ) {}
+}
+
 // class TileLoadPOSTRequest implements HiCTAPIRequest {
 //   requestPath = "/get_tile";
 
@@ -243,4 +261,6 @@ export {
   SplitContigRequest,
   // TileLoadPOSTRequest,
   MoveSelectionToDebrisRequest,
+  GetVisualizationOptionsRequest,
+  SetVisualizationOptionsRequest,
 };

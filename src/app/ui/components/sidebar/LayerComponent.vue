@@ -12,38 +12,8 @@
         class="bi bi-eye-slash visibility-btn"
         @click="updateVisibility"
       ></i>
-      <!-- <verte
-             class="color-picker"
-             v-bind:style="colorSelectorStyleObject"
-             picker="square"
-             model="rgb"
-             v-model="currentColor"
-           ></verte> -->
-
-      <!-- <div class="color-picker">
-        <select
-          v-bind:style="colorSelectorStyleObject"
-          name="machineColorWay"
-          v-model="currentColor"
-        >
-          <option
-            v-for="item in [
-              '#00000000',
-              '#ff0000',
-              '#ffff00',
-              '#00ffff',
-              '#ff00ff',
-            ]"
-            :key="item"
-            v-bind:class="{ active: item === currentColor }"
-            v-bind:value="item"
-            @click="updateBackgroundColor(item)"
-          >
-            {{ currentColor }}
-          </option>
-        </select>
-      </div> -->
       <ColorPickerRectangle
+        :position="['top', 'left']"
         :getDefaultColor="getBaseColor"
         @onColorChanged="updateBackgroundColor"
       ></ColorPickerRectangle>

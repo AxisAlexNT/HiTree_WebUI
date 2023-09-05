@@ -3,7 +3,12 @@ import axios, { type AxiosRequestConfig, type AxiosResponse } from "axios";
 import { ImageTile, Tile } from "ol";
 import TileState from "ol/TileState";
 import type { AssemblyInfo } from "../../domain/AssemblyInfo";
-import { AssemblyInfoDTO, InboundDTO, OpenFileResponseDTO } from "../dto/dto";
+import {
+  AssemblyInfoDTO,
+  InboundDTO,
+  OpenFileResponseDTO,
+  VisualizationOptionsDTO,
+} from "../dto/dto";
 import { HiCTAPIRequestDTO } from "../dto/requestDTO";
 import {
   ConverterStatusResponseDTO,
@@ -34,12 +39,15 @@ import {
   type HiCTAPIRequest,
   SplitContigRequest,
   MoveSelectionToDebrisRequest,
+  GetVisualizationOptionsRequest,
+  SetVisualizationOptionsRequest,
 } from "./request";
 import {
   ConverterStatusResponse,
   CurrentSignalRangeResponse,
 } from "./response";
 import { toast } from "vue-sonner";
+import VisualizationOptions from "../../visualization/VisualizationOptions";
 
 class RequestManager {
   constructor(public readonly networkManager: NetworkManager) {}
@@ -243,6 +251,22 @@ class RequestManager {
     return this.sendRequest(request)
       .then((response) => response.data)
       .then((json) => new AssemblyInfoDTO(json).toEntity());
+  }
+
+  public async getVisualizationOptions(
+    request: GetVisualizationOptionsRequest
+  ): Promise<VisualizationOptions> {
+    return this.sendRequest(request)
+      .then((response) => response.data)
+      .then((json) => new VisualizationOptionsDTO(json).toEntity());
+  }
+
+  public async setVisualizationOptions(
+    request: SetVisualizationOptionsRequest
+  ): Promise<VisualizationOptions> {
+    return this.sendRequest(request)
+      .then((response) => response.data)
+      .then((json) => new VisualizationOptionsDTO(json).toEntity());
   }
 
   /*

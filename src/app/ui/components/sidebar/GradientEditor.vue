@@ -82,12 +82,11 @@
 
 <script setup lang="ts">
 import "toolcool-color-picker";
-import ColorPicker from "toolcool-color-picker";
+import ColorPickerRectangle from "./ColorPickerRectangle.vue";
 import { type Ref, ref, onMounted, watch } from "vue";
 import { Modal } from "bootstrap";
 import type { NetworkManager } from "@/app/core/net/NetworkManager.js";
 import { toast } from "vue-sonner";
-import ColorPickerRectangle from "./ColorPickerRectangle.vue";
 
 const emit = defineEmits<{
   (e: "dismissed"): void;

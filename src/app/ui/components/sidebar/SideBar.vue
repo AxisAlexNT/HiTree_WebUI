@@ -8,11 +8,34 @@
         ></MiniMap>
       </div>
 
-      <div id="color-range" v-if="props.mapManager">
-        <ContrastSelector :map-manager="props.mapManager" />
+      <div id="layers-block" v-if="props.mapManager">
+        <!-- Instantiate layer components here using v-for -->
+        <LayerComponent
+          v-for="layer in layers"
+          v-bind:key="layer.name"
+          v-bind:layer-name="layer.name"
+          :getDefaultColor="layer.getStyle"
+          @onColorChanged="onColorChanged"
+          @onBorderStyleChanged="onBorderStyleChanged"
+        >
+        </LayerComponent>
       </div>
 
-      <GradientEditor />
+      <VisualziationSettingsEditor
+        :map-manager="props.mapManager"
+        v-if="props.mapManager"
+      />
+
+      <!-- <div id="color-range" v-if="props.mapManager">
+        <ContrastSelector :map-manager="props.mapManager" />
+      </div> -->
+
+      <div id="saved-visual-settings">
+        <SavedVisualOptions
+          :map-manager="props.mapManager"
+          v-if="props.mapManager"
+        ></SavedVisualOptions>
+      </div>
 
       <div id="saved-locations">
         <SavedLocations
@@ -20,19 +43,6 @@
           v-if="props.mapManager"
         ></SavedLocations>
       </div>
-    </div>
-
-    <div id="layers-block" v-if="props.mapManager">
-      <!-- Instantiate layer components here using v-for -->
-      <LayerComponent
-        v-for="layer in layers"
-        v-bind:key="layer.name"
-        v-bind:layer-name="layer.name"
-        :getDefaultColor="layer.getStyle"
-        @onColorChanged="onColorChanged"
-        @onBorderStyleChanged="onBorderStyleChanged"
-      >
-      </LayerComponent>
     </div>
   </aside>
 </template>
@@ -43,7 +53,6 @@ import LayerComponent from "@/app/ui/components/sidebar/LayerComponent.vue";
 import SavedLocations from "@/app/ui/components/sidebar/SavedLocations.vue";
 import { ref, type Ref } from "vue";
 import ContrastSelector from "./ContrastSelector.vue";
-import GradientEditor from "./GradientEditor.vue";
 import { CommonEventManager } from "@/app/core/mapmanagers/CommonEventManager";
 import { BorderStyle } from "@/app/core/tracks/Track2DSymmetric";
 import Style from "ol/style/Style";
@@ -51,6 +60,9 @@ import MiniMap from "@/app/ui/components/sidebar/MiniMap.vue";
 import { toast } from "vue-sonner";
 import Stroke from "ol/style/Stroke";
 import { useStyleStore } from "@/app/stores/styleStore";
+// import GradientEditor from "@/app/ui/components/sidebar/GradientEditor.vue";
+import VisualziationSettingsEditor from "./VisualziationSettingsEditor.vue";
+import SavedVisualOptions from "./SavedVisualOptions.vue";
 
 const stylesStore = useStyleStore();
 
@@ -187,7 +199,7 @@ function getEventManager(): CommonEventManager | undefined {
 
   /* Inside auto layout */
   flex: none;
-  order: 1;
+  order: 0;
   flex-grow: 0;
 }
 
