@@ -1,23 +1,53 @@
 <template>
   <p class="w-100 m-0"><b>Visualization presets:</b></p>
-  <div class="btn-group w-100 p-2" role="group" aria-label="Visualization presets">
-    <button type="button" class="btn btn-outline-primary" data-bs-toggle="tooltip" data-bs-placement="bottom"
-      title="Save current visualization options" @click="saveOptions">
+  <div
+    class="btn-group w-100 p-2"
+    role="group"
+    aria-label="Visualization presets"
+  >
+    <button
+      type="button"
+      class="btn btn-outline-primary"
+      data-bs-toggle="tooltip"
+      data-bs-placement="bottom"
+      title="Save current visualization options"
+      @click="saveOptions"
+    >
       <i class="bi bi-bookmark-plus"></i> Save
     </button>
-    <button type="button" class="btn btn-outline-primary" @click="exportOptions">
+    <button
+      type="button"
+      class="btn btn-outline-primary"
+      @click="exportOptions"
+    >
       Export
     </button>
-    <button type="button" class="btn btn-outline-primary" @click="importFileBtn?.click()">
+    <button
+      type="button"
+      class="btn btn-outline-primary"
+      @click="importFileBtn?.click()"
+    >
       Import
-      <input type="file" ref="importFileBtn" v-on:change="importOptionsFromFile()" hidden />
+      <input
+        type="file"
+        ref="importFileBtn"
+        v-on:change="importOptionsFromFile()"
+        hidden
+      />
     </button>
   </div>
   <div class="saved-locations-div">
     <div v-for="[id, opt] of savedOptions" :key="id">
-      <SavedVisualOptionsElement v-if="opt" :map-manager="props.mapManager" :option_id="opt.option_id"
-        :visualization-options="opt.options" :background-color="opt.backgroundColor" :name="opt.name"
-        @remove="removeOption" @rename="renameOption"></SavedVisualOptionsElement>
+      <SavedVisualOptionsElement
+        v-if="opt"
+        :map-manager="props.mapManager"
+        :option_id="opt.option_id"
+        :visualization-options="opt.options"
+        :background-color="opt.backgroundColor"
+        :name="opt.name"
+        @remove="removeOption"
+        @rename="renameOption"
+      ></SavedVisualOptionsElement>
     </div>
   </div>
 </template>
@@ -36,6 +66,7 @@ const { preLogBase, applyCoolerWeights, postLogBase, colormap } = storeToRefs(
 );
 
 import { useStyleStore } from "@/app/stores/styleStore";
+import { json } from "stream/consumers";
 const stylesStore = useStyleStore();
 const { mapBackgroundColor } = storeToRefs(stylesStore);
 
@@ -103,7 +134,7 @@ function exportOptions() {
     exportType: "visualizationOptions",
     data: {
       filename: props.mapManager?.getOptions().filename,
-      savedLocations: values,
+      savedVisualizationPresets: values,
     },
   });
   const blob = new Blob([data], { type: "text/plain" });
@@ -156,7 +187,13 @@ function importOptionsFromFile() {
                 savedLocations: {
                   option_id: number;
                   options: VisualizationOptions;
-                  backgroundColor: string;
+                  backgroundColor?: string;
+                  name?: string;
+                }[];
+                savedVisualizationPresets: {
+                  option_id: number;
+                  options: VisualizationOptions;
+                  backgroundColor?: string;
                   name?: string;
                 }[];
               };
@@ -170,29 +207,20 @@ function importOptionsFromFile() {
                 "Warning! You are importing presets saved for another file"
               );
             }
-            jsonResult.data.savedLocations.forEach((option) => {
-              if (savedOptions.value.has(option.option_id)) {
-                const newId = 1 + Math.max(...savedOptions.value.keys());
-                const newOption = {
-                  option_id: newId,
-                  options: option.options,
-                  backgroundColor: option.backgroundColor,
-                  name: option.name ?? `Preset ${newId}`,
-                };
-                savedOptions.value.set(newOption.option_id, newOption);
-                optionsCount.value =
-                  1 + Math.max(optionsCount.value, newOption.option_id);
-              } else {
-                const newOption = {
-                  option_id: option.option_id,
-                  options: option.options,
-                  backgroundColor: option.backgroundColor,
-                  name: `Preset ${option.option_id}`,
-                };
-                savedOptions.value.set(newOption.option_id, newOption);
-                optionsCount.value =
-                  1 + Math.max(optionsCount.value, 1 + newOption.option_id);
-              }
+            (
+              jsonResult.data.savedVisualizationPresets ??
+              jsonResult.data.savedLocations
+            ).forEach((option) => {
+              const newId = 1 + optionsCount.value;
+              const newOption = {
+                option_id: newId,
+                options: option.options,
+                backgroundColor:
+                  option.backgroundColor ?? "rgba(255,255,255,255)",
+                name: option.name ?? `Imported preset ${newId}`,
+              };
+              savedOptions.value.set(newOption.option_id, newOption);
+              optionsCount.value += 1;
             });
             toast.success("Visualziation presets loaded");
           } catch (e) {
