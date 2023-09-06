@@ -187,19 +187,25 @@ class ColormapDTO extends InboundDTO<Colormap> {
 
 class VisualizationOptionsDTO extends InboundDTO<VisualizationOptions> {
   public static fromEntity(e: VisualizationOptions) {
+    // console.log("Called from entity: ", e);
     return new VisualizationOptionsDTO({
       preLogBase: e.preLogBase,
       postLogBase: e.postLogBase,
       applyCoolerWeights: e.applyCoolerWeights,
+      resolutionScaling: e.resolutionScaling,
+      resolutionLinearScaling: e.resolutionLinearScaling,
       colormap: ColormapDTO.fromEntity(e.colormap),
     });
   }
 
   public toEntity(): VisualizationOptions {
+    // console.log("Called to entity: ", this);
     return new VisualizationOptions(
       this.json["preLogBase"] as number,
       this.json["postLogBase"] as number,
       this.json["applyCoolerWeights"] as boolean,
+      this.json["resolutionScaling"] as boolean,
+      this.json["resolutionLinearScaling"] as boolean,
       new ColormapDTO(
         this.json["colormap"] as Record<string, unknown>
       ).toEntity()

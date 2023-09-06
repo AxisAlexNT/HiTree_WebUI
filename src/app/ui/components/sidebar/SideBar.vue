@@ -66,7 +66,6 @@ import SavedVisualOptions from "./SavedVisualOptions.vue";
 
 const stylesStore = useStyleStore();
 
-
 const props = defineProps<{
   mapManager?: ContactMapManager;
 }>();

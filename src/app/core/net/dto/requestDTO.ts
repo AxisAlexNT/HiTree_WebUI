@@ -140,6 +140,9 @@ class SetVisualizationOptionsRequestDTO extends HiCTAPIRequestDTO<SetVisualizati
       preLogBase: this.entity.options.options.preLogBase,
       postLogBase: this.entity.options.options.postLogBase,
       applyCoolerWeights: this.entity.options.options.applyCoolerWeights,
+      resolutionScaling: this.entity.options.options.resolutionScaling,
+      resolutionLinearScaling:
+        this.entity.options.options.resolutionLinearScaling,
       colormap: ColormapDTO.fromEntity(this.entity.options.options.colormap)
         .json,
     };

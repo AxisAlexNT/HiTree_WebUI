@@ -44,7 +44,9 @@
         :option_id="opt.option_id"
         :visualization-options="opt.options"
         :background-color="opt.backgroundColor"
-        @remove="removeSavedLocation"
+        :name="opt.name"
+        @remove="removeOption"
+        @rename="renameOption"
       ></SavedVisualOptionsElement>
     </div>
   </div>
@@ -53,13 +55,11 @@
 <script setup lang="ts">
 import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
 import { Ref, ref } from "vue";
-import { Coordinate } from "ol/coordinate";
 import SavedVisualOptionsElement from "./SavedVisualOptionsElement.vue";
 import VisualizationOptions from "@/app/core/visualization/VisualizationOptions";
 import { useVisualizationOptionsStore } from "@/app/stores/visualizationOptionsStore";
 import { storeToRefs } from "pinia";
 import { toast } from "vue-sonner";
-import { read } from "fs";
 const visualizationOptionsStore = useVisualizationOptionsStore();
 const { preLogBase, applyCoolerWeights, postLogBase, colormap } = storeToRefs(
   visualizationOptionsStore
@@ -78,6 +78,7 @@ const savedOptions: Ref<
     number,
     {
       option_id: number;
+      name: string;
       options: VisualizationOptions;
       backgroundColor: string;
     }
@@ -92,6 +93,7 @@ function saveOptions() {
   if (props.mapManager) {
     savedOptions.value.set(optionsCount.value, {
       option_id: optionsCount.value,
+      name: `Preset ${optionsCount.value}`,
       options: visualizationOptionsStore.asVisualizationOptions(),
       backgroundColor: mapBackgroundColor.value,
     });
@@ -99,10 +101,16 @@ function saveOptions() {
   }
 }
 
-function removeSavedLocation(option_id: number) {
-  //savedLocations.value.splice(location_id, 1);
-  // delete savedLocations.value[location_id];
+function removeOption(option_id: number) {
   savedOptions.value.delete(option_id);
+}
+
+function renameOption(option_id: number, name: string) {
+  const opt = savedOptions.value.get(option_id);
+  if (opt) {
+    opt.name = name;
+    savedOptions.value.set(option_id, opt);
+  }
 }
 
 function exportOptions() {
@@ -110,6 +118,7 @@ function exportOptions() {
     option_id: number;
     options: VisualizationOptions;
     backgroundColor: string;
+    name: string;
   }[] = [];
 
   savedOptions.value.forEach((v) => values.push(v));
@@ -172,6 +181,7 @@ function importOptionsFromFile() {
                   option_id: number;
                   options: VisualizationOptions;
                   backgroundColor: string;
+                  name?: string;
                 }[];
               };
             };
@@ -186,19 +196,26 @@ function importOptionsFromFile() {
             }
             jsonResult.data.savedLocations.forEach((option) => {
               if (savedOptions.value.has(option.option_id)) {
+                const newId = 1 + Math.max(...savedOptions.value.keys());
                 const newOption = {
-                  option_id: 1 + Math.max(...savedOptions.value.keys()),
+                  option_id: newId,
                   options: option.options,
                   backgroundColor: option.backgroundColor,
+                  name: option.name ?? `Preset ${newId}`,
                 };
                 savedOptions.value.set(newOption.option_id, newOption);
-                optionsCount.value = 1 + newOption.option_id;
+                optionsCount.value =
+                  1 + Math.max(optionsCount.value, newOption.option_id);
               } else {
-                savedOptions.value.set(option.option_id, option);
-                optionsCount.value = Math.max(
-                  optionsCount.value,
-                  1 + option.option_id
-                );
+                const newOption = {
+                  option_id: option.option_id,
+                  options: option.options,
+                  backgroundColor: option.backgroundColor,
+                  name: `Preset ${option.option_id}`,
+                };
+                savedOptions.value.set(newOption.option_id, newOption);
+                optionsCount.value =
+                  1 + Math.max(optionsCount.value, 1 + newOption.option_id);
               }
             });
             toast.success("Visualziation presets loaded");

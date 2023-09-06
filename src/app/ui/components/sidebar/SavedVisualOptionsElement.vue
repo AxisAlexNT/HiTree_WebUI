@@ -4,10 +4,22 @@
       <input
         type="text"
         class="form-control m-0"
-        placeholder="Location name"
+        placeholder="Preset name"
         aria-label="Name of visualization preset"
         v-model="name"
+        @change="() => (showRenameButton = true)"
       />
+      <button
+        class="btn btn-outline-success"
+        type="button"
+        title="Rename preset"
+        data-bs-toggle="tooltip"
+        data-bs-placement="bottom"
+        v-if="showRenameButton"
+        @click="renamePreset"
+      >
+        <i class="bi bi-check-square-fill"></i>
+      </button>
       <button
         class="btn btn-outline-primary"
         type="button"
@@ -21,7 +33,7 @@
       <button
         class="btn btn-outline-danger"
         type="button"
-        title="Remove saved location"
+        title="Remove visualization preset"
         data-bs-toggle="tooltip"
         data-bs-placement="bottom"
         @click="$emit('remove', props.option_id)"
@@ -44,21 +56,26 @@ const { preLogBase, applyCoolerWeights, postLogBase, colormap } = storeToRefs(
 );
 
 import { useStyleStore } from "@/app/stores/styleStore";
+import { emit } from "process";
 const stylesStore = useStyleStore();
 const { mapBackgroundColor } = storeToRefs(stylesStore);
 
 const props = defineProps<{
   mapManager?: ContactMapManager;
   option_id: number;
+  name: string;
   visualizationOptions: VisualizationOptions;
   backgroundColor: string;
 }>();
 
 const emits = defineEmits<{
-  (e: "remove", location_id: number): void;
+  (e: "remove", option_id: number): void;
+  (e: "rename", option_id: number, new_name: string): void;
 }>();
 
-const name = ref("Preset " + props.option_id);
+const showRenameButton = ref(false);
+
+const name = ref(props.name);
 
 function setOptionsPreset() {
   if (props.mapManager) {
@@ -70,6 +87,11 @@ function setOptionsPreset() {
       .sendVisualizationOptionsToServer()
       .then(() => props.mapManager?.reloadTiles());
   }
+}
+
+function renamePreset() {
+  showRenameButton.value = false;
+  emits("rename", props.option_id, props.name);
 }
 </script>
 <style scoped>
