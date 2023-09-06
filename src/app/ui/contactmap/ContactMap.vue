@@ -6,6 +6,7 @@
 import "ol/ol.css";
 import { useStyleStore } from "@/app/stores/styleStore";
 import { ref, computed } from "vue";
+import { storeToRefs } from "pinia";
 
 const stylesStore = useStyleStore();
 

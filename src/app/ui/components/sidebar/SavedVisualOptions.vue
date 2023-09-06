@@ -43,6 +43,7 @@
         :map-manager="props.mapManager"
         :option_id="opt.option_id"
         :visualization-options="opt.options"
+        :background-color="opt.backgroundColor"
         @remove="removeSavedLocation"
       ></SavedVisualOptionsElement>
     </div>
@@ -64,6 +65,10 @@ const { preLogBase, applyCoolerWeights, postLogBase, colormap } = storeToRefs(
   visualizationOptionsStore
 );
 
+import { useStyleStore } from "@/app/stores/styleStore";
+const stylesStore = useStyleStore();
+const { mapBackgroundColor } = storeToRefs(stylesStore);
+
 const props = defineProps<{
   mapManager?: ContactMapManager;
 }>();
@@ -74,6 +79,7 @@ const savedOptions: Ref<
     {
       option_id: number;
       options: VisualizationOptions;
+      backgroundColor: string;
     }
   >
 > = ref(new Map());
@@ -87,6 +93,7 @@ function saveOptions() {
     savedOptions.value.set(optionsCount.value, {
       option_id: optionsCount.value,
       options: visualizationOptionsStore.asVisualizationOptions(),
+      backgroundColor: mapBackgroundColor.value,
     });
     optionsCount.value += 1;
   }
@@ -102,6 +109,7 @@ function exportOptions() {
   const values: {
     option_id: number;
     options: VisualizationOptions;
+    backgroundColor: string;
   }[] = [];
 
   savedOptions.value.forEach((v) => values.push(v));
@@ -109,13 +117,17 @@ function exportOptions() {
   const data = JSON.stringify({
     exportType: "visualizationOptions",
     data: {
+      filename: props.mapManager?.getOptions().filename,
       savedLocations: values,
     },
   });
   const blob = new Blob([data], { type: "text/plain" });
   const e = document.createEvent("MouseEvents"),
     a = document.createElement("a");
-  a.download = "visualizationOptionsPresets.hict.json";
+  a.download =
+    "visualizationOptionsPresets." +
+    props.mapManager?.getOptions().filename +
+    ".hict.json";
   a.href = window.URL.createObjectURL(blob);
   a.dataset.downloadurl = ["text/json", a.download, a.href].join(":");
   e.initEvent(
@@ -155,18 +167,29 @@ function importOptionsFromFile() {
             const jsonResult = JSON.parse(evt.target.result as string) as {
               exportType: "visualizationOptions";
               data: {
+                filename: string;
                 savedLocations: {
                   option_id: number;
                   options: VisualizationOptions;
+                  backgroundColor: string;
                 }[];
               };
             };
-            console.log(jsonResult);
+            // console.log(jsonResult);
+            if (
+              props.mapManager?.getOptions().filename !==
+              jsonResult.data.filename
+            ) {
+              toast.message(
+                "Warning! You are importing presets saved for another file"
+              );
+            }
             jsonResult.data.savedLocations.forEach((option) => {
               if (savedOptions.value.has(option.option_id)) {
                 const newOption = {
                   option_id: 1 + Math.max(...savedOptions.value.keys()),
                   options: option.options,
+                  backgroundColor: option.backgroundColor,
                 };
                 savedOptions.value.set(newOption.option_id, newOption);
                 optionsCount.value = 1 + newOption.option_id;
@@ -178,6 +201,7 @@ function importOptionsFromFile() {
                 );
               }
             });
+            toast.success("Visualziation presets loaded");
           } catch (e) {
             toast.error("Cannot import visualization options: " + e);
           }

@@ -43,10 +43,15 @@ const { preLogBase, applyCoolerWeights, postLogBase, colormap } = storeToRefs(
   visualizationOptionsStore
 );
 
+import { useStyleStore } from "@/app/stores/styleStore";
+const stylesStore = useStyleStore();
+const { mapBackgroundColor } = storeToRefs(stylesStore);
+
 const props = defineProps<{
   mapManager?: ContactMapManager;
   option_id: number;
   visualizationOptions: VisualizationOptions;
+  backgroundColor: string;
 }>();
 
 const emits = defineEmits<{
@@ -60,6 +65,7 @@ function setOptionsPreset() {
     visualizationOptionsStore.setVisualizationOptions(
       props.visualizationOptions
     );
+    stylesStore.setMapBackground(props.backgroundColor);
     props.mapManager?.visualizationManager
       .sendVisualizationOptionsToServer()
       .then(() => props.mapManager?.reloadTiles());

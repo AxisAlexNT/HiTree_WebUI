@@ -66,6 +66,7 @@ import SavedVisualOptions from "./SavedVisualOptions.vue";
 
 const stylesStore = useStyleStore();
 
+
 const props = defineProps<{
   mapManager?: ContactMapManager;
 }>();
@@ -95,7 +96,7 @@ const layers: Ref<LayerDescriptor[]> = ref([
     () =>
       new Style({
         stroke: new Stroke({
-          color: "rgb(255,255,255)",
+          color: "rgba(255,255,255,255)",
         }),
       })
   ),
@@ -114,7 +115,7 @@ function onColorChanged(layerName: string, newColor: string) {
       break;
     default:
       toast.error(`Method for ${layerName} is undefined`);
-      console.log(`Method for ${layerName} is undefined`);
+      // console.log(`Method for ${layerName} is undefined`);
       console.error(`Method for ${layerName} is undefined`);
   }
 
@@ -131,7 +132,8 @@ function onBorderStyleChanged(layerName: string, style: BorderStyle) {
       getEventManager()?.onScanffoldBorderStyleChanged(style);
       break;
     default:
-      alert(`Method for ${layerName} is undefined`);
+      // alert(`Method for ${layerName} is undefined`);
+      toast.error(`Method for ${layerName} is undefined`);
       console.error(`Method for ${layerName} is undefined`);
   }
 }
