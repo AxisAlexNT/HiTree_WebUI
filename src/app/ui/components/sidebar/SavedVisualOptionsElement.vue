@@ -11,12 +11,12 @@
       <button
         class="btn btn-outline-primary"
         type="button"
-        title="Go to saved location"
+        title="Load visualization preset"
         data-bs-toggle="tooltip"
         data-bs-placement="bottom"
         @click="setOptionsPreset"
       >
-        <i class="bi bi-box-arrow-in-right"></i>
+        <i class="bi bi-brush"></i>
       </button>
       <button
         class="btn btn-outline-danger"

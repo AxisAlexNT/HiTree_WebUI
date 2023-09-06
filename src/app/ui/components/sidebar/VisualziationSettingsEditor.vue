@@ -95,7 +95,14 @@ const gradstyle = ref({
 });
 
 watch(
-  () => [fromColor.value, toColor.value],
+  () => [
+    fromColor.value,
+    toColor.value,
+    lowerBound.value,
+    upperBound.value,
+    signalMin.value,
+    signalMax.value,
+  ],
   () => {
     gradstyle.value["background-image"] =
       "linear-gradient(to right," +
@@ -106,9 +113,10 @@ watch(
     colormap.value = new SimpleLinearGradient(
       fromColor.value,
       toColor.value,
-      signalMin.value,
-      signalMax.value
+      lowerBound.value,
+      upperBound.value
     );
+    // console.log("UpperBound", upperBound.value);
   }
 );
 
@@ -116,10 +124,36 @@ watch(
   () => props.mapManager,
   () => {
     if (props.mapManager) {
-      props.mapManager?.visualizationManager.fetchVisualizationOptions();
+      props.mapManager?.visualizationManager
+        .fetchVisualizationOptions()
+        .then(() => updateFromStore());
     }
   }
 );
+
+onMounted(() => {
+  props.mapManager?.visualizationManager
+    .fetchVisualizationOptions()
+    .then(() => updateFromStore());
+});
+
+function updateFromStore() {
+  // props.mapManager?.visualizationManager.fetchVisualizationOptions();
+  const cmap = colormap.value;
+  if (cmap) {
+    switch (true) {
+      case cmap instanceof SimpleLinearGradient: {
+        const grad = cmap as SimpleLinearGradient;
+        fromColor.value = grad.startColorRGBAString;
+        toColor.value = grad.endColorRGBAString;
+        console.log("Updated: ", fromColor.value, toColor.value);
+        break;
+      }
+      default:
+        throw Error("Unknown colormap type");
+    }
+  }
+}
 
 function applySettings() {
   props.mapManager?.visualizationManager

@@ -22,7 +22,19 @@
     >
       Export
     </button>
-    <button type="button" class="btn btn-outline-primary">Import</button>
+    <button
+      type="button"
+      class="btn btn-outline-primary"
+      @click="importFileBtn?.click()"
+    >
+      Import
+      <input
+        type="file"
+        ref="importFileBtn"
+        v-on:change="importOptionsFromFile()"
+        hidden
+      />
+    </button>
   </div>
   <div class="saved-locations-div">
     <div v-for="[id, opt] of savedOptions" :key="id">
@@ -45,6 +57,8 @@ import SavedVisualOptionsElement from "./SavedVisualOptionsElement.vue";
 import VisualizationOptions from "@/app/core/visualization/VisualizationOptions";
 import { useVisualizationOptionsStore } from "@/app/stores/visualizationOptionsStore";
 import { storeToRefs } from "pinia";
+import { toast } from "vue-sonner";
+import { read } from "fs";
 const visualizationOptionsStore = useVisualizationOptionsStore();
 const { preLogBase, applyCoolerWeights, postLogBase, colormap } = storeToRefs(
   visualizationOptionsStore
@@ -63,6 +77,8 @@ const savedOptions: Ref<
     }
   >
 > = ref(new Map());
+
+const importFileBtn: Ref<HTMLElement | null> = ref(null);
 
 const optionsCount = ref(0);
 
@@ -120,6 +136,57 @@ function exportOptions() {
     null
   );
   a.dispatchEvent(e);
+}
+
+function importOptionsFromFile() {
+  try {
+    if (importFileBtn.value) {
+      const fileList = importFileBtn.value.files as FileList;
+      if (fileList && fileList.length > 0) {
+        const reader = new FileReader();
+        reader.readAsText(fileList[0], "utf-8");
+        console.log(fileList);
+        console.log(reader);
+        reader.onload = (evt) => {
+          try {
+            if (!evt.target || !evt.target.result) {
+              return;
+            }
+            const jsonResult = JSON.parse(evt.target.result as string) as {
+              exportType: "visualizationOptions";
+              data: {
+                savedLocations: {
+                  option_id: number;
+                  options: VisualizationOptions;
+                }[];
+              };
+            };
+            console.log(jsonResult);
+            jsonResult.data.savedLocations.forEach((option) => {
+              if (savedOptions.value.has(option.option_id)) {
+                const newOption = {
+                  option_id: 1 + Math.max(...savedOptions.value.keys()),
+                  options: option.options,
+                };
+                savedOptions.value.set(newOption.option_id, newOption);
+                optionsCount.value = 1 + newOption.option_id;
+              } else {
+                savedOptions.value.set(option.option_id, option);
+                optionsCount.value = Math.max(
+                  optionsCount.value,
+                  1 + option.option_id
+                );
+              }
+            });
+          } catch (e) {
+            toast.error("Cannot import visualization options: " + e);
+          }
+        };
+      }
+    }
+  } catch (e) {
+    toast.error("Cannot import visualization options: " + e);
+  }
 }
 </script>
 

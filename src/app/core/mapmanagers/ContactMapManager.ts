@@ -53,6 +53,7 @@ class ContactMapManager {
     );
 
     this.visualizationManager = new VisualizationManager(this);
+    this.visualizationManager.fetchVisualizationOptions();
 
     this.map = new Map({
       layers: [],
