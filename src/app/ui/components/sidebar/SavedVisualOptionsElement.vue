@@ -91,7 +91,7 @@ function setOptionsPreset() {
 
 function renamePreset() {
   showRenameButton.value = false;
-  emits("rename", props.option_id, props.name);
+  emits("rename", props.option_id, name.value);
 }
 </script>
 <style scoped>

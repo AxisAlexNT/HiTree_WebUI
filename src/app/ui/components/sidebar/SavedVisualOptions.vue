@@ -1,53 +1,23 @@
 <template>
   <p class="w-100 m-0"><b>Visualization presets:</b></p>
-  <div
-    class="btn-group w-100 p-2"
-    role="group"
-    aria-label="Visualization presets"
-  >
-    <button
-      type="button"
-      class="btn btn-outline-primary"
-      data-bs-toggle="tooltip"
-      data-bs-placement="bottom"
-      title="Save current visualization options"
-      @click="saveOptions"
-    >
+  <div class="btn-group w-100 p-2" role="group" aria-label="Visualization presets">
+    <button type="button" class="btn btn-outline-primary" data-bs-toggle="tooltip" data-bs-placement="bottom"
+      title="Save current visualization options" @click="saveOptions">
       <i class="bi bi-bookmark-plus"></i> Save
     </button>
-    <button
-      type="button"
-      class="btn btn-outline-primary"
-      @click="exportOptions"
-    >
+    <button type="button" class="btn btn-outline-primary" @click="exportOptions">
       Export
     </button>
-    <button
-      type="button"
-      class="btn btn-outline-primary"
-      @click="importFileBtn?.click()"
-    >
+    <button type="button" class="btn btn-outline-primary" @click="importFileBtn?.click()">
       Import
-      <input
-        type="file"
-        ref="importFileBtn"
-        v-on:change="importOptionsFromFile()"
-        hidden
-      />
+      <input type="file" ref="importFileBtn" v-on:change="importOptionsFromFile()" hidden />
     </button>
   </div>
   <div class="saved-locations-div">
     <div v-for="[id, opt] of savedOptions" :key="id">
-      <SavedVisualOptionsElement
-        v-if="opt"
-        :map-manager="props.mapManager"
-        :option_id="opt.option_id"
-        :visualization-options="opt.options"
-        :background-color="opt.backgroundColor"
-        :name="opt.name"
-        @remove="removeOption"
-        @rename="renameOption"
-      ></SavedVisualOptionsElement>
+      <SavedVisualOptionsElement v-if="opt" :map-manager="props.mapManager" :option_id="opt.option_id"
+        :visualization-options="opt.options" :background-color="opt.backgroundColor" :name="opt.name"
+        @remove="removeOption" @rename="renameOption"></SavedVisualOptionsElement>
     </div>
   </div>
 </template>
@@ -108,8 +78,14 @@ function removeOption(option_id: number) {
 function renameOption(option_id: number, name: string) {
   const opt = savedOptions.value.get(option_id);
   if (opt) {
-    opt.name = name;
-    savedOptions.value.set(option_id, opt);
+    const newOpt = {
+      option_id: opt.option_id,
+      options: opt.options,
+      name: name,
+      backgroundColor: opt.backgroundColor,
+    };
+    savedOptions.value.set(option_id, newOpt);
+    console.log("newOpt:", newOpt, " saved options: ", savedOptions.value);
   }
 }
 
@@ -166,8 +142,8 @@ function importOptionsFromFile() {
       if (fileList && fileList.length > 0) {
         const reader = new FileReader();
         reader.readAsText(fileList[0], "utf-8");
-        console.log(fileList);
-        console.log(reader);
+        // console.log(fileList);
+        // console.log(reader);
         reader.onload = (evt) => {
           try {
             if (!evt.target || !evt.target.result) {
