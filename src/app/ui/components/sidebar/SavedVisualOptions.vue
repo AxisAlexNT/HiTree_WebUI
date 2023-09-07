@@ -60,13 +60,12 @@ import VisualizationOptions from "@/app/core/visualization/VisualizationOptions"
 import { useVisualizationOptionsStore } from "@/app/stores/visualizationOptionsStore";
 import { storeToRefs } from "pinia";
 import { toast } from "vue-sonner";
+import { useStyleStore } from "@/app/stores/styleStore";
 const visualizationOptionsStore = useVisualizationOptionsStore();
 const { preLogBase, applyCoolerWeights, postLogBase, colormap } = storeToRefs(
   visualizationOptionsStore
 );
 
-import { useStyleStore } from "@/app/stores/styleStore";
-import { json } from "stream/consumers";
 const stylesStore = useStyleStore();
 const { mapBackgroundColor } = storeToRefs(stylesStore);
 
@@ -86,7 +85,7 @@ const savedOptions: Ref<
   >
 > = ref(new Map());
 
-const importFileBtn: Ref<HTMLElement | null> = ref(null);
+const importFileBtn: Ref<HTMLInputElement | null> = ref(null);
 
 const optionsCount = ref(0);
 
@@ -150,6 +149,7 @@ function exportOptions() {
     "click",
     true,
     false,
+    // @ts-expect-error Taken from JS
     window,
     0,
     0,

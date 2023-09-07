@@ -46,17 +46,17 @@
 <script setup lang="ts">
 import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
 import VisualizationOptions from "@/app/core/visualization/VisualizationOptions";
-import { Coordinate } from "ol/coordinate";
 import { ref } from "vue";
 import { useVisualizationOptionsStore } from "@/app/stores/visualizationOptionsStore";
 import { storeToRefs } from "pinia";
+import { useStyleStore } from "@/app/stores/styleStore";
+
 const visualizationOptionsStore = useVisualizationOptionsStore();
 const { preLogBase, applyCoolerWeights, postLogBase, colormap } = storeToRefs(
   visualizationOptionsStore
 );
 
-import { useStyleStore } from "@/app/stores/styleStore";
-import { emit } from "process";
+
 const stylesStore = useStyleStore();
 const { mapBackgroundColor } = storeToRefs(stylesStore);
 

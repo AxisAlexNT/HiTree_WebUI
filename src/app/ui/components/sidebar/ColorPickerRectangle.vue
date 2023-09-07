@@ -6,11 +6,13 @@
 <script setup lang="ts">
 import { Ref, onMounted, ref } from "vue";
 import "toolcool-color-picker";
-import Picker from "vanilla-picker/csp";
+import Picker from "vanilla-picker";
 import "vanilla-picker/dist/vanilla-picker.csp.css";
 
+type position = false | "top" | "bottom" | "left" | "right";
+
 const props = defineProps<{
-  position: string | string[] | undefined;
+  position?: position | position[];
   getDefaultColor: () => string | undefined;
 }>();
 
@@ -32,15 +34,16 @@ onMounted(() => {
     picker.value = new Picker({
       parent: vPicker.value,
       color: currentColor.value,
-      onChange: function (color: Record<string, unknown>) {
+      onChange: function (color) {
         currentColor.value = color.rgbaString as string;
         colorSelectorStyleObject.value["background"] = currentColor.value;
       },
-      onDone: function (color: Record<string, unknown>) {
+      onDone: function (color) {
         currentColor.value = color.rgbaString as string;
         colorSelectorStyleObject.value["background"] = currentColor.value;
         emit("onColorChanged", currentColor.value);
       },
+      // @ts-expect-error Library actiually supports multiple terms in positioning
       popup: props.position ?? ["top", "left"],
     });
   }
