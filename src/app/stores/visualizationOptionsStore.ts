@@ -13,7 +13,7 @@ export const useVisualizationOptionsStore = defineStore(
     const resolutionLinearScaling = ref(false);
     const postLogBase = ref(10);
     const colormap: Ref<Colormap> = ref(
-      new SimpleLinearGradient("rgba(0,255,0,0)", "rgba(0,96,0,1)", 0, 1)
+      new SimpleLinearGradient("rgba(0,255,0,0.0)", "rgba(0,96,0,1.0)", 0, 1)
     );
 
     function asVisualizationOptions(): VisualizationOptions {

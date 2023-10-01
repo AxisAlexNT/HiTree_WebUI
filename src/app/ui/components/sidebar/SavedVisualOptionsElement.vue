@@ -56,7 +56,6 @@ const { preLogBase, applyCoolerWeights, postLogBase, colormap } = storeToRefs(
   visualizationOptionsStore
 );
 
-
 const stylesStore = useStyleStore();
 const { mapBackgroundColor } = storeToRefs(stylesStore);
 
@@ -71,6 +70,11 @@ const props = defineProps<{
 const emits = defineEmits<{
   (e: "remove", option_id: number): void;
   (e: "rename", option_id: number, new_name: string): void;
+  // (
+  //   e: "apply",
+  //   option_id: number,
+  //   visualizationOptions: VisualizationOptions
+  // ): void;
 }>();
 
 const showRenameButton = ref(false);
@@ -79,6 +83,7 @@ const name = ref(props.name);
 
 function setOptionsPreset() {
   if (props.mapManager) {
+    // console.log("Setting preset: ", props.visualizationOptions);
     visualizationOptionsStore.setVisualizationOptions(
       props.visualizationOptions
     );

@@ -4,7 +4,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { Ref, onMounted, ref } from "vue";
+import { Ref, onMounted, ref, watch } from "vue";
 import "toolcool-color-picker";
 import Picker from "vanilla-picker";
 import "vanilla-picker/dist/vanilla-picker.csp.css";
@@ -25,6 +25,20 @@ const emit = defineEmits<{
 const currentColor = ref(props.getDefaultColor());
 
 const vPicker: Ref<HTMLElement | null> = ref(null);
+
+watch(
+  () => props.getDefaultColor(),
+  () => {
+    const nc = props.getDefaultColor();
+    if (nc) {
+      // console.log("Picker rectangle: new color", nc);
+      // nc = "rgba(255,0,0,1.000000)";
+      const re = /\s*rgba\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*((\d+)[,.](\d+))\s*\)\s*/;
+      currentColor.value = nc.replace(re, "rgba($1,$2,$3,$5.$6)");
+      colorSelectorStyleObject.value["background"] = currentColor.value;
+    }
+  }
+);
 
 onMounted(() => {
   if (!currentColor.value) {

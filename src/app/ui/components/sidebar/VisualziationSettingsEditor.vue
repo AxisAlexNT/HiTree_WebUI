@@ -12,13 +12,14 @@
             <input
               class="form-check-input number-input w-100 h-100 m-0"
               type="number"
+              lang="en"
               v-model.number="lowerBound"
             />
           </li>
           <li class="list-group-item w-100 h-100">
             <ColorPickerRectangle
               :position="'left'"
-              :getDefaultColor="() => fromColor"
+              :getDefaultColor="fromColorFn"
               @onColorChanged="(nc: string) => (fromColor = nc)"
             >
             </ColorPickerRectangle>
@@ -32,13 +33,14 @@
             <input
               class="form-check-input number-input w-100 h-100 m-0"
               type="number"
+              lang="en"
               v-model.number="upperBound"
             />
           </li>
           <li class="list-group-item w-100 h-100">
             <ColorPickerRectangle
               :position="'left'"
-              :getDefaultColor="() => toColor"
+              :getDefaultColor="toColorFn"
               @onColorChanged="(nc: string) => (toColor = nc)"
             >
             </ColorPickerRectangle>
@@ -86,6 +88,9 @@ const toColor = ref("rgba(0,96,0,1)");
 const lowerBound: Ref<number> = ref(signalMin.value);
 const upperBound: Ref<number> = ref(signalMax.value);
 
+const fromColorFn = ref(() => fromColor.value);
+const toColorFn = ref(() => toColor.value);
+
 const gradstyle = ref({
   width: "98%",
   height: "2rem",
@@ -93,6 +98,26 @@ const gradstyle = ref({
   "background-image":
     "linear-gradient(to right," + fromColor.value + " , " + toColor.value + ")",
 });
+
+watch(
+  () => {
+    if (colormap.value instanceof SimpleLinearGradient) {
+      const cmap = colormap.value as SimpleLinearGradient;
+      return [cmap.startColorRGBAString, cmap.endColorRGBAString];
+    }
+  },
+  () => {
+    if (colormap.value instanceof SimpleLinearGradient) {
+      // console.log("Colormap type changed and simple linear gradient, was: ", fromColor.value, toColor.value);
+      const cmap = colormap.value as SimpleLinearGradient;
+      fromColor.value = cmap.startColorRGBAString;
+      toColor.value = cmap.endColorRGBAString;
+      fromColorFn.value = () => fromColor.value;
+      toColorFn.value = () => toColor.value;
+      // console.log("Now: ", fromColor.value, toColor.value);
+    }
+  }
+);
 
 watch(
   () => [
@@ -110,6 +135,8 @@ watch(
       " , " +
       toColor.value +
       ")";
+    fromColorFn.value = () => fromColor.value;
+    toColorFn.value = () => toColor.value;
     colormap.value = new SimpleLinearGradient(
       fromColor.value,
       toColor.value,
