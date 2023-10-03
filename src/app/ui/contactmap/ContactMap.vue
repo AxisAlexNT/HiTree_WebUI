@@ -14,7 +14,6 @@ const mapContainerStyle = ref({
   width: "100%",
   height: "100%",
   "padding-right": "15px",
-  "background-color": computed(() => stylesStore.mapBackgroundColor),
 });
 </script>
 

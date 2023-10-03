@@ -51,7 +51,7 @@
 import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
 import LayerComponent from "@/app/ui/components/sidebar/LayerComponent.vue";
 import SavedLocations from "@/app/ui/components/sidebar/SavedLocations.vue";
-import { ref, type Ref } from "vue";
+import { ref, watch, type Ref } from "vue";
 import ContrastSelector from "./ContrastSelector.vue";
 import { CommonEventManager } from "@/app/core/mapmanagers/CommonEventManager";
 import { BorderStyle } from "@/app/core/tracks/Track2DSymmetric";
@@ -63,8 +63,29 @@ import { useStyleStore } from "@/app/stores/styleStore";
 // import GradientEditor from "@/app/ui/components/sidebar/GradientEditor.vue";
 import VisualziationSettingsEditor from "./VisualziationSettingsEditor.vue";
 import SavedVisualOptions from "./SavedVisualOptions.vue";
+import { storeToRefs } from "pinia";
 
 const stylesStore = useStyleStore();
+
+const { mapBackgroundColor } = storeToRefs(stylesStore);
+const backgroundColorStyle: Ref<Style> = ref(
+  new Style({
+    stroke: new Stroke({
+      color: "rgba(255,255,255,255)",
+    }),
+  })
+);
+
+watch(
+  () => mapBackgroundColor.value,
+  () => {
+    backgroundColorStyle.value = new Style({
+      stroke: new Stroke({
+        color: mapBackgroundColor.value,
+      }),
+    });
+  }
+);
 
 const props = defineProps<{
   mapManager?: ContactMapManager;
@@ -90,15 +111,7 @@ const layers: Ref<LayerDescriptor[]> = ref([
       .track2DHolder.scaffoldBordersTrack.getStyle()
   ),
   new LayerDescriptor("Gridlines"),
-  new LayerDescriptor(
-    "Background",
-    () =>
-      new Style({
-        stroke: new Stroke({
-          color: "rgba(255,255,255,255)",
-        }),
-      })
-  ),
+  new LayerDescriptor("Background", () => backgroundColorStyle.value),
 ]);
 
 function onColorChanged(layerName: string, newColor: string) {

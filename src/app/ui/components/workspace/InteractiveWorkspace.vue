@@ -1,5 +1,5 @@
 <template>
-  <div class="interactive-workspace">
+  <div :class="iwsClass" :style="iwcStyle">
     <div class="interactive-workspace_tracknames">
       <TrackNames></TrackNames>
     </div>
@@ -24,6 +24,19 @@ import TrackNames from "./TrackNames.vue";
 import HorizontalIGVTrack from "../tracks/HorizontalIGVTrack.vue";
 import ContactMap from "../../contactmap/ContactMap.vue";
 import VerticalIGVTrack from "../tracks/VerticalIGVTrack.vue";
+
+import { useStyleStore } from "@/app/stores/styleStore";
+import { ref } from "vue";
+import { storeToRefs } from "pinia";
+
+const stylesStore = useStyleStore();
+
+const { mapBackgroundColor } = storeToRefs(stylesStore);
+
+const iwsClass = ref("interactive-workspace");
+const iwcStyle = ref({
+  "background-color": mapBackgroundColor,
+});
 
 const props = defineProps<{
   mapManager: ContactMapManager | undefined;
