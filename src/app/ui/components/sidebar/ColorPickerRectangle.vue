@@ -33,9 +33,13 @@ watch(
     if (nc) {
       // console.log("Picker rectangle: new color", nc);
       // nc = "rgba(255,0,0,1.000000)";
-      const re = /\s*rgba\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*((\d+)[,.](\d+))\s*\)\s*/;
-      currentColor.value = nc.replace(re, "rgba($1,$2,$3,$5.$6)");
+      const re =
+        /\s*rgba\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*((\d+)([,.](\d+))?)\s*\)\s*/;
+      const alpha = nc.replace(re, "$4").replace(/,/, ".");
+      currentColor.value = nc.replace(re, `rgba($1,$2,$3,${alpha})`);
       colorSelectorStyleObject.value["background"] = currentColor.value;
+      picker.value?.setColor(currentColor.value, false);
+      // console.log("Picker rectangle: new color", currentColor.value);
     }
   }
 );
