@@ -8,9 +8,33 @@
         ></MiniMap>
       </div>
 
-      <div id="color-range" v-if="props.mapManager">
+      <div id="layers-block" v-if="props.mapManager">
+        <!-- Instantiate layer components here using v-for -->
+        <LayerComponent
+          v-for="layer in layers"
+          v-bind:key="layer.name"
+          v-bind:layer-name="layer.name"
+          :getDefaultColor="layer.getStyle"
+          @onColorChanged="onColorChanged"
+          @onBorderStyleChanged="onBorderStyleChanged"
+        >
+        </LayerComponent>
+      </div>
+
+      <VisualziationSettingsEditor
+        :map-manager="props.mapManager"
+        v-if="props.mapManager"
+      />
+
+      <!-- <div id="color-range" v-if="props.mapManager">
         <ContrastSelector :map-manager="props.mapManager" />
-        <!-- <GradientEditor /> -->
+      </div> -->
+
+      <div id="saved-visual-settings">
+        <SavedVisualOptions
+          :map-manager="props.mapManager"
+          v-if="props.mapManager"
+        ></SavedVisualOptions>
       </div>
 
       <div id="saved-locations">
@@ -20,19 +44,6 @@
         ></SavedLocations>
       </div>
     </div>
-
-    <div id="layers-block" v-if="props.mapManager">
-      <!-- Instantiate layer components here using v-for -->
-      <LayerComponent
-        v-for="layer in layers"
-        v-bind:key="layer.name"
-        v-bind:layer-name="layer.name"
-        :getDefaultColor="layer.getStyle"
-        @onColorChanged="onColorChanged"
-        @onBorderStyleChanged="onBorderStyleChanged"
-      >
-      </LayerComponent>
-    </div>
   </aside>
 </template>
 
@@ -40,13 +51,41 @@
 import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
 import LayerComponent from "@/app/ui/components/sidebar/LayerComponent.vue";
 import SavedLocations from "@/app/ui/components/sidebar/SavedLocations.vue";
-import { ref, type Ref } from "vue";
+import { ref, watch, type Ref } from "vue";
 import ContrastSelector from "./ContrastSelector.vue";
-import GradientEditor from "./GradientEditor.vue";
 import { CommonEventManager } from "@/app/core/mapmanagers/CommonEventManager";
 import { BorderStyle } from "@/app/core/tracks/Track2DSymmetric";
 import Style from "ol/style/Style";
 import MiniMap from "@/app/ui/components/sidebar/MiniMap.vue";
+import { toast } from "vue-sonner";
+import Stroke from "ol/style/Stroke";
+import { useStyleStore } from "@/app/stores/styleStore";
+// import GradientEditor from "@/app/ui/components/sidebar/GradientEditor.vue";
+import VisualziationSettingsEditor from "./VisualziationSettingsEditor.vue";
+import SavedVisualOptions from "./SavedVisualOptions.vue";
+import { storeToRefs } from "pinia";
+
+const stylesStore = useStyleStore();
+
+const { mapBackgroundColor } = storeToRefs(stylesStore);
+const backgroundColorStyle: Ref<Style> = ref(
+  new Style({
+    stroke: new Stroke({
+      color: "rgba(255,255,255,255)",
+    }),
+  })
+);
+
+watch(
+  () => mapBackgroundColor.value,
+  () => {
+    backgroundColorStyle.value = new Style({
+      stroke: new Stroke({
+        color: mapBackgroundColor.value,
+      }),
+    });
+  }
+);
 
 const props = defineProps<{
   mapManager?: ContactMapManager;
@@ -72,6 +111,7 @@ const layers: Ref<LayerDescriptor[]> = ref([
       .track2DHolder.scaffoldBordersTrack.getStyle()
   ),
   new LayerDescriptor("Gridlines"),
+  new LayerDescriptor("Background", () => backgroundColorStyle.value),
 ]);
 
 function onColorChanged(layerName: string, newColor: string) {
@@ -82,8 +122,12 @@ function onColorChanged(layerName: string, newColor: string) {
     case "Scaffolds":
       getEventManager()?.onScanffoldBorderColorChanged(newColor);
       break;
+    case "Background":
+      stylesStore.setMapBackground(newColor);
+      break;
     default:
-      alert(`Method for ${layerName} is undefined`);
+      toast.error(`Method for ${layerName} is undefined`);
+      // console.log(`Method for ${layerName} is undefined`);
       console.error(`Method for ${layerName} is undefined`);
   }
 
@@ -100,7 +144,8 @@ function onBorderStyleChanged(layerName: string, style: BorderStyle) {
       getEventManager()?.onScanffoldBorderStyleChanged(style);
       break;
     default:
-      alert(`Method for ${layerName} is undefined`);
+      // alert(`Method for ${layerName} is undefined`);
+      toast.error(`Method for ${layerName} is undefined`);
       console.error(`Method for ${layerName} is undefined`);
   }
 }
@@ -121,7 +166,7 @@ function getEventManager(): CommonEventManager | undefined {
   flex-direction: column;
   gap: 1px;
 
-  width: 232px;
+  width: 350px;
 
   right: 0px;
   top: 109px;
@@ -158,8 +203,7 @@ function getEventManager(): CommonEventManager | undefined {
   padding: 16px;
   gap: 8px;
 
-  width: 232px;
-  height: 108px;
+  height: fit-content;
 
   /* Global/09. White */
   background: #ffffff;
@@ -169,7 +213,7 @@ function getEventManager(): CommonEventManager | undefined {
 
   /* Inside auto layout */
   flex: none;
-  order: 1;
+  order: 0;
   flex-grow: 0;
 }
 
@@ -186,6 +230,8 @@ function getEventManager(): CommonEventManager | undefined {
   flex-direction: column;
   padding: 16px;
   gap: 12px;
+
+  height: fit-content;
 
   /* Global/09. White */
   background: #ffffff;
@@ -207,6 +253,8 @@ function getEventManager(): CommonEventManager | undefined {
   flex-direction: column;
   padding: 16px 0px;
   gap: 8px;
+
+  height: fit-content;
 
   /* Global/09. White */
   background: #ffffff;

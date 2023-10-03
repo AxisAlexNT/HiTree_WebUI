@@ -18,10 +18,10 @@
           <input
             class="form-check-input"
             type="checkbox"
-            role="switch"
             value=""
             id="checkbox-normalization-pre-log"
             v-model="applyPreLog"
+            @change="preLogCheckChange"
           />
           <label class="form-check-label" for="checkbox-normalization-pre-log">
             Apply pre log-normalization
@@ -35,14 +35,58 @@
             class="form-check-input number-input"
             type="number"
             id="normalization-pre-log-base"
-            min="2.0"
+            min="0.00000001"
             max="1000.0"
-            step="0.5"
+            step="0.1"
             v-model.number="preLogBase"
           />
         </div>
       </li>
-      <li><hr class="dropdown-divider" /></li>
+      <li>
+        <hr class="dropdown-divider" />
+      </li>
+      <li>
+        <div class="form-check">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            role="switch"
+            value=""
+            id="checkbox-normalization-resolution-scaling"
+            v-model="resolutionScaling"
+          />
+          <label
+            class="form-check-label"
+            for="checkbox-normalization-resolution-scaling"
+          >
+            Apply resolution scaling
+          </label>
+        </div>
+      </li>
+      <li>
+        <hr class="dropdown-divider" />
+      </li>
+      <li>
+        <div class="form-check">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            role="switch"
+            value=""
+            id="checkbox-normalization-resolution-linear-scaling"
+            v-model="resolutionLinearScaling"
+          />
+          <label
+            class="form-check-label"
+            for="checkbox-normalization-resolution-linear-scaling"
+          >
+            Apply linear resolution scaling
+          </label>
+        </div>
+      </li>
+      <li>
+        <hr class="dropdown-divider" />
+      </li>
       <li>
         <div class="form-check">
           <input
@@ -61,16 +105,18 @@
           </label>
         </div>
       </li>
-      <li><hr class="dropdown-divider" /></li>
+      <li>
+        <hr class="dropdown-divider" />
+      </li>
       <li>
         <div class="form-check">
           <input
             class="form-check-input"
             type="checkbox"
-            role="switch"
             value=""
             id="checkbox-normalization-post-log"
             v-model="applyPostLog"
+            @change="postLogCheckChange"
           />
           <label class="form-check-label" for="checkbox-normalization-post-log">
             Apply post log-normalization
@@ -84,14 +130,16 @@
             class="form-check-input number-input"
             type="number"
             id="normalization-post-log-base"
-            min="2.0"
+            min="0.00000001"
             max="1000.0"
-            step="0.5"
+            step="0.1"
             v-model.number="postLogBase"
           />
         </div>
       </li>
-      <li><hr class="dropdown-divider" /></li>
+      <li>
+        <hr class="dropdown-divider" />
+      </li>
       <li>
         <div class="btn-group" role="group" id="normalization-apply-group">
           <button type="button" class="btn btn-success" @click="applySettings">
@@ -109,6 +157,18 @@
 <script setup lang="ts">
 import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
 import { Ref, ref } from "vue";
+import { useVisualizationOptionsStore } from "@/app/stores/visualizationOptionsStore";
+import { storeToRefs } from "pinia";
+import { toast } from "vue-sonner";
+const visualizationOptionsStore = useVisualizationOptionsStore();
+const {
+  preLogBase,
+  applyCoolerWeights,
+  resolutionScaling,
+  resolutionLinearScaling,
+  postLogBase,
+  colormap,
+} = storeToRefs(visualizationOptionsStore);
 
 const props = defineProps<{
   mapManager?: ContactMapManager;
@@ -116,13 +176,13 @@ const props = defineProps<{
 
 const applyPreLog: Ref<boolean> = ref(false);
 
-const applyCoolerWeights: Ref<boolean> = ref(false);
+// const applyCoolerWeights: Ref<boolean> = ref(false);
 
 const applyPostLog: Ref<boolean> = ref(true);
 
-const preLogBase: Ref<number> = ref(10);
+// const preLogBase: Ref<number> = ref(10);
 
-const postLogBase: Ref<number> = ref(10);
+// const postLogBase: Ref<number> = ref(10);
 
 function resetAttributes(): void {
   applyPreLog.value = false;
@@ -130,14 +190,44 @@ function resetAttributes(): void {
   applyPostLog.value = true;
   postLogBase.value = 10;
   applyCoolerWeights.value = false;
+  resolutionScaling.value = false;
+  resolutionLinearScaling.value = false;
+  applySettings();
 }
 
 function applySettings(): void {
-  props.mapManager?.eventManager.onNormalizationChanged({
-    applyCoolerWeights: applyCoolerWeights.value,
-    preLogBase: applyPreLog.value ? preLogBase.value : -1,
-    postLogBase: applyPostLog.value ? postLogBase.value : -1,
-  });
+  // props.mapManager?.eventManager.onNormalizationChanged({
+  //   applyCoolerWeights: applyCoolerWeights.value,
+  //   preLogBase: applyPreLog.value ? preLogBase.value : -1,
+  //   postLogBase: applyPostLog.value ? postLogBase.value : -1,
+  // });
+  props.mapManager?.visualizationManager
+    .sendVisualizationOptionsToServer()
+    .then(() => props.mapManager?.reloadTiles());
+}
+
+function preLogCheckChange() {
+  // applyPreLog.value = !applyPreLog.value;
+  if (!applyPreLog.value) {
+    preLogBase.value = Math.min(-preLogBase.value, -1e-6);
+  } else {
+    preLogBase.value = Math.max(-preLogBase.value, 1e-6);
+  }
+  // toast.message(
+  //   `Apply pre log: ${applyPreLog.value}, preLogBase: ${preLogBase.value}`
+  // );
+}
+
+function postLogCheckChange() {
+  // applyPostLog.value = !applyPostLog.value;
+  if (!applyPostLog.value) {
+    postLogBase.value = Math.min(-postLogBase.value, -1e-6);
+  } else {
+    postLogBase.value = Math.max(-postLogBase.value, 1e-6);
+  }
+  // toast.message(
+  //   `Apply pre log: ${applyPostLog.value}, preLogBase: ${postLogBase.value}`
+  // );
 }
 </script>
 

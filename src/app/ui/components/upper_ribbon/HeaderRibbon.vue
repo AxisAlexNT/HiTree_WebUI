@@ -237,7 +237,7 @@ function onNormalizationChanged() {
   padding: 0px;
   gap: 16px;
 
-  width: 920px;
+  width: calc(100% - 150px);
   height: 29px;
 
   /* Inside auto layout */

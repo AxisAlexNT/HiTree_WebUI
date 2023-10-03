@@ -1,15 +1,20 @@
 <template>
-  <div id="hic-contact-map" class="hic-contact-map"></div>
+  <div id="hic-contact-map" :style="mapContainerStyle"></div>
 </template>
 
 <script setup lang="ts">
 import "ol/ol.css";
+import { useStyleStore } from "@/app/stores/styleStore";
+import { ref, computed } from "vue";
+import { storeToRefs } from "pinia";
+
+const stylesStore = useStyleStore();
+
+const mapContainerStyle = ref({
+  width: "100%",
+  height: "100%",
+  "padding-right": "15px",
+});
 </script>
 
-<style>
-.hic-contact-map {
-  width: 100%;
-  height: 100%;
-  padding-right: 15px;
-}
-</style>
+<style scoped></style>

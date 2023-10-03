@@ -23,8 +23,10 @@ import {
   GetConverterStatusRequest,
   SplitContigRequest,
   MoveSelectionToDebrisRequest,
+  GetVisualizationOptionsRequest,
+  SetVisualizationOptionsRequest,
 } from "../api/request";
-import { OutboundDTO } from "./dto";
+import { ColormapDTO, OutboundDTO, VisualizationOptionsDTO } from "./dto";
 
 abstract class HiCTAPIRequestDTO<
   T extends HiCTAPIRequest
@@ -108,6 +110,14 @@ abstract class HiCTAPIRequestDTO<
         return new GetFastaForSelectionRequestDTO(
           entity as GetFastaForSelectionRequest
         );
+      case entity instanceof GetVisualizationOptionsRequest:
+        return new GetVisualizationOptionsRequestDTO(
+          entity as GetVisualizationOptionsRequest
+        );
+      case entity instanceof SetVisualizationOptionsRequest:
+        return new SetVisualizationOptionsRequestDTO(
+          entity as SetVisualizationOptionsRequest
+        );
       default:
         throw new Error(
           `Unknown HiCTAPIRequest type: ${typeof entity}, constructor ${
@@ -115,6 +125,27 @@ abstract class HiCTAPIRequestDTO<
           } cannot be transformed to DTO class.`
         );
     }
+  }
+}
+
+class GetVisualizationOptionsRequestDTO extends HiCTAPIRequestDTO<GetVisualizationOptionsRequest> {
+  toDTO(): Record<string, unknown> {
+    return {};
+  }
+}
+
+class SetVisualizationOptionsRequestDTO extends HiCTAPIRequestDTO<SetVisualizationOptionsRequest> {
+  toDTO(): Record<string, unknown> {
+    return {
+      preLogBase: this.entity.options.options.preLogBase,
+      postLogBase: this.entity.options.options.postLogBase,
+      applyCoolerWeights: this.entity.options.options.applyCoolerWeights,
+      resolutionScaling: this.entity.options.options.resolutionScaling,
+      resolutionLinearScaling:
+        this.entity.options.options.resolutionLinearScaling,
+      colormap: ColormapDTO.fromEntity(this.entity.options.options.colormap)
+        .json,
+    };
   }
 }
 
@@ -314,4 +345,6 @@ export {
   GetConverterStatusRequestDTO,
   SplitContigRequestDTO,
   MoveSelectionToDebrisRequestDTO,
+  GetVisualizationOptionsRequestDTO,
+  SetVisualizationOptionsRequestDTO,
 };

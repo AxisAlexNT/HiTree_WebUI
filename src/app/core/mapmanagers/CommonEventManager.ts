@@ -62,31 +62,31 @@ class CommonEventManager {
     this.mapManager.viewAndLayersManager.onScanffoldBorderStyleChanged(style);
   }
 
-  public onNormalizationChanged(
-    normalizationSettings: NormalizationSettings
-  ): void {
-    this.mapManager.networkManager.requestManager
-      .sendRequest(
-        new SetNormalizationRequest({
-          normalizationSettings: normalizationSettings,
-        })
-      )
-      .then(() => this.mapManager.viewAndLayersManager.reloadTiles())
-      .catch(alert);
-  }
+  // public onNormalizationChanged(
+  //   normalizationSettings: NormalizationSettings
+  // ): void {
+  //   this.mapManager.networkManager.requestManager
+  //     .sendRequest(
+  //       new SetNormalizationRequest({
+  //         normalizationSettings: normalizationSettings,
+  //       })
+  //     )
+  //     .then(() => this.mapManager.viewAndLayersManager.reloadTiles())
+  //     .catch(alert);
+  // }
 
-  public onContrastChanged(contrastRangeSettings: ContrastRangeSettings): void {
-    this.mapManager.networkManager.requestManager
-      .sendRequest(
-        new SetContrastRangeRequest({
-          contrastRangeSettings: contrastRangeSettings,
-        })
-      )
-      .then(() => {
-        this.reloadTiles();
-      })
-      .catch(alert);
-  }
+  // public onContrastChanged(contrastRangeSettings: ContrastRangeSettings): void {
+  //   this.mapManager.networkManager.requestManager
+  //     .sendRequest(
+  //       new SetContrastRangeRequest({
+  //         contrastRangeSettings: contrastRangeSettings,
+  //       })
+  //     )
+  //     .then(() => {
+  //       this.reloadTiles();
+  //     })
+  //     .catch(alert);
+  // }
 
   public onAddScaffoldClicked(): void {
     this.mapManager.viewAndLayersManager.currentViewState.activeTool =

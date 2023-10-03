@@ -11,6 +11,7 @@ import type { NetworkManager } from "../net/NetworkManager";
 import type { ContigDescriptor } from "../domain/ContigDescriptor";
 import { CommonEventManager } from "./CommonEventManager";
 import { CurrentSignalRangeResponse } from "../net/api/response";
+import { VisualizationManager } from "./VisualizationManager";
 
 class ContactMapManager {
   public readonly map: Map;
@@ -21,6 +22,7 @@ class ContactMapManager {
   public readonly eventManager: CommonEventManager;
   public sizeObserver?: ResizeObserver;
   public readonly toastHandlers: (() => void)[] = [];
+  public readonly visualizationManager: VisualizationManager;
 
   constructor(
     protected readonly options: {
@@ -49,6 +51,9 @@ class ContactMapManager {
       this,
       options.response
     );
+
+    this.visualizationManager = new VisualizationManager(this);
+    this.visualizationManager.fetchVisualizationOptions();
 
     this.map = new Map({
       layers: [],

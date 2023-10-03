@@ -1,5 +1,6 @@
 <template>
-  <div class="pills">
+  <p class="w-100 m-0"><b>Saved Locations:</b></p>
+  <div class="pills w-100">
     <div class="btn-group" role="group">
       <input
         id="saved-btn"
@@ -144,7 +145,7 @@ function removeSavedLocation(location_id: number) {
 
 #save-button {
   /* Buttons */
-  width: 200px;
+  width: 232px;
 
   /* Inside auto layout */
   flex: none;
