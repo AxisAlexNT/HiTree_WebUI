@@ -68,6 +68,7 @@ import { storeToRefs } from "pinia";
 const stylesStore = useStyleStore();
 
 const { mapBackgroundColor } = storeToRefs(stylesStore);
+/// @ts-expect-error "Style objects are not cloneable"
 const backgroundColorStyle: Ref<Style> = ref(
   new Style({
     stroke: new Stroke({
