@@ -30,6 +30,8 @@ import { NetworkManager } from "@/app/core/net/NetworkManager";
 
 import WorkspaceComponent from "@/app/ui/components/workspace/WorkspaceComponent.vue";
 import { Toaster, toast } from "vue-sonner";
+import { storeToRefs } from "pinia";
+import { usehtmlElementReferencesStore } from "../stores/htmlElementReferencesStore";
 
 // Reactively use these refs only inside component
 // Pass them to Map Manager on creation as values, not Refs as objects
@@ -45,6 +47,9 @@ const networkManager: NetworkManager = new NetworkManager(
   "http://localhost:5000/",
   undefined
 );
+
+const htmlElementReferencesStore = usehtmlElementReferencesStore();
+const { mapTarget, miniMapTarget } = storeToRefs(htmlElementReferencesStore);
 
 function resetState() {
   mapManager.value?.dispose();
@@ -81,6 +86,7 @@ function displayNewMap() {
         contigBorderColor: contigBorderColor.value,
         mapTargetSelector: "hic-contact-map",
         networkManager: networkManager,
+        minimapTarget: miniMapTarget,
       });
       mapManager.value = newManager;
       networkManager.mapManager = mapManager.value;

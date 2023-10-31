@@ -30,6 +30,7 @@ import { pointerMove, shiftKeyOnly, singleClick } from "ol/events/condition";
 import type { ContigDescriptor } from "../domain/ContigDescriptor";
 import { CurrentSignalRangeResponse } from "../net/api/response";
 import { SplitRulesInteraction } from "../interactions/SplitRulesInteraction";
+import { OverviewMap } from "ol/control";
 
 interface LayerResolutionBorders {
   minResolutionInclusive: number;

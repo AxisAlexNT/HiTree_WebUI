@@ -12,6 +12,7 @@ import type { ContigDescriptor } from "../domain/ContigDescriptor";
 import { CommonEventManager } from "./CommonEventManager";
 import { CurrentSignalRangeResponse } from "../net/api/response";
 import { VisualizationManager } from "./VisualizationManager";
+import { Ref } from "vue";
 
 class ContactMapManager {
   public readonly map: Map;
@@ -23,6 +24,7 @@ class ContactMapManager {
   public sizeObserver?: ResizeObserver;
   public readonly toastHandlers: (() => void)[] = [];
   public readonly visualizationManager: VisualizationManager;
+  public minimap: OverviewMap | null;
 
   constructor(
     protected readonly options: {
@@ -33,6 +35,7 @@ class ContactMapManager {
       readonly contigBorderColor: string;
       readonly mapTargetSelector: string;
       readonly networkManager: NetworkManager;
+      readonly minimapTarget: Ref<HTMLElement | null>;
     }
   ) {
     const contigDescriptors: ContigDescriptor[] =
@@ -59,6 +62,8 @@ class ContactMapManager {
       layers: [],
       interactions: [],
     });
+
+    this.minimap = null;
   }
 
   public initializeMap(): void {
@@ -121,6 +126,10 @@ class ContactMapManager {
 
   public getMap(): Map {
     return this.map;
+  }
+
+  public getMiniMap(): OverviewMap {
+    return this.minimap;
   }
 
   public getView(): View {
