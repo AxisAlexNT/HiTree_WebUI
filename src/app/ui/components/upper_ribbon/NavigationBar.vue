@@ -146,24 +146,35 @@
       </div>
     </div>
   </nav>
-  <OpenFileSelector
+  <!-- <OpenFileSelector
     :network-manager="props.networkManager"
     v-if="openingFile"
     @selected="onFileSelected"
     @dismissed="onFileDismissed"
-  ></OpenFileSelector>
-  <FASTAFileSelector
+  ></OpenFileSelector> -->
+  <UniversalFileSelector
+    :network-manager="props.networkManager"
+    v-if="openingFile"
+    @selected="onFileSelected"
+    @dismissed="onFileDismissed"
+    :error-message="errorMessage"
+  ></UniversalFileSelector>
+  <UniversalFileSelector
     :network-manager="props.networkManager"
     v-if="openingFASTAFile"
-    @selected="onFASTAFileSelected"
+    @selected="linkFASTA"
     @dismissed="onFASTAFileDismissed"
-  ></FASTAFileSelector>
-  <AGPFileSelector
+    :error-message="errorMessage"
+    :file-name-predicate="(name: string) => name.endsWith('.fasta') || name.endsWith('.fa')"
+  ></UniversalFileSelector>
+  <UniversalFileSelector
     :network-manager="props.networkManager"
     v-if="openingAGPFile"
-    @selected="onAGPFileSelected"
+    @selected="openAGP"
     @dismissed="onAGPFileDismissed"
-  ></AGPFileSelector>
+    :error-message="errorMessage"
+    :file-name-predicate="(name: string) => name.endsWith('.agp')"
+  ></UniversalFileSelector>
   <CoolerConverter
     :network-manager="networkManager"
     v-if="convertingCoolers"
@@ -177,13 +188,17 @@ import type { NetworkManager } from "@/app/core/net/NetworkManager.js";
 import OpenFileSelector from "@/app/ui/components/upper_ribbon/OpenFileSelector.vue";
 import FASTAFileSelector from "@/app/ui/components/upper_ribbon/FASTAFileSelector.vue";
 import AGPFileSelector from "@/app/ui/components/upper_ribbon/AGPFileSelector.vue";
-import { Ref, ref } from "vue";
+import { Ref, ref, watch } from "vue";
 import {
   GetAGPForAssemblyRequest,
   GetFastaForAssemblyRequest,
+  LinkFASTARequest,
+  LoadAGPRequest,
 } from "@/app/core/net/api/request";
 import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
 import CoolerConverter from "./CoolerConverter.vue";
+import UniversalFileSelector from "@/app/ui/components/upper_ribbon/UniversalFileSelector.vue";
+import { toast } from "vue-sonner";
 const openingFile = ref(false);
 const openingFASTAFile = ref(false);
 const openingAGPFile = ref(false);
@@ -201,6 +216,8 @@ const props = defineProps<{
   mapManager?: ContactMapManager;
 }>();
 
+const errorMessage: Ref<unknown | null> = ref(null);
+
 function onOpenFile() {
   openingFile.value = true;
 }
@@ -211,6 +228,7 @@ function onLoadAGP() {
 
 function onFileDismissed() {
   openingFile.value = false;
+  errorMessage.value = null;
 }
 
 function onSaveClicked(): void {
@@ -222,6 +240,7 @@ function onSaveClicked(): void {
 
 function onCloseClicked(): void {
   emit("closed");
+  errorMessage.value = null;
 }
 
 function onConvertCoolersClicked(): void {
@@ -249,11 +268,57 @@ function onAGPFileDismissed() {
 }
 
 function onFileSelected(filename: string) {
-  openingFile.value = false;
   if (filename && filename !== "") {
-    emit("selected", filename);
+    if (filename.endsWith(".hict") || filename.endsWith(".hict.hdf5")) {
+      openingFile.value = false;
+      emit("selected", filename);
+    } else if (filename.endsWith(".agp")) {
+      openAGP(filename);
+    } else if (filename.endsWith(".fasta") || filename.endsWith(".fa")) {
+      linkFASTA(filename);
+    } else {
+      errorMessage.value = "Unknown type of file to be opened: " + filename;
+      toast.error("errorMessage.value");
+    }
   }
 }
+
+function openAGP(filename: string) {
+  props.networkManager.requestManager
+    .loadAGP(new LoadAGPRequest({ agpFilename: filename }))
+    .then(() => {
+      openingFile.value = false;
+      openingAGPFile.value = false;
+      errorMessage.value = null;
+      toast.message("Assembly loaded from AGP file " + filename);
+    })
+    .catch((e) => {
+      errorMessage.value = e;
+    });
+}
+
+function linkFASTA(filename: string) {
+  props.networkManager.requestManager
+    .linkFASTA(new LinkFASTARequest({ fastaFilename: filename }))
+    .then(() => {
+      openingFile.value = false;
+      openingFASTAFile.value = false;
+      errorMessage.value = false;
+      toast.message("Linked FASTA file " + filename);
+    })
+    .catch((e) => {
+      errorMessage.value = e;
+    });
+}
+
+watch(
+  () => errorMessage.value,
+  (message) => {
+    if (message) {
+      toast.error(message);
+    }
+  }
+);
 
 function onFASTAFileSelected() {
   openingFASTAFile.value = false;

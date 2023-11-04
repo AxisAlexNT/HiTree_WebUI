@@ -18,8 +18,11 @@
           ></button>
         </div>
         <div class="modal-body">
-          <div class="d-flex align-items-center" v-if="errorMessage">
-            Error: {{ errorMessage }}
+          <div
+            class="d-flex align-items-center"
+            v-if="props.errorMessage || errorMessage"
+          >
+            Error: {{ props.errorMessage ?? errorMessage }}
           </div>
           <div class="d-flex align-items-center" v-if="loading">
             <strong>Loading...</strong>
@@ -102,7 +105,7 @@
 </template>
 
 <script setup lang="ts">
-import { type Ref, ref, onMounted } from "vue";
+import { type Ref, ref, onMounted, onUnmounted } from "vue";
 import { Modal } from "bootstrap";
 import type { NetworkManager } from "@/app/core/net/NetworkManager.js";
 import path from "path-browserify";
@@ -129,6 +132,7 @@ const props = defineProps<{
   fileNamePredicate?: (name: string) => boolean;
   title?: string;
   fileType?: string;
+  errorMessage?: unknown;
 }>();
 
 const selectedFilename: Ref<string | null> = ref(null);
@@ -158,7 +162,7 @@ function recursiveRecordToFileTree(
         // console.log("Original path: ", originalPath);
         // console.log("Original path Format: ", path.format(originalPath));
         return {
-          nodeName: originalPath.name,
+          nodeName: `${originalPath.name}${originalPath.ext}`,
           dataType: extensionToDataType(originalPath.ext),
           nodeType: "file",
           children: [],
@@ -233,12 +237,13 @@ const primeVueTree: Ref<PrimeVueFileTreeNode | null> = ref(null);
 function getFilenamesList(): void {
   props.networkManager.requestManager
     .listFiles()
-    .then((lst) => {
-      if (props.fileNamePredicate) {
-        filenames.value = lst.filter(props.fileNamePredicate);
-      } else {
-        filenames.value = lst;
-      }
+    .then((fileList) => {
+      const lst = props.fileNamePredicate
+        ? fileList.filter(props.fileNamePredicate)
+        : fileList;
+
+      filenames.value = lst;
+
       loading.value = false;
       const np = lst.map((s) =>
         path.normalize(s).replaceAll("\\", "/").replaceAll(path.sep, "/")
@@ -334,7 +339,7 @@ function onSelectClicked(): void {
     return;
   }
   emit("selected", selectedFilenameString);
-  resetState();
+  // resetState();
 }
 
 onMounted(() => {
@@ -351,19 +356,26 @@ onMounted(() => {
   getFilenamesList();
 });
 
-function onNodeSelect(evt: { target: { originalIndex?: number } }) {
-  console.log(evt);
-  const idx = evt.target.originalIndex;
+onUnmounted(() => {
+  resetState();
+});
+
+function onNodeSelect(evt: { originalIndex?: number; key?: string }) {
+  // console.log(evt);
+  const idx = evt.originalIndex;
+  const key = evt.key;
   if (idx) {
     const fn = filenames.value;
     if (fn) {
       selectedFilename.value = fn[idx];
     }
+  } else if (key) {
+    expandedKeys.value[key] = true;
   }
 }
 
 function onNodeUnselect(evt: unknown) {
-  console.log(evt);
+  // console.log(evt);
   selectedFilename.value = null;
 }
 
