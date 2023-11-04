@@ -62,6 +62,7 @@ interface FileTreeNode {
   dataType?: "hict" | "agp" | "fasta" | "experiment";
   nodePath: string;
   children: FileTreeNode[];
+  originalIndex?: number;
 }
 
 export {
