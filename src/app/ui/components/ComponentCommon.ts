@@ -1,3 +1,5 @@
+import path from "path-browserify";
+
 /**
  * Interface that is used to signal normalization settings change.
  */
@@ -45,7 +47,8 @@ function extensionToDataType(
     fasta: "fasta",
     hictexp: "experiment",
   };
-  const extLower = ext.toLowerCase();
+  const extLower = ext.toLowerCase().substring(1);
+  // console.log("extLower = ", extLower);
   if (extLower in extMap) {
     return extMap[extLower];
   } else {
@@ -57,6 +60,7 @@ interface FileTreeNode {
   nodeName: string;
   nodeType: "file" | "directory";
   dataType?: "hict" | "agp" | "fasta" | "experiment";
+  nodePath: string;
   children: FileTreeNode[];
 }
 

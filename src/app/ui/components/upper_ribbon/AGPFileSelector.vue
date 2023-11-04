@@ -25,7 +25,7 @@
             <strong>Loading...</strong>
             <div class="spinner-border ms-auto" role="status"></div>
           </div>
-          <div v-if="!loading">
+          <div>
             <select
               class="form-select form-select-lg mb-3"
               v-model="selectedAGPFilename"
@@ -39,22 +39,59 @@
                 {{ filename }}
               </option>
             </select>
+            <div class="card flex justify-content-center" v-if="primeVueTree">
+              <Tree
+                :filter="true"
+                filterMode="lenient"
+                :value="[primeVueTree]"
+                selectionMode="single"
+                class="w-full md:w-60rem limited-height"
+                @nodeSelect="onNodeSelect"
+                @nodeUnselect="onNodeUnselect"
+                :loading="loading"
+                :expanded-keys="expandedKeys"
+              ></Tree>
+            </div>
           </div>
           <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              @click="onDismissClicked"
-            >
-              Dismiss
-            </button>
-            <button
-              type="button"
-              class="btn btn-primary"
-              @click="onSelectClicked"
-            >
-              Load AGP
-            </button>
+            <div class="row w-100 m-0 p-0">
+              <div class="col-md-auto">
+                <div class="input-group">
+                  <button
+                    class="btn btn-outline-success"
+                    type="button"
+                    @click="expandAll"
+                  >
+                    Expand
+                  </button>
+                  <button
+                    class="btn btn-outline-danger"
+                    type="button"
+                    @click="collapseAll"
+                  >
+                    Collapse
+                  </button>
+                </div>
+              </div>
+              <div class="col-md-auto">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  @click="onDismissClicked"
+                >
+                  Dismiss
+                </button>
+              </div>
+              <div class="col-md-auto">
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  @click="onSelectClicked"
+                >
+                  Load AGP
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -69,7 +106,7 @@ import type { NetworkManager } from "@/app/core/net/NetworkManager.js";
 import { LoadAGPRequest } from "@/app/core/net/api/request";
 import path from "path-browserify";
 import { FileTreeNode, extensionToDataType } from "../ComponentCommon";
-import { resolveSrv } from "dns";
+import Tree from "primevue/tree";
 
 interface FinalTreeNode {
   isLeaf: boolean;
@@ -99,30 +136,39 @@ const fileTree: Ref<FileTreeNode | null> = ref(null);
 
 const loadAGPModal = ref<HTMLElement | null>(null);
 
+const expandedKeys: Ref<Record<string, boolean>> = ref({});
+
 function recursiveRecordToFileTree(
   r: RecursiveStringRecord | FinalTreeNode,
-  parentName: string | undefined
+  parentName: string | undefined,
+  parentPath: string | undefined
 ): FileTreeNode {
+  const pName = parentName ?? "DATA";
+  const pPath = (parentPath ?? "") + pName + "/";
   if (r) {
     if ("isLeaf" in r) {
       const ftn = r as unknown as FinalTreeNode;
       if (ftn && ftn.isLeaf === true) {
         const originalPath = path.parse(ftn.originalPath);
+        console.log("Original path: ", originalPath);
+        console.log("Original path Format: ", path.format(originalPath));
         return {
           nodeName: originalPath.name,
           dataType: extensionToDataType(originalPath.ext),
           nodeType: "file",
           children: [],
+          nodePath: path.format(originalPath),
         };
       }
     }
     return {
-      nodeName: parentName ?? "ROOT",
+      nodeName: pName,
       dataType: undefined,
       nodeType: "directory",
       children: Object.entries(r).map(([key, value]) =>
-        recursiveRecordToFileTree(value, key)
+        recursiveRecordToFileTree(value, key, pPath)
       ),
+      nodePath: pPath,
     };
   }
   return {
@@ -130,8 +176,51 @@ function recursiveRecordToFileTree(
     dataType: undefined,
     nodeType: "directory",
     children: [],
+    nodePath: pPath,
   };
 }
+
+function getIconForNode(node: FileTreeNode): string {
+  switch (node.nodeType) {
+    case "file":
+      switch (node.dataType) {
+        case "hict":
+          return "pi pi-fw pi-map";
+        case "agp":
+          return "pi pi-fw pi-sitemap";
+        case "fasta":
+          return "pi pi-fw pi-language";
+        case "experiment":
+          return "bi bi-eyedropper";
+        default:
+          return "pi pi-fw pi-question";
+      }
+    case "directory":
+      return "pi pi-fw pi-folder-open";
+    default:
+      return "pi pi-fw pi-question-circle";
+  }
+}
+
+interface PrimeVueFileTreeNode {
+  key: string;
+  label: string;
+  data: unknown;
+  icon: string;
+  children: PrimeVueFileTreeNode[];
+}
+
+function fileTreeToPrimeVueTree(t: FileTreeNode): PrimeVueFileTreeNode {
+  return {
+    key: t.nodePath,
+    data: t,
+    label: t.nodeName,
+    icon: getIconForNode(t),
+    children: t.children.map(fileTreeToPrimeVueTree),
+  } as PrimeVueFileTreeNode;
+}
+
+const primeVueTree: Ref<PrimeVueFileTreeNode | null> = ref(null);
 
 function getAGPFilenamesList(): void {
   props.networkManager.requestManager
@@ -184,8 +273,10 @@ function getAGPFilenamesList(): void {
           originalPath: p,
         } as FinalTreeNode;
       });
-      const ft = recursiveRecordToFileTree(tree, undefined);
+      const ft = recursiveRecordToFileTree(tree, undefined, undefined);
       fileTree.value = ft;
+      const pvt = fileTreeToPrimeVueTree(ft);
+      primeVueTree.value = pvt;
       console.log("Path separator:", path.sep);
       console.log("Raw:");
       console.log(lst);
@@ -195,6 +286,8 @@ function getAGPFilenamesList(): void {
       console.log(tree);
       console.log("FileTree:");
       console.log(ft);
+      console.log("PrimeVueFileTree:");
+      console.log(pvt);
     })
     .catch((e) => {
       errorMessage.value = e;
@@ -253,6 +346,41 @@ onMounted(() => {
   modal.value.show();
   getAGPFilenamesList();
 });
+
+function onNodeSelect(evt: unknown) {
+  console.log(evt);
+}
+
+function onNodeUnselect(evt: unknown) {
+  console.log(evt);
+}
+
+function expandAll() {
+  const ptv = primeVueTree.value;
+  if (ptv) {
+    expandNode(ptv);
+    expandedKeys.value = { ...expandedKeys.value };
+  }
+}
+
+function collapseAll() {
+  expandedKeys.value = {};
+}
+
+function expandNode(node: PrimeVueFileTreeNode) {
+  if (node.children && node.children.length) {
+    expandedKeys.value[node.key] = true;
+
+    for (const child of node.children) {
+      expandNode(child);
+    }
+  }
+}
 </script>
 
-<style scoped></style>
+<style scoped>
+.limited-height {
+  max-height: 50vh;
+  overflow-y: scroll;
+}
+</style>
