@@ -36,7 +36,10 @@
     "multi-range-slider-vue": "^1.1.4",
     "normalize.css": "^8.0.1",
     "ol": "^7.1.0",
+    "path-browserify": "^1.0.1",
     "pinia": "^2.1.6",
+    "primevue": "^3.39.0",
+    "sl-vue-tree": "^1.8.5",
     "toolcool-color-picker": "^1.0.15",
     "vanilla-picker": "^2.12.2",
     "vue": "^3.2.41",
@@ -46,6 +49,7 @@
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.2.0",
     "@types/node": "^16.11.43",
+    "@types/path-browserify": "^1.0.1",
     "@typescript-eslint/typescript-estree": "^5.40.1",
     "@vitejs/plugin-vue": "^3.2.0",
     "@vitejs/plugin-vue-jsx": "^2.1.1",

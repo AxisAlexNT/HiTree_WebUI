@@ -34,4 +34,35 @@ interface ContrastRangeSettings {
   upperSignalBound: number;
 }
 
-export { type NormalizationSettings, type ContrastRangeSettings };
+function extensionToDataType(
+  ext: string
+): "hict" | "agp" | "fasta" | "experiment" | undefined {
+  const extMap: Record<string, "hict" | "agp" | "fasta" | "experiment"> = {
+    hict: "hict",
+    "hict.hdf5": "hict",
+    hdf5: "hict",
+    agp: "agp",
+    fasta: "fasta",
+    hictexp: "experiment",
+  };
+  const extLower = ext.toLowerCase();
+  if (extLower in extMap) {
+    return extMap[extLower];
+  } else {
+    return undefined;
+  }
+}
+
+interface FileTreeNode {
+  nodeName: string;
+  nodeType: "file" | "directory";
+  dataType?: "hict" | "agp" | "fasta" | "experiment";
+  children: FileTreeNode[];
+}
+
+export {
+  type NormalizationSettings,
+  type ContrastRangeSettings,
+  type FileTreeNode,
+  extensionToDataType,
+};

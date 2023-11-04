@@ -67,6 +67,18 @@ import { type Ref, ref, onMounted } from "vue";
 import { Modal } from "bootstrap";
 import type { NetworkManager } from "@/app/core/net/NetworkManager.js";
 import { LoadAGPRequest } from "@/app/core/net/api/request";
+import path from "path-browserify";
+import { FileTreeNode, extensionToDataType } from "../ComponentCommon";
+import { resolveSrv } from "dns";
+
+interface FinalTreeNode {
+  isLeaf: boolean;
+  originalPath: string;
+}
+
+interface RecursiveStringRecord {
+  [index: string]: RecursiveStringRecord | FinalTreeNode;
+}
 
 const emit = defineEmits<{
   (e: "selected", agpFilename: string): void;
@@ -83,7 +95,43 @@ const loading: Ref<boolean> = ref(true);
 const errorMessage: Ref<unknown | null> = ref(null);
 const modal: Ref<Modal | null> = ref(null);
 
+const fileTree: Ref<FileTreeNode | null> = ref(null);
+
 const loadAGPModal = ref<HTMLElement | null>(null);
+
+function recursiveRecordToFileTree(
+  r: RecursiveStringRecord | FinalTreeNode,
+  parentName: string | undefined
+): FileTreeNode {
+  if (r) {
+    if ("isLeaf" in r) {
+      const ftn = r as unknown as FinalTreeNode;
+      if (ftn && ftn.isLeaf === true) {
+        const originalPath = path.parse(ftn.originalPath);
+        return {
+          nodeName: originalPath.name,
+          dataType: extensionToDataType(originalPath.ext),
+          nodeType: "file",
+          children: [],
+        };
+      }
+    }
+    return {
+      nodeName: parentName ?? "ROOT",
+      dataType: undefined,
+      nodeType: "directory",
+      children: Object.entries(r).map(([key, value]) =>
+        recursiveRecordToFileTree(value, key)
+      ),
+    };
+  }
+  return {
+    nodeName: "EMPTY",
+    dataType: undefined,
+    nodeType: "directory",
+    children: [],
+  };
+}
 
 function getAGPFilenamesList(): void {
   props.networkManager.requestManager
@@ -91,6 +139,62 @@ function getAGPFilenamesList(): void {
     .then((lst) => {
       filenames.value = lst;
       loading.value = false;
+      const np = lst.map((s) =>
+        path.normalize(s).replaceAll("\\", "/").replaceAll(path.sep, "/")
+      );
+      const tree: RecursiveStringRecord = {};
+      np.forEach((p) => {
+        const parts = p.split("/");
+
+        /*
+        const preparedHierarchy = parts
+          .slice(parts.length - 1, 1)
+          .reduce((acc, path_part) => {
+            acc[path_part] =
+              acc[path_part] ||
+              ({
+                //isLeaf: true, originalPath: p
+              } as FinalTreeNode);
+            console.log("acc is", acc, "path_part is", path_part);
+            return acc[path_part] as RecursiveStringRecord;
+          }, tree);
+        */
+
+        let preparedHierarchy = tree;
+
+        parts.slice(0, parts.length - 1).forEach((p) => {
+          if (p in preparedHierarchy) {
+            const nextNode = preparedHierarchy[p];
+            if (!nextNode || "isLeaf" in nextNode) {
+              throw new Error(
+                `Unexpected hierarchy: ${p} is an existing Leaf in ${preparedHierarchy} but expected to be a Node`
+              );
+            }
+            preparedHierarchy = nextNode;
+          } else {
+            preparedHierarchy[p] = {};
+            preparedHierarchy = preparedHierarchy[p] as RecursiveStringRecord;
+          }
+        });
+
+        console.log("parts", parts, "preparedHierarchy", preparedHierarchy);
+
+        preparedHierarchy[parts[parts.length - 1]] = {
+          isLeaf: true,
+          originalPath: p,
+        } as FinalTreeNode;
+      });
+      const ft = recursiveRecordToFileTree(tree, undefined);
+      fileTree.value = ft;
+      console.log("Path separator:", path.sep);
+      console.log("Raw:");
+      console.log(lst);
+      console.log("Normalized:");
+      console.log(np);
+      console.log("Tree:");
+      console.log(tree);
+      console.log("FileTree:");
+      console.log(ft);
     })
     .catch((e) => {
       errorMessage.value = e;
