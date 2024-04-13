@@ -31,6 +31,7 @@ import type { ContigDescriptor } from "../domain/ContigDescriptor";
 import { CurrentSignalRangeResponse } from "../net/api/response";
 import { SplitRulesInteraction } from "../interactions/SplitRulesInteraction";
 import { OverviewMap } from "ol/control";
+import { RulerManager } from "./RulerManager";
 
 interface LayerResolutionBorders {
   minResolutionInclusive: number;
@@ -72,10 +73,12 @@ interface LayersHolder {
   readonly contigBordersLayers: Layer[];
   readonly contigTranslocationArrowsLayers: Layer[];
   readonly scaffoldBordersLayers: Layer[];
+  readonly horizontalRulerLayers: Layer[];
   readonly bpResolutionToHiCDataLayer: Map<number, Layer>;
   readonly bpResolutionToContigBordersLayer: Map<number, Layer>;
   readonly bpResolutionToContigTranslocationArrowsLayer: Map<number, Layer>;
   readonly bpResolutionToScaffoldBordersLayer: Map<number, Layer>;
+  readonly bpResolutionToHorizontalRulerLayer: Map<number, Layer>;
 }
 
 interface Track2DHolder {
@@ -103,10 +106,12 @@ class HiCViewAndLayersManager {
     contigBordersLayers: [],
     contigTranslocationArrowsLayers: [],
     scaffoldBordersLayers: [],
+    horizontalRulerLayers: [],
     bpResolutionToHiCDataLayer: new Map(),
     bpResolutionToContigBordersLayer: new Map(),
     bpResolutionToContigTranslocationArrowsLayer: new Map(),
     bpResolutionToScaffoldBordersLayer: new Map(),
+    bpResolutionToHorizontalRulerLayer: new Map(),
   };
   protected readonly view: View;
   public tileSize: number;
@@ -162,6 +167,8 @@ class HiCViewAndLayersManager {
     contrastSliderRangesCallbacks: [],
   };
 
+  public readonly rulerManager: RulerManager;
+
   constructor(
     public readonly mapManager: ContactMapManager,
     response: OpenFileResponse,
@@ -172,6 +179,8 @@ class HiCViewAndLayersManager {
     this.pixelResolutionSet = response.pixelResolutions;
     this.resolutions = response.resolutions;
     this.tileSize = mapManager.getOptions().tileSize;
+
+    this.rulerManager = new RulerManager(this.mapManager);
 
     for (let i = 0; i < this.resolutions.length; ++i) {
       this.resolutionToPixelResolution.set(
@@ -462,6 +471,34 @@ class HiCViewAndLayersManager {
         this.mapManager.getMap().addLayer(vectorLayer);
       }
     );
+  }
+
+  protected addHorizontalRulers(
+    layersCollection: Layer[] = this.layersHolder.horizontalRulerLayers
+  ): void {
+    console.log("Adding horizontal rulers to collection ", layersCollection);
+    this.resolutionTuples.forEach((resolutionDesctiptor) => {
+      const { bpResolution, pixelResolution, layerResolutionBorders } =
+        resolutionDesctiptor;
+
+      const vectorSource =
+        this.rulerManager.getHorizontalRulerSource(resolutionDesctiptor);
+      const vectorLayer = new (
+        this.useVectorImageLayer ? VectorImageLayer : VectorLayer
+      )({
+        source: vectorSource,
+        zIndex: this.layersZIndices.TRACK_2D_LAYER_Z_INDEX + 100,
+        minResolution: layerResolutionBorders.minResolutionInclusive,
+        maxResolution: layerResolutionBorders.maxResolutionExclusive,
+      });
+      vectorLayer.set("bpResolution", bpResolution);
+      vectorLayer.set(
+        "pixelResolution",
+        this.resolutionToPixelResolution.get(bpResolution)
+      );
+      layersCollection.push(vectorLayer);
+      this.mapManager.getMap().addLayer(vectorLayer);
+    });
   }
 
   public initializeMapsDataLayers() {
@@ -929,6 +966,7 @@ class HiCViewAndLayersManager {
 
 export {
   HiCViewAndLayersManager,
+  type LayerResolutionDescriptor,
   type LayerResolutionBorders,
   type LayersHolder,
   type CurrentHiCViewState,
