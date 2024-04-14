@@ -16,7 +16,6 @@ import { Ref } from "vue";
 import Colormap from "../visualization/colormap/Colormap";
 import { ColorTranslator } from "colortranslator";
 import SimpleLinearGradient from "../visualization/colormap/SimpleLinearGradient";
-import { fill } from "core-js/core/array";
 
 interface Options extends ControlOptions {
   position: "top" | "bottom" | "left" | "right";

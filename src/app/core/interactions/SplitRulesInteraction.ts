@@ -81,7 +81,7 @@ class SplitRulesInteraction extends PointerInteraction {
         ? null
         : layers
             .filter((l) => l instanceof TileLayer)
-            .sort((l1, l2) => l1.getZIndex() - l2.getZIndex())[0];
+            .sort((l1, l2) => (l1.getZIndex() ?? 0) - (l2.getZIndex() ?? 0))[0];
     if (!hovered_layer) {
       return;
     }
@@ -220,7 +220,9 @@ class SplitRulesInteraction extends PointerInteraction {
               ? null
               : layers
                   .filter((l) => l instanceof TileLayer)
-                  .sort((l1, l2) => l1.getZIndex() - l2.getZIndex())[0];
+                  .sort(
+                    (l1, l2) => (l1.getZIndex() ?? 0) - (l2.getZIndex() ?? 0)
+                  )[0];
           if (!hovered_layer) {
             return true;
           }

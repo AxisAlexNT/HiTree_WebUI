@@ -129,7 +129,12 @@ class ContactMapManager {
   }
 
   public getMiniMap(): OverviewMap {
-    return this.minimap;
+    const minimap = this.minimap;
+    if (minimap) {
+      return minimap;
+    } else {
+      throw Error("Minimap is not yet initialized?");
+    }
   }
 
   public getView(): View {
