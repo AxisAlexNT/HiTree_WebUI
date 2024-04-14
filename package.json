@@ -36,6 +36,7 @@
     "multi-range-slider-vue": "^1.1.4",
     "normalize.css": "^8.0.1",
     "ol": "^9.1.0",
+    "display-si": "^1.0.7",
     "path-browserify": "^1.0.1",
     "pinia": "^2.1.6",
     "primeflex": "^3.3.1",

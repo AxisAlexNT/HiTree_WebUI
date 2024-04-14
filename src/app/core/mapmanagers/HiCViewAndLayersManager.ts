@@ -31,6 +31,7 @@ import type { ContigDescriptor } from "../domain/ContigDescriptor";
 import { CurrentSignalRangeResponse } from "../net/api/response";
 import { SplitRulesInteraction } from "../interactions/SplitRulesInteraction";
 import { OverviewMap } from "ol/control";
+import { RulerControl } from "../controls/RulerControl";
 
 interface LayerResolutionBorders {
   minResolutionInclusive: number;
@@ -91,7 +92,7 @@ class HiCViewAndLayersManager {
   public readonly resolutions: number[] = [];
   public readonly resolutionToPixelResolution: Map<number, number> = new Map();
   public readonly pixelProjection: Projection;
-  protected readonly imageSizes: number[] = [];
+  public readonly imageSizes: number[] = [];
   public readonly layerProjections: Array<Projection> = [];
   protected readonly imageSizeScaled: number[] = [];
   // protected readonly hicDataLayers: Layer[] = [];
@@ -162,8 +163,6 @@ class HiCViewAndLayersManager {
     contrastSliderRangesCallbacks: [],
   };
 
-  public readonly rulerManager: RulerManager;
-
   constructor(
     public readonly mapManager: ContactMapManager,
     response: OpenFileResponse,
@@ -174,8 +173,6 @@ class HiCViewAndLayersManager {
     this.pixelResolutionSet = response.pixelResolutions;
     this.resolutions = response.resolutions;
     this.tileSize = mapManager.getOptions().tileSize;
-
-    this.rulerManager = new RulerManager(this.mapManager);
 
     for (let i = 0; i < this.resolutions.length; ++i) {
       this.resolutionToPixelResolution.set(
@@ -598,6 +595,21 @@ class HiCViewAndLayersManager {
         layers: this.layersHolder.hicDataLayers,
       })
     );
+    const ruler = new RulerControl({
+      position: "top",
+      direction: "horizontal",
+      mapManager: this.mapManager,
+    });
+    try {
+      const map = this.getMapManager().getMap();
+      ruler.setMap(map);
+      this.mapManager.getMap().addControl(ruler);
+      map.on("moveend", (event) => {
+        ruler.render(event); // Render the axis control with the map event
+      });
+    } catch (e: unknown) {
+      console.log("Error while adding rulers", e);
+    }
   }
 
   public initializeMapInteractions(): void {
