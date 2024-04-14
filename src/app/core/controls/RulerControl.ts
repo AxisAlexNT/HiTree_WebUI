@@ -108,7 +108,8 @@ class RulerControl extends Control {
     const fraction4 =
       resolutionDescriptor.layerResolutionBorders.maxResolutionExclusive /
       (mapView.getResolution() ?? 1);
-    const pixelResolution = activeHiCLayer.get("pixelResolution");
+    // const pixelResolution = activeHiCLayer.get("pixelResolution");
+    const pixelResolution = mapView.getResolution() ?? 1;
     // const pixelResolution = (mapView.getResolution() / fraction3) ?? 1;
 
     const fixed_coordinates = transform(
@@ -134,7 +135,10 @@ class RulerControl extends Control {
     const visibleMapBoxExtentPixel = {
       left: Math.round(Math.max(0, leftmostMapPx)),
       right: Math.round(
-        Math.min(mapBoxPixelCoordinates.left + pixelMapSize, size[0])
+        Math.min(
+          mapBoxPixelCoordinates.left + pixelMapSize / fraction1,
+          size[0]
+        )
       ),
       top: Math.round(Math.max(0, topmostMapPx)),
       bottom: Math.round(size[1] - Math.min(bottommostMapPx, size[1])),
@@ -181,7 +185,7 @@ class RulerControl extends Control {
     context.stroke();
 
     const tickInterval = 100;
-    for (let x = startX; x < endX - 20; x += tickInterval) {
+    for (let x = startX; x < endX - 50; x += tickInterval) {
       this.drawTickAtPxOffset(
         context,
         resolutionDescriptor,
