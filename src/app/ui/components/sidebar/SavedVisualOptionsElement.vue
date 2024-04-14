@@ -50,6 +50,7 @@ import { ref } from "vue";
 import { useVisualizationOptionsStore } from "@/app/stores/visualizationOptionsStore";
 import { storeToRefs } from "pinia";
 import { useStyleStore } from "@/app/stores/styleStore";
+import { ColorTranslator } from "colortranslator";
 
 const visualizationOptionsStore = useVisualizationOptionsStore();
 const { preLogBase, applyCoolerWeights, postLogBase, colormap } = storeToRefs(
@@ -64,7 +65,7 @@ const props = defineProps<{
   option_id: number;
   name: string;
   visualizationOptions: VisualizationOptions;
-  backgroundColor: string;
+  backgroundColor: ColorTranslator;
 }>();
 
 const emits = defineEmits<{

@@ -32,8 +32,10 @@ import { type Ref, ref } from "vue";
 import { BorderStyle } from "@/app/core/tracks/Track2DSymmetric";
 import ColorPickerRectangle from "./ColorPickerRectangle.vue";
 import Style from "ol/style/Style";
-import { Color, asString } from "ol/color";
+import { Color } from "ol/color";
 import { toast } from "vue-sonner";
+import { ColorTranslator } from "colortranslator";
+import { ColorLike } from "ol/colorlike";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const props = defineProps<{
@@ -41,17 +43,23 @@ const props = defineProps<{
   getDefaultColor?: () => Style | undefined;
 }>();
 
-function getBaseColor() {
+function getBaseColor(): ColorTranslator {
   if (props.getDefaultColor) {
-    const color = props.getDefaultColor()?.getStroke()?.getColor() as Color;
+    const olColorString = props
+      .getDefaultColor()
+      ?.getStroke()
+      ?.getColor() as ColorLike as string;
+
+    const color = new ColorTranslator(olColorString, { legacyCSS: true });
     if (color) {
-      return asString(color);
+      return color;
     }
   }
+  return new ColorTranslator("rgb(127, 192, 224)", { legacyCSS: true });
 }
 
 const emit = defineEmits<{
-  (e: "onColorChanged", layerName: string, newColor: string): void;
+  (e: "onColorChanged", layerName: string, newColor: ColorTranslator): void;
   (
     e: "onBorderStyleChanged",
     layerName: string,
@@ -59,7 +67,7 @@ const emit = defineEmits<{
   ): void;
 }>();
 
-const currentColor: Ref<string> = ref("#ffaaff");
+const currentColor = ref(new ColorTranslator("#ffaaff", { legacyCSS: true }));
 
 const bordersStyle: Ref<number> = ref(0);
 const visible: Ref<boolean> = ref(true);
@@ -72,7 +80,7 @@ function updateVisibility() {
     visible.value ? bordersStyle.value : BorderStyle.NONE
   );
 }
-function updateBackgroundColor(newColor: string) {
+function updateBackgroundColor(newColor: ColorTranslator) {
   currentColor.value = newColor;
   emit("onColorChanged", props.layerName as string, newColor);
 }

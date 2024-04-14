@@ -63,6 +63,7 @@ import { useStyleStore } from "@/app/stores/styleStore";
 import VisualziationSettingsEditor from "./VisualziationSettingsEditor.vue";
 import SavedVisualOptions from "./SavedVisualOptions.vue";
 import { storeToRefs } from "pinia";
+import { ColorTranslator } from "colortranslator";
 
 const stylesStore = useStyleStore();
 
@@ -81,7 +82,7 @@ watch(
   () => {
     backgroundColorStyle.value = new Style({
       stroke: new Stroke({
-        color: mapBackgroundColor.value,
+        color: mapBackgroundColor.value.RGBA,
       }),
     });
   }
@@ -114,13 +115,13 @@ const layers: Ref<LayerDescriptor[]> = ref([
   new LayerDescriptor("Background", () => backgroundColorStyle.value),
 ]);
 
-function onColorChanged(layerName: string, newColor: string) {
+function onColorChanged(layerName: string, newColor: ColorTranslator) {
   switch (layerName) {
     case "Contigs":
-      getEventManager()?.onContigBorderColorChanged(newColor);
+      getEventManager()?.onContigBorderColorChanged(newColor.RGBA);
       break;
     case "Scaffolds":
-      getEventManager()?.onScanffoldBorderColorChanged(newColor);
+      getEventManager()?.onScanffoldBorderColorChanged(newColor.RGBA);
       break;
     case "Background":
       stylesStore.setMapBackground(newColor);

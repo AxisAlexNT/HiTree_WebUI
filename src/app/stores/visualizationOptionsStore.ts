@@ -3,6 +3,7 @@ import { ref, Ref } from "vue";
 import SimpleLinearGradient from "../core/visualization/colormap/SimpleLinearGradient";
 import VisualizationOptions from "../core/visualization/VisualizationOptions";
 import Colormap from "../core/visualization/colormap/Colormap";
+import { ColorTranslator } from "colortranslator";
 
 export const useVisualizationOptionsStore = defineStore(
   "visualizationOptions",
@@ -13,7 +14,12 @@ export const useVisualizationOptionsStore = defineStore(
     const resolutionLinearScaling = ref(false);
     const postLogBase = ref(10);
     const colormap: Ref<Colormap> = ref(
-      new SimpleLinearGradient("rgba(0,255,0,0.0)", "rgba(0,96,0,1.0)", 0, 1)
+      new SimpleLinearGradient(
+        new ColorTranslator("rgba(0,255,0,0.0)", { legacyCSS: true }),
+        new ColorTranslator("rgba(0,96,0,1.0)", { legacyCSS: true }),
+        0,
+        1
+      )
     );
 
     function asVisualizationOptions(): VisualizationOptions {

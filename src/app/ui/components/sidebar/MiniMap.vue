@@ -71,6 +71,4 @@ onMounted(() => {
   /* background-color: aqua; */
   position: relative;
 }
-
-
 </style>

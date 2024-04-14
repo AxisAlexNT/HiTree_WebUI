@@ -1,3 +1,4 @@
+import { ColorTranslator } from "colortranslator";
 import type { AssemblyInfo } from "../../domain/AssemblyInfo";
 import {
   ContigDirection,
@@ -144,8 +145,8 @@ class OpenFileResponseDTO extends InboundDTO<OpenFileResponse> {
 class SimpleLinearGradientDTO extends InboundDTO<SimpleLinearGradient> {
   public static fromEntity(e: SimpleLinearGradient) {
     return new SimpleLinearGradientDTO({
-      startColorRGBAString: e.startColorRGBAString,
-      endColorRGBAString: e.endColorRGBAString,
+      startColorRGBAString: e.startColorRGBA.RGBA,
+      endColorRGBAString: e.endColorRGBA.RGBA,
       minSignal: e.minSignal,
       maxSignal: e.maxSignal,
     });
@@ -153,8 +154,12 @@ class SimpleLinearGradientDTO extends InboundDTO<SimpleLinearGradient> {
 
   public toEntity(): SimpleLinearGradient {
     return new SimpleLinearGradient(
-      this.json["startColorRGBAString"] as string,
-      this.json["endColorRGBAString"] as string,
+      new ColorTranslator(this.json["startColorRGBAString"] as string, {
+        legacyCSS: true,
+      }),
+      new ColorTranslator(this.json["endColorRGBAString"] as string, {
+        legacyCSS: true,
+      }),
       this.json["minSignal"] as number,
       this.json["maxSignal"] as number
     );

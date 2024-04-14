@@ -35,7 +35,7 @@
     "mobx-vue-lite": "^0.3.1",
     "multi-range-slider-vue": "^1.1.4",
     "normalize.css": "^8.0.1",
-    "ol": "^9.1.0",
+    "ol": "^7.1.0",
     "display-si": "^1.0.7",
     "path-browserify": "^1.0.1",
     "pinia": "^2.1.6",
@@ -47,7 +47,8 @@
     "vanilla-picker": "^2.12.2",
     "vue": "^3.2.41",
     "vue-color-kit": "^1.0.6",
-    "vue-sonner": "^0.4.2"
+    "vue-sonner": "^0.4.2",
+    "colortranslator": "^4.1.0"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.2.0",

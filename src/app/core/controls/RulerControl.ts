@@ -9,6 +9,14 @@ import {
 import ContigDimensionHolder from "../mapmanagers/ContigDimensionHolder";
 import { transform, transformExtent } from "ol/proj";
 import { toSI } from "display-si";
+import { storeToRefs } from "pinia";
+import { useStyleStore } from "@/app/stores/styleStore";
+import { useVisualizationOptionsStore } from "@/app/stores/visualizationOptionsStore";
+import { Ref } from "vue";
+import Colormap from "../visualization/colormap/Colormap";
+import { ColorTranslator } from "colortranslator";
+import SimpleLinearGradient from "../visualization/colormap/SimpleLinearGradient";
+import { fill } from "core-js/core/array";
 
 interface Options extends ControlOptions {
   position: "top" | "bottom" | "left" | "right";
@@ -21,6 +29,9 @@ class RulerControl extends Control {
   protected readonly mapManager: ContactMapManager;
   protected readonly viewAndLayersManager: HiCViewAndLayersManager;
   protected readonly contigDimensionHolder: ContigDimensionHolder;
+
+  protected readonly mapBackgroundColor: Ref<ColorTranslator>;
+  protected readonly colormap: Ref<Colormap>;
 
   public constructor(public readonly opt_options: Options) {
     const canvas = document.createElement("canvas");
@@ -35,6 +46,15 @@ class RulerControl extends Control {
     this.mapManager = opt_options.mapManager;
     this.viewAndLayersManager = this.mapManager.getLayersManager();
     this.contigDimensionHolder = this.mapManager.getContigDimensionHolder();
+
+    const visualizationOptionsStore = useVisualizationOptionsStore();
+    const { colormap } = storeToRefs(visualizationOptionsStore);
+    const stylesStore = useStyleStore();
+    const { mapBackgroundColor } = storeToRefs(stylesStore);
+
+    this.colormap = colormap;
+    this.mapBackgroundColor = mapBackgroundColor as Ref<ColorTranslator>;
+
     console.log("RulerControl constructor finished", this);
   }
 
@@ -176,6 +196,20 @@ class RulerControl extends Control {
     const startX = visibleMapBoxExtentPixel.left;
     const endX = visibleMapBoxExtentPixel.right;
     const y0 = Math.round(this.canvas.height / 2);
+    // context.save();
+    // this.setFillStrokeContrastColors(context);
+    // const strokeStyle = context.strokeStyle;
+    context.strokeStyle = context.fillStyle;
+    context.lineWidth = 5;
+    context.beginPath();
+    context.moveTo(startX, y0 - 5);
+    context.lineTo(endX, y0 - 5);
+    context.moveTo(startX, y0 + 5);
+    context.lineTo(endX, y0 + 5);
+    context.strokeStyle = "white";
+    context.stroke();
+    // context.strokeStyle = strokeStyle;
+    context.lineWidth = 3;
     context.beginPath();
     context.moveTo(startX, y0 - 5);
     context.lineTo(endX, y0 - 5);
@@ -183,6 +217,7 @@ class RulerControl extends Control {
     context.lineTo(endX, y0 + 5);
     context.strokeStyle = "black";
     context.stroke();
+    // context.reset();
 
     const tickInterval = 100;
     for (let x = startX; x < endX - 50; x += tickInterval) {
@@ -193,7 +228,10 @@ class RulerControl extends Control {
         startX,
         endX,
         y0,
-        tickInterval
+        tickInterval,
+        mapBoxPixelCoordinates,
+        visibleMapBoxExtentPixel,
+        fraction1
       );
     }
     this.drawTickAtPxOffset(
@@ -203,7 +241,10 @@ class RulerControl extends Control {
       startX,
       endX,
       y0,
-      tickInterval
+      tickInterval,
+      mapBoxPixelCoordinates,
+      visibleMapBoxExtentPixel,
+      fraction1
     );
   }
 
@@ -214,11 +255,41 @@ class RulerControl extends Control {
     startPx: number,
     endPx: number,
     y0: number,
-    tickInterval: number
+    tickInterval: number,
+    mapBoxPixelCoordinates: {
+      left: number;
+      right: number;
+      top: number;
+      bottom: number;
+    },
+    visibleMapBoxExtentPixel: {
+      left: number;
+      right: number;
+      top: number;
+      bottom: number;
+    },
+    fraction1: number
   ): void {
     px = Math.round(px);
 
-    const dPx = Math.round(px - startPx);
+    const dPx =
+      Math.round(px - startPx - Math.min(0, mapBoxPixelCoordinates.left)) *
+      fraction1;
+
+    const dBp =
+      dPx == 0
+        ? 0
+        : this.contigDimensionHolder.getStartBpOfPx(
+            dPx,
+            resolutionDescriptor.bpResolution
+          ) -
+          this.contigDimensionHolder.getStartBpOfPx(
+            Math.max(
+              0,
+              Math.round(-Math.min(0, mapBoxPixelCoordinates.left)) * fraction1
+            ),
+            resolutionDescriptor.bpResolution
+          );
 
     const [preBP, postBP] = (() => {
       if (dPx == 0) {
@@ -256,9 +327,17 @@ class RulerControl extends Control {
       }
     })();
 
+    context.strokeStyle = "white";
+    context.lineWidth = 6;
     context.beginPath();
-    context.moveTo(px, y0 - 10);
-    context.lineTo(px, y0 + 10);
+    context.moveTo(px, y0 - 20);
+    context.lineTo(px, y0 + 20);
+    context.stroke();
+    context.strokeStyle = "black";
+    context.lineWidth = 3;
+    context.beginPath();
+    context.moveTo(px, y0 - 20);
+    context.lineTo(px, y0 + 20);
     context.stroke();
 
     const angleDeg = -45;
@@ -272,19 +351,19 @@ class RulerControl extends Control {
       this.drawRotatedText(
         SIStringPre,
         Math.round(px - 20),
-        y0 - 10 - 5,
+        y0 - 20 - 5,
         context,
         angleDeg,
-        "20px serif"
+        "bold 20px serif"
       );
       //   context.fillText(SIStringPost, Math.round(px + 10), y0 - 10 - 20);
       this.drawRotatedText(
         SIStringPost,
         Math.round(px + 20),
-        y0 - 10 - 5,
+        y0 - 20 - 5,
         context,
         angleDeg,
-        "20px serif"
+        "bold 20px serif"
       );
     } else {
       const SIString = toSI(preBP); // + "bp";
@@ -293,12 +372,21 @@ class RulerControl extends Control {
       this.drawRotatedText(
         SIString,
         Math.round(px),
-        y0 - 10 - 5,
+        y0 - 20 - 5,
         context,
         angleDeg,
-        "20px serif"
+        "bold 20px serif"
       );
     }
+
+    this.drawRotatedText(
+      "+" + toSI(dBp) + "bp",
+      Math.round(px),
+      y0 + 20 + 5 + 20,
+      context,
+      0,
+      "bold 20px serif"
+    );
 
     context.restore();
   }
@@ -309,15 +397,66 @@ class RulerControl extends Control {
     y: number,
     context: CanvasRenderingContext2D,
     angleDeg: number,
-    font: string
+    font: string,
+    stroke?: boolean
   ): void {
     context.save();
     context.translate(x, y);
     context.rotate(angleDeg * (Math.PI / 180));
     context.font = font;
     context.textAlign = "left";
+
+    const mt = context.measureText(text);
+
+    const backgroundColor = this.mapBackgroundColor.value;
+
+    context.fillStyle = backgroundColor.RGB;
+
+    context.fillRect(-5, 5, mt.width + 5 + 5, -(mt.fontBoundingBoxAscent + 5));
+
+    this.setFillStrokeContrastColors(context);
+
     context.fillText(text, 0, 0);
+    if (stroke) {
+      context.strokeText(text, 0, 0);
+    }
+
     context.restore();
+  }
+
+  protected setFillStrokeContrastColors(
+    context: CanvasRenderingContext2D
+  ): void {
+    const backgroundColor = this.mapBackgroundColor.value;
+
+    const fillColor = new ColorTranslator(
+      {
+        H: (180 + backgroundColor.H) % 360.0,
+        S: backgroundColor.S, // > 50 ? 30 : 70,
+        L: backgroundColor.L > 50 ? 30 : 70,
+        A: 1.0,
+      },
+      { legacyCSS: true }
+    ).RGB;
+    context.fillStyle = fillColor;
+
+    const cmap = this.colormap.value;
+
+    if (!(cmap instanceof SimpleLinearGradient)) {
+      context.fillStyle = "black";
+    } else {
+      const cmapEndColor = cmap.endColorRGBA;
+      const strokeColor = new ColorTranslator(
+        {
+          H: (180 + cmapEndColor.H) % 360.0,
+          S: cmapEndColor.S, // > 50 ? 30 : 70,
+          L: cmapEndColor.L > 50 ? 30 : 70,
+          A: 1.0,
+        },
+        { legacyCSS: true }
+      ).RGB;
+      context.strokeStyle = strokeColor;
+    }
   }
 }
 

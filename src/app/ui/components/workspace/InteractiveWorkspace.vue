@@ -26,8 +26,9 @@ import ContactMap from "../../contactmap/ContactMap.vue";
 import VerticalIGVTrack from "../tracks/VerticalIGVTrack.vue";
 
 import { useStyleStore } from "@/app/stores/styleStore";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { storeToRefs } from "pinia";
+import { ColorTranslator } from "colortranslator";
 
 const stylesStore = useStyleStore();
 
@@ -35,8 +36,15 @@ const { mapBackgroundColor } = storeToRefs(stylesStore);
 
 const iwsClass = ref("interactive-workspace");
 const iwcStyle = ref({
-  "background-color": mapBackgroundColor,
+  "background-color": mapBackgroundColor.value.RGB,
 });
+
+watch(
+  () => mapBackgroundColor.value.RGB,
+  () => {
+    iwcStyle.value["background-color"] = mapBackgroundColor.value.RGB;
+  }
+);
 
 const props = defineProps<{
   mapManager: ContactMapManager | undefined;
