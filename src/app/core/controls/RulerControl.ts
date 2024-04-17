@@ -236,12 +236,15 @@ class RulerControl extends Control {
       }
     })();
 
+    // TODO: Fix this part so that ruler is not overlaid by something else:
+    /*
     if ((end[0] - start[0]) * deltaDir[0] + (end[1] - start[1]) * deltaDir[1]) {
       start[0] += (this.canvas.width / 20) * deltaDir[0];
       start[1] += (this.canvas.height / 20) * deltaDir[1];
       end[0] -= (this.canvas.width / 20) * deltaDir[0];
       end[1] -= (this.canvas.height / 20) * deltaDir[1];
     }
+    */
 
     // const startX = visibleMapBoxExtentPixel.left;
     // const endX = visibleMapBoxExtentPixel.right;
