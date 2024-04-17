@@ -23,6 +23,8 @@ interface Options extends ControlOptions {
   mapManager: ContactMapManager;
 }
 
+const DEFAULT_CANVAS_SIZE = 200;
+
 class RulerControl extends Control {
   protected readonly canvas: HTMLCanvasElement;
   protected readonly mapManager: ContactMapManager;
@@ -59,7 +61,14 @@ class RulerControl extends Control {
         number,
         number
       ];
-      canvasSize = [mapSize[0], 200];
+      switch (opt_options.direction) {
+        case "vertical":
+          canvasSize = [DEFAULT_CANVAS_SIZE, mapSize[1]];
+          break;
+        case "horizontal":
+          canvasSize = [mapSize[0], DEFAULT_CANVAS_SIZE];
+          break;
+      }
     }
     const newOptions = {
       ...opt_options,
@@ -88,9 +97,9 @@ class RulerControl extends Control {
 
   render(mapEvent: MapEvent) {
     const map = mapEvent.map;
-    const size = this.canvasSize; //map.getSize() as [number, number];
-    this.canvas.width = size[0];
-    this.canvas.height = size[1];
+    // const size = this.canvasSize; //map.getSize() as [number, number];
+    this.canvas.width = this.canvasSize[0];
+    this.canvas.height = this.canvasSize[1];
     const context = this.canvas.getContext("2d");
     console.log("Got context: ", context, "RulerControl: ", this);
     if (!context) return;
@@ -185,11 +194,11 @@ class RulerControl extends Control {
       right: Math.round(
         Math.min(
           mapBoxPixelCoordinates.left + pixelMapSize / fraction1,
-          size[0]
+          this.canvasSize[0]
         )
       ),
       top: Math.round(Math.max(0, topmostMapPx)),
-      bottom: Math.round(size[1] - Math.min(bottommostMapPx, size[1])),
+      bottom: Math.round(this.canvasSize[1] - Math.min(bottommostMapPx, this.canvasSize[1])),
     };
 
     console.log(
