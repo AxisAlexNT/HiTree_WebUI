@@ -595,18 +595,27 @@ class HiCViewAndLayersManager {
         layers: this.layersHolder.hicDataLayers,
       })
     );
-    const ruler = new RulerControl({
+    const rulerH = new RulerControl({
       // position: "top",
       direction: "horizontal",
       mapManager: this.mapManager,
       // target: "horizontal-igv-track-div",
     });
+    const rulerV = new RulerControl({
+      // position: "top",
+      direction: "vertical",
+      mapManager: this.mapManager,
+      target: "vertical-igv-track-div",
+    });
     try {
-      const map = this.getMapManager().getMap();
-      ruler.setMap(map);
-      this.mapManager.getMap().addControl(ruler);
+      const map = this.mapManager.getMap();
+      map.addControl(rulerH);
+      map.addControl(rulerV);
       map.on("moveend", (event) => {
-        ruler.render(event); // Render the axis control with the map event
+        rulerH.render(event);
+      });
+      map.on("moveend", (event) => {
+        rulerV.render(event);
       });
     } catch (e: unknown) {
       console.log("Error while adding rulers", e);

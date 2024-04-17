@@ -145,29 +145,11 @@ class RulerControl extends Control {
       targetProjection
     );
 
-    const fraction1 =
-      (mapView.getResolution() ?? 0) /
-      resolutionDescriptor.layerResolutionBorders.minResolutionInclusive;
-
-    const fraction2 =
-      1 +
-      ((mapView.getResolution() ?? 0) -
-        resolutionDescriptor.layerResolutionBorders.minResolutionInclusive) /
-        (resolutionDescriptor.layerResolutionBorders.maxResolutionExclusive -
-          resolutionDescriptor.layerResolutionBorders.minResolutionInclusive);
-
-    const fraction3 =
-      (resolutionDescriptor.layerResolutionBorders.maxResolutionExclusive -
-        resolutionDescriptor.layerResolutionBorders.minResolutionInclusive) /
-      ((mapView.getResolution() ?? 0) -
-        resolutionDescriptor.layerResolutionBorders.minResolutionInclusive);
-
-    const fraction4 =
-      resolutionDescriptor.layerResolutionBorders.maxResolutionExclusive /
-      (mapView.getResolution() ?? 1);
-    // const pixelResolution = activeHiCLayer.get("pixelResolution");
     const pixelResolution = mapView.getResolution() ?? 1;
-    // const pixelResolution = (mapView.getResolution() / fraction3) ?? 1;
+
+    const fraction1 =
+      pixelResolution /
+      resolutionDescriptor.layerResolutionBorders.minResolutionInclusive;
 
     const fixed_coordinates = transform(
       extent,
@@ -179,14 +161,12 @@ class RulerControl extends Control {
     const rightmostMapPx = fixed_coordinates[2];
     const topmostMapPx = fixed_coordinates[3];
     const bottommostMapPx = -fixed_coordinates[1];
-    const rightLength = rightmostMapPx - leftmostMapPx;
 
     const mapBoxPixelCoordinates = {
       left: Math.round(leftmostMapPx),
       right: Math.round(rightmostMapPx),
       top: Math.round(topmostMapPx),
       bottom: Math.round(bottommostMapPx),
-      rightLength: Math.round(rightLength),
     };
 
     const visibleMapBoxExtentPixel = {
@@ -198,7 +178,12 @@ class RulerControl extends Control {
         )
       ),
       top: Math.round(Math.max(0, topmostMapPx)),
-      bottom: Math.round(this.canvasSize[1] - Math.min(bottommostMapPx, this.canvasSize[1])),
+      bottom: Math.round(
+        Math.min(
+          mapBoxPixelCoordinates.top + pixelMapSize / fraction1,
+          this.canvasSize[1]
+        )
+      ),
     };
 
     console.log(
@@ -221,50 +206,90 @@ class RulerControl extends Control {
       "resolutionBorders",
       resolutionDescriptor.layerResolutionBorders,
       "fraction1",
-      fraction1,
-      "fraction2",
-      fraction2,
-      "fraction3",
-      fraction3,
-      "fraction4",
-      fraction4
+      fraction1
     );
 
-    const startX = visibleMapBoxExtentPixel.left;
-    const endX = visibleMapBoxExtentPixel.right;
-    const y0 = Math.round(this.canvas.height / 2);
+    const [start, end, deltaDir]: [
+      [number, number],
+      [number, number],
+      [number, number]
+    ] = (() => {
+      switch (this.opt_options.direction) {
+        case "vertical":
+          return [
+            [Math.round(this.canvas.width / 2), visibleMapBoxExtentPixel.top],
+            [
+              Math.round(this.canvas.width / 2),
+              visibleMapBoxExtentPixel.bottom,
+            ],
+            [0, 1],
+          ];
+        case "horizontal":
+          return [
+            [visibleMapBoxExtentPixel.left, Math.round(this.canvas.height / 2)],
+            [
+              visibleMapBoxExtentPixel.right,
+              Math.round(this.canvas.height / 2),
+            ],
+            [1, 0],
+          ];
+      }
+    })();
+
+    // const startX = visibleMapBoxExtentPixel.left;
+    // const endX = visibleMapBoxExtentPixel.right;
+    // const y0 = Math.round(this.canvas.height / 2);
     // context.save();
     // this.setFillStrokeContrastColors(context);
     // const strokeStyle = context.strokeStyle;
     context.strokeStyle = context.fillStyle;
     context.lineWidth = 5;
     context.beginPath();
-    context.moveTo(startX, y0 - 5);
-    context.lineTo(endX, y0 - 5);
-    context.moveTo(startX, y0 + 5);
-    context.lineTo(endX, y0 + 5);
+    context.moveTo(start[0] - 5 * deltaDir[0], start[1] - 5 * deltaDir[1]);
+    context.lineTo(end[0] - 5 * deltaDir[0], end[1] - 5 * deltaDir[1]);
+    context.moveTo(start[0] + 5 * deltaDir[0], start[1] + 5 * deltaDir[1]);
+    context.lineTo(end[0] + 5 * deltaDir[0], end[1] + 5 * deltaDir[1]);
     context.strokeStyle = "white";
     context.stroke();
     // context.strokeStyle = strokeStyle;
     context.lineWidth = 3;
     context.beginPath();
-    context.moveTo(startX, y0 - 5);
-    context.lineTo(endX, y0 - 5);
-    context.moveTo(startX, y0 + 5);
-    context.lineTo(endX, y0 + 5);
+    context.moveTo(start[0] - 5 * deltaDir[0], start[1] - 5 * deltaDir[1]);
+    context.lineTo(end[0] - 5 * deltaDir[0], end[1] - 5 * deltaDir[1]);
+    context.moveTo(start[0] + 5 * deltaDir[0], start[1] + 5 * deltaDir[1]);
+    context.lineTo(end[0] + 5 * deltaDir[0], end[1] + 5 * deltaDir[1]);
     context.strokeStyle = "black";
     context.stroke();
     // context.reset();
 
+    console.log("start", start, "end", end, "deltaDir", deltaDir);
+
+    const LAST_TICK_MARGIN = 50;
     const tickInterval = 100;
-    for (let x = startX; x < endX - 50; x += tickInterval) {
+    for (
+      let coord: [number, number] = start;
+      coord[0] < end[0] - LAST_TICK_MARGIN ||
+      coord[1] < end[1] - LAST_TICK_MARGIN;
+      coord[0] += deltaDir[0] * tickInterval,
+        coord[1] += deltaDir[1] * tickInterval
+    ) {
+      console.log(
+        "start",
+        start,
+        "end",
+        end,
+        "deltaDir",
+        deltaDir,
+        "coord",
+        coord
+      );
       this.drawTickAtPxOffset(
         context,
         resolutionDescriptor,
-        x,
-        startX,
-        endX,
-        y0,
+        coord,
+        start,
+        end,
+        deltaDir,
         tickInterval,
         mapBoxPixelCoordinates,
         visibleMapBoxExtentPixel,
@@ -274,10 +299,10 @@ class RulerControl extends Control {
     this.drawTickAtPxOffset(
       context,
       resolutionDescriptor,
-      endX,
-      startX,
-      endX,
-      y0,
+      end,
+      start,
+      end,
+      deltaDir,
       tickInterval,
       mapBoxPixelCoordinates,
       visibleMapBoxExtentPixel,
@@ -288,10 +313,10 @@ class RulerControl extends Control {
   protected drawTickAtPxOffset(
     context: CanvasRenderingContext2D,
     resolutionDescriptor: LayerResolutionDescriptor,
-    px: number,
-    startPx: number,
-    endPx: number,
-    y0: number,
+    coord: [number, number],
+    start: [number, number],
+    end: [number, number],
+    deltaDir: [number, number],
     tickInterval: number,
     mapBoxPixelCoordinates: {
       left: number;
@@ -307,11 +332,24 @@ class RulerControl extends Control {
     },
     fraction1: number
   ): void {
-    px = Math.round(px);
+    coord = coord.map(Math.round) as [number, number];
 
-    const dPx =
-      Math.round(px - startPx - Math.min(0, mapBoxPixelCoordinates.left)) *
-      fraction1;
+    const dPx = (() => {
+      switch (this.opt_options.direction) {
+        case "vertical":
+          return (
+            Math.round(
+              coord[1] - start[1] - Math.min(0, mapBoxPixelCoordinates.top)
+            ) * fraction1
+          );
+        case "horizontal":
+          return (
+            Math.round(
+              coord[0] - start[0] - Math.min(0, mapBoxPixelCoordinates.left)
+            ) * fraction1
+          );
+      }
+    })();
 
     const dBp =
       dPx == 0
@@ -337,7 +375,7 @@ class RulerControl extends Control {
             resolutionDescriptor.bpResolution
           ),
         ];
-      } else if (px == endPx) {
+      } else if (coord == end) {
         return [
           this.contigDimensionHolder.getStartBpOfPx(
             dPx - 1,
@@ -364,65 +402,124 @@ class RulerControl extends Control {
       }
     })();
 
+    const TICK_SEMI_HEIGHT = 20;
+
     context.strokeStyle = "white";
     context.lineWidth = 6;
     context.beginPath();
-    context.moveTo(px, y0 - 20);
-    context.lineTo(px, y0 + 20);
+    context.moveTo(
+      coord[0] - TICK_SEMI_HEIGHT * deltaDir[1],
+      coord[1] - TICK_SEMI_HEIGHT * deltaDir[0]
+    );
+    context.lineTo(
+      coord[0] + TICK_SEMI_HEIGHT * deltaDir[1],
+      coord[1] + TICK_SEMI_HEIGHT * deltaDir[0]
+    );
     context.stroke();
     context.strokeStyle = "black";
     context.lineWidth = 3;
     context.beginPath();
-    context.moveTo(px, y0 - 20);
-    context.lineTo(px, y0 + 20);
+    context.moveTo(
+      coord[0] - TICK_SEMI_HEIGHT * deltaDir[1],
+      coord[1] - TICK_SEMI_HEIGHT * deltaDir[0]
+    );
+    context.lineTo(
+      coord[0] + TICK_SEMI_HEIGHT * deltaDir[1],
+      coord[1] + TICK_SEMI_HEIGHT * deltaDir[0]
+    );
     context.stroke();
 
-    const angleDeg = -45;
+    const angleDeg = (() => {
+      switch (this.opt_options.direction) {
+        case "vertical":
+          return 0;
+        case "horizontal":
+          return -45;
+      }
+    })();
+
+    const FONT_SIZE_PX = Math.floor(
+      Math.min(this.canvas.width, this.canvas.height) / 10
+    );
+    const FONT_STRING = `bold ${FONT_SIZE_PX}px serif`;
+    const textAlign = (() => {
+      switch (this.opt_options.direction) {
+        case "vertical":
+          return "right";
+        case "horizontal":
+          return "left";
+      }
+    })();
 
     if (postBP - preBP > resolutionDescriptor.bpResolution) {
       const SIStringPre = toSI(preBP); // + "bp";
       const SIStringPost = toSI(postBP); // + "bp";
       const mtPre = context.measureText(SIStringPre);
       //   const mtPost = context.measureText(SIStringPost);
-      //   context.fillText(SIStringPre, Math.round(px - mtPre.width - 10), y0 - 10 - 20);
       this.drawRotatedText(
         SIStringPre,
-        Math.round(px - 20),
-        y0 - 20 - 5,
+        Math.round(
+          coord[0] -
+            FONT_SIZE_PX * deltaDir[0] -
+            (FONT_SIZE_PX + 5) * deltaDir[1]
+        ),
+        Math.round(
+          coord[1] -
+            FONT_SIZE_PX * deltaDir[1] -
+            (FONT_SIZE_PX + 5) * deltaDir[0]
+        ),
         context,
         angleDeg,
-        "bold 20px serif"
+        FONT_STRING,
+        textAlign,
+        false
       );
-      //   context.fillText(SIStringPost, Math.round(px + 10), y0 - 10 - 20);
       this.drawRotatedText(
         SIStringPost,
-        Math.round(px + 20),
-        y0 - 20 - 5,
+        Math.round(
+          coord[0] +
+            FONT_SIZE_PX * deltaDir[0] -
+            (FONT_SIZE_PX + 5) * deltaDir[1]
+        ),
+        Math.round(
+          coord[1] +
+            FONT_SIZE_PX * deltaDir[1] -
+            (FONT_SIZE_PX + 5) * deltaDir[0]
+        ),
         context,
         angleDeg,
-        "bold 20px serif"
+        FONT_STRING,
+        textAlign,
+        false
       );
     } else {
       const SIString = toSI(preBP); // + "bp";
       const mt = context.measureText(SIString);
-      //   context.fillText(SIString, Math.round(px - mt.width / 2), y0 - 10 - 20);
       this.drawRotatedText(
         SIString,
-        Math.round(px),
-        y0 - 20 - 5,
+        Math.round(coord[0] - (FONT_SIZE_PX + 5) * deltaDir[1]),
+        Math.round(coord[1] - (FONT_SIZE_PX + 5) * deltaDir[0]),
         context,
         angleDeg,
-        "bold 20px serif"
+        FONT_STRING,
+        textAlign,
+        false
       );
     }
 
     this.drawRotatedText(
       "+" + toSI(dBp) + "bp",
-      Math.round(px),
-      y0 + 20 + 5 + 20,
+      Math.round(
+        coord[0] + (TICK_SEMI_HEIGHT + FONT_SIZE_PX + 5) * deltaDir[1]
+      ),
+      Math.round(
+        coord[1] + (TICK_SEMI_HEIGHT + FONT_SIZE_PX + 5) * deltaDir[0]
+      ),
       context,
-      0,
-      "bold 20px serif"
+      angleDeg,
+      FONT_STRING,
+      textAlign,
+      false
     );
 
     context.restore();
@@ -435,13 +532,14 @@ class RulerControl extends Control {
     context: CanvasRenderingContext2D,
     angleDeg: number,
     font: string,
+    textAlign: CanvasTextAlign,
     stroke?: boolean
   ): void {
     context.save();
     context.translate(x, y);
     context.rotate(angleDeg * (Math.PI / 180));
     context.font = font;
-    context.textAlign = "left";
+    context.textAlign = textAlign;
 
     const mt = context.measureText(text);
 
