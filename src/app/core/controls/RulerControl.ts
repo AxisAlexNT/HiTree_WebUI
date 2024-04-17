@@ -18,7 +18,7 @@ import { ColorTranslator } from "colortranslator";
 import SimpleLinearGradient from "../visualization/colormap/SimpleLinearGradient";
 
 interface Options extends ControlOptions {
-  position: "top" | "bottom" | "left" | "right";
+  // position: "top" | "bottom" | "left" | "right";
   direction: "vertical" | "horizontal";
   mapManager: ContactMapManager;
 }
@@ -32,8 +32,35 @@ class RulerControl extends Control {
   protected readonly mapBackgroundColor: Ref<ColorTranslator>;
   protected readonly colormap: Ref<Colormap>;
 
+  public readonly canvasSize: number[];
+
   public constructor(public readonly opt_options: Options) {
     const canvas = document.createElement("canvas");
+    let canvasSize: number[];
+
+    if (opt_options.target) {
+      const parent =
+        typeof opt_options.target === "string" ||
+        opt_options.target instanceof String
+          ? document.getElementById(opt_options.target as string)
+          : (opt_options.target as HTMLElement);
+      if (parent) {
+        parent?.appendChild(canvas);
+      } else {
+        throw new Error(
+          "Cannot find parent element for RulerControl with target " +
+            opt_options.target
+        );
+      }
+      const dim = parent.getBoundingClientRect();
+      canvasSize = [Math.floor(dim.width), Math.floor(dim.height)];
+    } else {
+      const mapSize = opt_options.mapManager.getMap().getSize() as [
+        number,
+        number
+      ];
+      canvasSize = [mapSize[0], 200];
+    }
     const newOptions = {
       ...opt_options,
       ...{
@@ -54,20 +81,22 @@ class RulerControl extends Control {
     this.colormap = colormap;
     this.mapBackgroundColor = mapBackgroundColor as Ref<ColorTranslator>;
 
+    this.canvasSize = canvasSize;
+
     console.log("RulerControl constructor finished", this);
   }
 
   render(mapEvent: MapEvent) {
     const map = mapEvent.map;
-    const size = map.getSize() as [number, number];
+    const size = this.canvasSize; //map.getSize() as [number, number];
     this.canvas.width = size[0];
-    this.canvas.height = 200; //size[1];
+    this.canvas.height = size[1];
     const context = this.canvas.getContext("2d");
     console.log("Got context: ", context, "RulerControl: ", this);
     if (!context) return;
     console.log("Context available");
 
-    context.clearRect(0, 0, size[0], size[1]);
+    context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     const mapView = map.getView();
 

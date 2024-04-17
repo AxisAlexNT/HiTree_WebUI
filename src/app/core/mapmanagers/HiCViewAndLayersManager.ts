@@ -596,9 +596,10 @@ class HiCViewAndLayersManager {
       })
     );
     const ruler = new RulerControl({
-      position: "top",
+      // position: "top",
       direction: "horizontal",
       mapManager: this.mapManager,
+      // target: "horizontal-igv-track-div",
     });
     try {
       const map = this.getMapManager().getMap();
