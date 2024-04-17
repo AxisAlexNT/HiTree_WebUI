@@ -267,7 +267,7 @@ class RulerControl extends Control {
     const LAST_TICK_MARGIN = 50;
     const tickInterval = 100;
     for (
-      let coord: [number, number] = start;
+      let coord: [number, number] = [start[0], start[1]];
       coord[0] < end[0] - LAST_TICK_MARGIN ||
       coord[1] < end[1] - LAST_TICK_MARGIN;
       coord[0] += deltaDir[0] * tickInterval,
@@ -401,6 +401,20 @@ class RulerControl extends Control {
         ];
       }
     })();
+
+    console.log(
+      this.opt_options.direction,
+      "coord",
+      coord,
+      "dPx",
+      dPx,
+      "dBp",
+      dBp,
+      "pre",
+      preBP,
+      "post",
+      postBP
+    );
 
     const TICK_SEMI_HEIGHT = 20;
 
