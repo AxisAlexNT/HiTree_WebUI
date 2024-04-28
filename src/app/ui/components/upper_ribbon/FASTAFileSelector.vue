@@ -65,8 +65,8 @@
 <script setup lang="ts">
 import { type Ref, ref, onMounted } from "vue";
 import { Modal } from "bootstrap";
-import type { NetworkManager } from "@/app/core/net/NetworkManager.js";
-import { LinkFASTARequest } from "@/app/core/net/api/request";
+import type { NetworkManager } from "@hict/app/core/net/NetworkManager.js";
+import { LinkFASTARequest } from "@hict/app/core/net/api/request";
 
 const emit = defineEmits<{
   (e: "selected", fastaFilename: string): void;

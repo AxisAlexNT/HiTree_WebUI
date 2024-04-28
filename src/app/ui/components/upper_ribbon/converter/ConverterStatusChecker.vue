@@ -78,8 +78,8 @@
 
 <script setup lang="ts">
 import { type Ref, ref, onMounted } from "vue";
-import type { NetworkManager } from "@/app/core/net/NetworkManager.js";
-import { ConverterStatusResponse } from "@/app/core/net/api/response";
+import type { NetworkManager } from "@hict/app/core/net/NetworkManager.js";
+import { ConverterStatusResponse } from "@hict/app/core/net/api/response";
 
 const props = defineProps<{
   networkManager: NetworkManager;

@@ -1,4 +1,4 @@
-import type ContigDimensionHolder from "@/app/core/mapmanagers/ContigDimensionHolder";
+import type ContigDimensionHolder from "@hict/app/core/mapmanagers/ContigDimensionHolder";
 import type { Color } from "ol/color";
 import type { ColorLike } from "ol/colorlike";
 import Feature from "ol/Feature";

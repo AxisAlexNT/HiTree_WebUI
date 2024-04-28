@@ -3,8 +3,8 @@
 </template>
 
 <script setup lang="ts">
-import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
-import { usehtmlElementReferencesStore } from "@/app/stores/htmlElementReferencesStore";
+import { ContactMapManager } from "@hict/app/core/mapmanagers/ContactMapManager";
+import { usehtmlElementReferencesStore } from "@hict/app/stores/htmlElementReferencesStore";
 import { View } from "ol";
 import { storeToRefs } from "pinia";
 import { Ref, onMounted, ref, watch } from "vue";

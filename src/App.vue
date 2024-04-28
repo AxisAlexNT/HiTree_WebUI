@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import MainUIComponent from "@/app/ui/MainUIComponent.vue";
+import MainUIComponent from "@hict/app/ui/MainUIComponent.vue";
 </script>
 
 <style>

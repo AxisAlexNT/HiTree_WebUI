@@ -19,13 +19,13 @@
 import {
   ContactMapManager,
   // type ContactMapManagerOptions,
-} from "@/app/core/mapmanagers/ContactMapManager";
+} from "@hict/app/core/mapmanagers/ContactMapManager";
 import TrackNames from "./TrackNames.vue";
 import HorizontalIGVTrack from "../tracks/HorizontalIGVTrack.vue";
 import ContactMap from "../../contactmap/ContactMap.vue";
 import VerticalIGVTrack from "../tracks/VerticalIGVTrack.vue";
 
-import { useStyleStore } from "@/app/stores/styleStore";
+import { useStyleStore } from "@hict/app/stores/styleStore";
 import { ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { ColorTranslator } from "colortranslator";

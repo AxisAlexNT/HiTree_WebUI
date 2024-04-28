@@ -20,15 +20,15 @@
 </template>
 
 <script setup lang="ts">
-import UpperFrame from "@/app/ui/components/upper_ribbon/UpperFrame.vue";
+import UpperFrame from "@hict/app/ui/components/upper_ribbon/UpperFrame.vue";
 import {
   ContactMapManager,
   // type ContactMapManagerOptions,
-} from "@/app/core/mapmanagers/ContactMapManager";
+} from "@hict/app/core/mapmanagers/ContactMapManager";
 import { ref, watch, type Ref } from "vue";
-import { NetworkManager } from "@/app/core/net/NetworkManager";
+import { NetworkManager } from "@hict/app/core/net/NetworkManager";
 
-import WorkspaceComponent from "@/app/ui/components/workspace/WorkspaceComponent.vue";
+import WorkspaceComponent from "@hict/app/ui/components/workspace/WorkspaceComponent.vue";
 import { Toaster, toast } from "vue-sonner";
 import { storeToRefs } from "pinia";
 import { usehtmlElementReferencesStore } from "../stores/htmlElementReferencesStore";

@@ -48,18 +48,18 @@
 </template>
 
 <script setup lang="ts">
-import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
-import LayerComponent from "@/app/ui/components/sidebar/LayerComponent.vue";
-import SavedLocations from "@/app/ui/components/sidebar/SavedLocations.vue";
+import { ContactMapManager } from "@hict/app/core/mapmanagers/ContactMapManager";
+import LayerComponent from "@hict/app/ui/components/sidebar/LayerComponent.vue";
+import SavedLocations from "@hict/app/ui/components/sidebar/SavedLocations.vue";
 import { ref, watch, type Ref } from "vue";
-import { CommonEventManager } from "@/app/core/mapmanagers/CommonEventManager";
-import { BorderStyle } from "@/app/core/tracks/Track2DSymmetric";
+import { CommonEventManager } from "@hict/app/core/mapmanagers/CommonEventManager";
+import { BorderStyle } from "@hict/app/core/tracks/Track2DSymmetric";
 import Style from "ol/style/Style";
-import MiniMap from "@/app/ui/components/sidebar/MiniMap.vue";
+import MiniMap from "@hict/app/ui/components/sidebar/MiniMap.vue";
 import { toast } from "vue-sonner";
 import Stroke from "ol/style/Stroke";
-import { useStyleStore } from "@/app/stores/styleStore";
-// import GradientEditor from "@/app/ui/components/sidebar/GradientEditor.vue";
+import { useStyleStore } from "@hict/app/stores/styleStore";
+// import GradientEditor from "@hict/app/ui/components/sidebar/GradientEditor.vue";
 import VisualziationSettingsEditor from "./VisualziationSettingsEditor.vue";
 import SavedVisualOptions from "./SavedVisualOptions.vue";
 import { storeToRefs } from "pinia";

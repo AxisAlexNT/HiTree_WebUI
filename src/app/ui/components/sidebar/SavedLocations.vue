@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
+import { ContactMapManager } from "@hict/app/core/mapmanagers/ContactMapManager";
 import SavedLocationElement from "./SavedLocationElement.vue";
 import { Ref, ref } from "vue";
 import { Coordinate } from "ol/coordinate";

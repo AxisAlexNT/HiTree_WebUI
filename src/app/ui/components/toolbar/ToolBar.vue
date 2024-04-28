@@ -15,10 +15,10 @@
 </template>
 
 <script setup lang="ts">
-import FirstBlock from "@/app/ui/components/toolbar/upper_blocks/FirstBlock.vue";
-import ThirdBlock from "@/app/ui/components/toolbar/upper_blocks/ThirdBlock.vue";
-import BottomButtons from "@/app/ui/components/toolbar/bottom_blocks/BottomButtons.vue";
-import type { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
+import FirstBlock from "@hict/app/ui/components/toolbar/upper_blocks/FirstBlock.vue";
+import ThirdBlock from "@hict/app/ui/components/toolbar/upper_blocks/ThirdBlock.vue";
+import BottomButtons from "@hict/app/ui/components/toolbar/bottom_blocks/BottomButtons.vue";
+import type { ContactMapManager } from "@hict/app/core/mapmanagers/ContactMapManager";
 import RearrangementButtons from "./upper_blocks/RearrangementButtons.vue";
 import ScaffoldingButtons from "./upper_blocks/ScaffoldingButtons.vue";
 

@@ -11,10 +11,10 @@
 </template>
 
 <script setup lang="ts">
-import NavigationBar from "@/app/ui/components/upper_ribbon/NavigationBar.vue";
-import HeaderRibbon from "@/app/ui/components/upper_ribbon/HeaderRibbon.vue";
-import type { NetworkManager } from "@/app/core/net/NetworkManager.js";
-import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
+import NavigationBar from "@hict/app/ui/components/upper_ribbon/NavigationBar.vue";
+import HeaderRibbon from "@hict/app/ui/components/upper_ribbon/HeaderRibbon.vue";
+import type { NetworkManager } from "@hict/app/core/net/NetworkManager.js";
+import { ContactMapManager } from "@hict/app/core/mapmanagers/ContactMapManager";
 const emit = defineEmits<{
   (e: "selected", filename: string): void;
   (e: "closed"): void;

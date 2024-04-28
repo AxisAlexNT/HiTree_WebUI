@@ -44,12 +44,12 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
-import VisualizationOptions from "@/app/core/visualization/VisualizationOptions";
+import { ContactMapManager } from "@hict/app/core/mapmanagers/ContactMapManager";
+import VisualizationOptions from "@hict/app/core/visualization/VisualizationOptions";
 import { ref } from "vue";
-import { useVisualizationOptionsStore } from "@/app/stores/visualizationOptionsStore";
+import { useVisualizationOptionsStore } from "@hict/app/stores/visualizationOptionsStore";
 import { storeToRefs } from "pinia";
-import { useStyleStore } from "@/app/stores/styleStore";
+import { useStyleStore } from "@hict/app/stores/styleStore";
 import { ColorTranslator } from "colortranslator";
 
 const visualizationOptionsStore = useVisualizationOptionsStore();

@@ -1,8 +1,8 @@
-import CommonUtils from "@/CommonUtils";
+import CommonUtils from "@hict/CommonUtils";
 import {
   ContrastRangeSettings,
   NormalizationSettings,
-} from "@/app/ui/components/ComponentCommon";
+} from "@hict/app/ui/components/ComponentCommon";
 import { ContigDescriptor } from "../domain/ContigDescriptor";
 import {
   GroupContigsIntoScaffoldRequest,
@@ -17,7 +17,7 @@ import {
 } from "../net/api/request";
 import { ContactMapManager } from "./ContactMapManager";
 import { ActiveTool } from "./HiCViewAndLayersManager";
-import { BorderStyle } from "@/app/core/tracks/Track2DSymmetric";
+import { BorderStyle } from "@hict/app/core/tracks/Track2DSymmetric";
 import { Coordinate } from "ol/coordinate";
 import { toast } from "vue-sonner";
 

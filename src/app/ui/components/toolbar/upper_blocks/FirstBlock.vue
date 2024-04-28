@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
+import { ContactMapManager } from "@hict/app/core/mapmanagers/ContactMapManager";
 import { toast } from "vue-sonner";
 import { onMounted, ref, watch } from "vue";
 import { Coordinate } from "ol/coordinate";

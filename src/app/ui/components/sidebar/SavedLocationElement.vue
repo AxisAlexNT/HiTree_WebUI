@@ -32,7 +32,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
+import { ContactMapManager } from "@hict/app/core/mapmanagers/ContactMapManager";
 import { Coordinate } from "ol/coordinate";
 import { ref } from "vue";
 

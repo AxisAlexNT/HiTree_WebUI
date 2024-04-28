@@ -10,10 +10,10 @@
 </template>
 
 <script setup lang="ts">
-import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
-import InteractiveWorkspace from "@/app/ui/components/workspace/InteractiveWorkspace.vue";
-import ToolBar from "@/app/ui/components/toolbar/ToolBar.vue";
-import SideBar from "@/app/ui/components/sidebar/SideBar.vue";
+import { ContactMapManager } from "@hict/app/core/mapmanagers/ContactMapManager";
+import InteractiveWorkspace from "@hict/app/ui/components/workspace/InteractiveWorkspace.vue";
+import ToolBar from "@hict/app/ui/components/toolbar/ToolBar.vue";
+import SideBar from "@hict/app/ui/components/sidebar/SideBar.vue";
 
 const props = defineProps<{
   mapManager: ContactMapManager | undefined;

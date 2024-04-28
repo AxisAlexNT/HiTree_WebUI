@@ -3,7 +3,7 @@ import {
   SetVisualizationOptionsRequest,
 } from "../net/api/request";
 import { ContactMapManager } from "./ContactMapManager";
-import { useVisualizationOptionsStore } from "@/app/stores/visualizationOptionsStore";
+import { useVisualizationOptionsStore } from "@hict/app/stores/visualizationOptionsStore";
 import VisualizationOptions from "../visualization/VisualizationOptions";
 
 class VisualizationManager {

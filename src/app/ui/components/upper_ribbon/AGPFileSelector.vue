@@ -102,8 +102,8 @@
 <script setup lang="ts">
 import { type Ref, ref, onMounted } from "vue";
 import { Modal } from "bootstrap";
-import type { NetworkManager } from "@/app/core/net/NetworkManager.js";
-import { LoadAGPRequest } from "@/app/core/net/api/request";
+import type { NetworkManager } from "@hict/app/core/net/NetworkManager.js";
+import { LoadAGPRequest } from "@hict/app/core/net/api/request";
 import path from "path-browserify";
 import { FileTreeNode, extensionToDataType } from "../ComponentCommon";
 import Tree from "primevue/tree";

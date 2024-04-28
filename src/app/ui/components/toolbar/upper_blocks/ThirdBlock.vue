@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
+import type { ContactMapManager } from "@hict/app/core/mapmanagers/ContactMapManager";
 
 const props = defineProps<{
   mapManager?: ContactMapManager | undefined;

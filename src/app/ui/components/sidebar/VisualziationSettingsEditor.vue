@@ -64,12 +64,12 @@
 
 <script setup lang="ts">
 import { Ref, onMounted, ref, unref, watch } from "vue";
-import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
+import { ContactMapManager } from "@hict/app/core/mapmanagers/ContactMapManager";
 import ColorPickerRectangle from "./ColorPickerRectangle.vue";
 import { toast } from "vue-sonner";
-import { useVisualizationOptionsStore } from "@/app/stores/visualizationOptionsStore";
+import { useVisualizationOptionsStore } from "@hict/app/stores/visualizationOptionsStore";
 import { storeToRefs } from "pinia";
-import SimpleLinearGradient from "@/app/core/visualization/colormap/SimpleLinearGradient";
+import SimpleLinearGradient from "@hict/app/core/visualization/colormap/SimpleLinearGradient";
 import { ColorTranslator } from "colortranslator";
 const visualizationOptionsStore = useVisualizationOptionsStore();
 const { preLogBase, applyCoolerWeights, postLogBase, colormap } = storeToRefs(

@@ -49,8 +49,8 @@
 <script setup lang="ts">
 import { type Ref, ref, onMounted } from "vue";
 import { Modal } from "bootstrap";
-import type { NetworkManager } from "@/app/core/net/NetworkManager.js";
-import { ConvertCoolerRequest } from "@/app/core/net/api/request";
+import type { NetworkManager } from "@hict/app/core/net/NetworkManager.js";
+import { ConvertCoolerRequest } from "@hict/app/core/net/api/request";
 import CoolerFileSelector from "./converter/CoolerFileSelector.vue";
 import ConverterStatusChecker from "./converter/ConverterStatusChecker.vue";
 

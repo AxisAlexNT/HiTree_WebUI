@@ -89,7 +89,7 @@
 </template>
 
 <script setup lang="ts">
-import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
+import { ContactMapManager } from "@hict/app/core/mapmanagers/ContactMapManager";
 import NormalizationSelector from "./NormalizationSelector.vue";
 import { Ref, ref } from "vue";
 

@@ -1,7 +1,7 @@
 import {
   ContrastRangeSettings,
   NormalizationSettings,
-} from "@/app/ui/components/ComponentCommon";
+} from "@hict/app/ui/components/ComponentCommon";
 import assert from "assert";
 import { ImageTile, Tile } from "ol";
 import { VisualizationOptionsDTO } from "../dto/dto";

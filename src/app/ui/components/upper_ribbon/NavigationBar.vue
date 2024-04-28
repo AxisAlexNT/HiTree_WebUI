@@ -189,15 +189,19 @@ import OpenFileSelector from "@/app/ui/components/upper_ribbon/OpenFileSelector.
 import FASTAFileSelector from "@/app/ui/components/upper_ribbon/FASTAFileSelector.vue";
 import AGPFileSelector from "@/app/ui/components/upper_ribbon/AGPFileSelector.vue";
 import { Ref, ref, watch } from "vue";
+import type { NetworkManager } from "@hict/app/core/net/NetworkManager.js";
+import OpenFileSelector from "@hict/app/ui/components/upper_ribbon/OpenFileSelector.vue";
+import FASTAFileSelector from "@hict/app/ui/components/upper_ribbon/FASTAFileSelector.vue";
+import AGPFileSelector from "@hict/app/ui/components/upper_ribbon/AGPFileSelector.vue";
 import {
   GetAGPForAssemblyRequest,
   GetFastaForAssemblyRequest,
   LinkFASTARequest,
   LoadAGPRequest,
-} from "@/app/core/net/api/request";
-import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
+} from "@hict/app/core/net/api/request";
+import { ContactMapManager } from "@hict/app/core/mapmanagers/ContactMapManager";
 import CoolerConverter from "./CoolerConverter.vue";
-import UniversalFileSelector from "@/app/ui/components/upper_ribbon/UniversalFileSelector.vue";
+import UniversalFileSelector from "@hict/app/ui/components/upper_ribbon/UniversalFileSelector.vue";
 import { toast } from "vue-sonner";
 const openingFile = ref(false);
 const openingFASTAFile = ref(false);

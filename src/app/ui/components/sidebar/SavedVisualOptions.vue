@@ -53,14 +53,14 @@
 </template>
 
 <script setup lang="ts">
-import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
+import { ContactMapManager } from "@hict/app/core/mapmanagers/ContactMapManager";
 import { Ref, ref } from "vue";
 import SavedVisualOptionsElement from "./SavedVisualOptionsElement.vue";
-import VisualizationOptions from "@/app/core/visualization/VisualizationOptions";
-import { useVisualizationOptionsStore } from "@/app/stores/visualizationOptionsStore";
+import VisualizationOptions from "@hict/app/core/visualization/VisualizationOptions";
+import { useVisualizationOptionsStore } from "@hict/app/stores/visualizationOptionsStore";
 import { storeToRefs } from "pinia";
 import { toast } from "vue-sonner";
-import { useStyleStore } from "@/app/stores/styleStore";
+import { useStyleStore } from "@hict/app/stores/styleStore";
 import { ColorTranslator } from "colortranslator";
 const visualizationOptionsStore = useVisualizationOptionsStore();
 const { preLogBase, applyCoolerWeights, postLogBase, colormap } = storeToRefs(

@@ -29,7 +29,7 @@
 
 <script setup lang="ts">
 import { type Ref, ref } from "vue";
-import { BorderStyle } from "@/app/core/tracks/Track2DSymmetric";
+import { BorderStyle } from "@hict/app/core/tracks/Track2DSymmetric";
 import ColorPickerRectangle from "./ColorPickerRectangle.vue";
 import Style from "ol/style/Style";
 import { Color } from "ol/color";

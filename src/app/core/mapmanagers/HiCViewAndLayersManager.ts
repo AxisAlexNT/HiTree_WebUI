@@ -12,12 +12,12 @@ import Stroke from "ol/style/Stroke";
 import Style from "ol/style/Style";
 import TileGrid from "ol/tilegrid/TileGrid";
 import { type Ref, ref } from "vue";
-import ContigMouseWheelZoom from "@/ContigMouseWheelZoom";
-import BinMousePosition from "@/BinMousePosition";
+import ContigMouseWheelZoom from "@hict/ContigMouseWheelZoom";
+import BinMousePosition from "@hict/BinMousePosition";
 import { VersionedXYZContactMapSource } from "../VersionedXYZSource";
 import VectorImageLayer from "ol/layer/VectorImage";
 import type { OpenFileResponse } from "../net/netcommon";
-import { Track2D } from "@/app/core/tracks/Track2D";
+import { Track2D } from "@hict/app/core/tracks/Track2D";
 import {
   ContigBordersTrack2D,
   TranslocationArrowsTrack2D,

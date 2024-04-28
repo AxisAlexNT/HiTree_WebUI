@@ -4,10 +4,10 @@
 
 <script setup lang="ts">
 import "ol/ol.css";
-import { useStyleStore } from "@/app/stores/styleStore";
+import { useStyleStore } from "@hict/app/stores/styleStore";
 import { ref, computed, Ref, watch } from "vue";
 import { storeToRefs } from "pinia";
-import { usehtmlElementReferencesStore } from "@/app/stores/htmlElementReferencesStore";
+import { usehtmlElementReferencesStore } from "@hict/app/stores/htmlElementReferencesStore";
 
 const stylesStore = useStyleStore();
 

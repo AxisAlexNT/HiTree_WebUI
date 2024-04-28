@@ -155,9 +155,9 @@
 </template>
 
 <script setup lang="ts">
-import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
+import { ContactMapManager } from "@hict/app/core/mapmanagers/ContactMapManager";
 import { Ref, ref } from "vue";
-import { useVisualizationOptionsStore } from "@/app/stores/visualizationOptionsStore";
+import { useVisualizationOptionsStore } from "@hict/app/stores/visualizationOptionsStore";
 import { storeToRefs } from "pinia";
 import { toast } from "vue-sonner";
 const visualizationOptionsStore = useVisualizationOptionsStore();

@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
 import { type Ref, ref, onMounted } from "vue";
-import type { NetworkManager } from "@/app/core/net/NetworkManager.js";
+import type { NetworkManager } from "@hict/app/core/net/NetworkManager.js";
 
 const emit = defineEmits<{
   (e: "selected", coolerFilename: string): void;

@@ -10,7 +10,7 @@ import Style from "ol/style/Style";
 import Stroke from "ol/style/Stroke";
 import { Coordinate } from "ol/coordinate";
 import MapBrowserEventType from "ol/MapBrowserEventType";
-import CommonUtils from "@/CommonUtils";
+import CommonUtils from "@hict/CommonUtils";
 import TileLayer from "ol/layer/Tile";
 import { transform } from "ol/proj";
 
