@@ -48,6 +48,7 @@ import {
 } from "./response";
 import { toast } from "vue-sonner";
 import VisualizationOptions from "../../visualization/VisualizationOptions";
+import { useRemoteHostStore } from "@hict/app/stores/remoteHost";
 
 class RequestManager {
   constructor(public readonly networkManager: NetworkManager) {}
@@ -56,9 +57,11 @@ class RequestManager {
     request: HiCTAPIRequest,
     axiosConfig?: AxiosRequestConfig | undefined
   ): Promise<AxiosResponse> {
+    const host = useRemoteHostStore().remoteHost();
+
     return axios
       .post(
-        `${this.networkManager.host}/${request.requestPath}`,
+        `${host}/${request.requestPath}`,
         HiCTAPIRequestDTO.toDTOClass(request).toDTO(),
         axiosConfig ?? undefined
       )

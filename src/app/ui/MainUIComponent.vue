@@ -44,7 +44,6 @@ const tileSize: Ref<number> = ref(256);
 const contigBorderColor: Ref<string> = ref("ffccee");
 const mapManager: Ref<ContactMapManager | undefined> = ref(undefined);
 const networkManager: NetworkManager = new NetworkManager(
-  "http://localhost:5000/",
   undefined
 );
 

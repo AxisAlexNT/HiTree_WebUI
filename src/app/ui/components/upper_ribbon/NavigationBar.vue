@@ -184,15 +184,11 @@
 </template>
 
 <script setup lang="ts">
-import type { NetworkManager } from "@/app/core/net/NetworkManager.js";
-import OpenFileSelector from "@/app/ui/components/upper_ribbon/OpenFileSelector.vue";
-import FASTAFileSelector from "@/app/ui/components/upper_ribbon/FASTAFileSelector.vue";
-import AGPFileSelector from "@/app/ui/components/upper_ribbon/AGPFileSelector.vue";
-import { Ref, ref, watch } from "vue";
 import type { NetworkManager } from "@hict/app/core/net/NetworkManager.js";
 import OpenFileSelector from "@hict/app/ui/components/upper_ribbon/OpenFileSelector.vue";
 import FASTAFileSelector from "@hict/app/ui/components/upper_ribbon/FASTAFileSelector.vue";
 import AGPFileSelector from "@hict/app/ui/components/upper_ribbon/AGPFileSelector.vue";
+import { onMounted, Ref, ref, watch } from "vue";
 import {
   GetAGPForAssemblyRequest,
   GetFastaForAssemblyRequest,
@@ -203,12 +199,16 @@ import { ContactMapManager } from "@hict/app/core/mapmanagers/ContactMapManager"
 import CoolerConverter from "./CoolerConverter.vue";
 import UniversalFileSelector from "@hict/app/ui/components/upper_ribbon/UniversalFileSelector.vue";
 import { toast } from "vue-sonner";
+import { useRemoteHostStore } from "@hict/app/stores/remoteHost";
+
+const { remoteHost, setRemoteHost } = useRemoteHostStore();
+
 const openingFile = ref(false);
 const openingFASTAFile = ref(false);
 const openingAGPFile = ref(false);
 const convertingCoolers = ref(false);
 const saving = ref(false);
-const gatewayAddress: Ref<string> = ref("http://localhost:5000/");
+const gatewayAddress: Ref<string> = ref('http://unknown');
 
 const emit = defineEmits<{
   (e: "selected", filename: string): void;
@@ -221,6 +221,10 @@ const props = defineProps<{
 }>();
 
 const errorMessage: Ref<unknown | null> = ref(null);
+
+onMounted(() => {
+   gatewayAddress.value = remoteHost();
+});
 
 function onOpenFile() {
   openingFile.value = true;
@@ -264,7 +268,7 @@ function onFASTAFileDismissed() {
 }
 
 function onGatewayChanged() {
-  props.networkManager.onHostChanged(gatewayAddress.value);
+  setRemoteHost(gatewayAddress.value);
 }
 
 function onAGPFileDismissed() {
