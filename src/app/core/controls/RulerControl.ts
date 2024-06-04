@@ -247,7 +247,7 @@ class RulerControl extends Control {
     this.setFillStrokeContrastColors(context);
     const strokeStyle = context.strokeStyle;
     context.strokeStyle = context.fillStyle;
-    context.lineWidth = 5;
+    context.lineWidth = 10;
     context.beginPath();
     context.moveTo(start[0], start[1]);
     context.lineTo(end[0], end[1]);
@@ -258,7 +258,7 @@ class RulerControl extends Control {
     context.strokeStyle = "white";
     context.stroke();
     // context.strokeStyle = strokeStyle;
-    context.lineWidth = 3;
+    context.lineWidth = 5;
     context.beginPath();
     context.moveTo(start[0], start[1]);
     context.lineTo(end[0], end[1]);
@@ -490,20 +490,21 @@ class RulerControl extends Control {
       }
     })();
 
-    console.log(
-      this.opt_options.direction,
-      "coord",
-      coord,
-      "dPx",
-      dPx,
-      "dBp",
-      dBp,
-      "pre",
-      preBP,
-      "post",
-      postBP
-    );
+    // console.log(
+    //   this.opt_options.direction,
+    //   "coord",
+    //   coord,
+    //   "dPx",
+    //   dPx,
+    //   "dBp",
+    //   dBp,
+    //   "pre",
+    //   preBP,
+    //   "post",
+    //   postBP
+    // );
 
+    // this.setFillStrokeContrastColors(context);
     context.strokeStyle = "white";
     context.lineWidth = 6;
     context.beginPath();
