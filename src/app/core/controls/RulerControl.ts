@@ -217,20 +217,14 @@ class RulerControl extends Control {
       switch (this.opt_options.direction) {
         case "vertical":
           return [
-            [Math.round(this.canvas.width / 2), visibleMapBoxExtentPixel.top],
-            [
-              Math.round(this.canvas.width / 2),
-              visibleMapBoxExtentPixel.bottom,
-            ],
+            [Math.round(this.canvas.width), visibleMapBoxExtentPixel.top],
+            [Math.round(this.canvas.width), visibleMapBoxExtentPixel.bottom],
             [0, 1],
           ];
         case "horizontal":
           return [
-            [visibleMapBoxExtentPixel.left, Math.round(this.canvas.height / 2)],
-            [
-              visibleMapBoxExtentPixel.right,
-              Math.round(this.canvas.height / 2),
-            ],
+            [visibleMapBoxExtentPixel.left, Math.round(this.canvas.height)],
+            [visibleMapBoxExtentPixel.right, Math.round(this.canvas.height)],
             [1, 0],
           ];
       }
@@ -250,60 +244,96 @@ class RulerControl extends Control {
     // const endX = visibleMapBoxExtentPixel.right;
     // const y0 = Math.round(this.canvas.height / 2);
     // context.save();
-    // this.setFillStrokeContrastColors(context);
-    // const strokeStyle = context.strokeStyle;
+    this.setFillStrokeContrastColors(context);
+    const strokeStyle = context.strokeStyle;
     context.strokeStyle = context.fillStyle;
     context.lineWidth = 5;
     context.beginPath();
-    context.moveTo(start[0] - 5 * deltaDir[0], start[1] - 5 * deltaDir[1]);
-    context.lineTo(end[0] - 5 * deltaDir[0], end[1] - 5 * deltaDir[1]);
-    context.moveTo(start[0] + 5 * deltaDir[0], start[1] + 5 * deltaDir[1]);
-    context.lineTo(end[0] + 5 * deltaDir[0], end[1] + 5 * deltaDir[1]);
+    context.moveTo(start[0], start[1]);
+    context.lineTo(end[0], end[1]);
+    // context.moveTo(start[0] - 5 * deltaDir[0], start[1] - 5 * deltaDir[1]);
+    // context.lineTo(end[0] - 5 * deltaDir[0], end[1] - 5 * deltaDir[1]);
+    // context.moveTo(start[0] + 5 * deltaDir[0], start[1] + 5 * deltaDir[1]);
+    // context.lineTo(end[0] + 5 * deltaDir[0], end[1] + 5 * deltaDir[1]);
     context.strokeStyle = "white";
     context.stroke();
     // context.strokeStyle = strokeStyle;
     context.lineWidth = 3;
     context.beginPath();
-    context.moveTo(start[0] - 5 * deltaDir[0], start[1] - 5 * deltaDir[1]);
-    context.lineTo(end[0] - 5 * deltaDir[0], end[1] - 5 * deltaDir[1]);
-    context.moveTo(start[0] + 5 * deltaDir[0], start[1] + 5 * deltaDir[1]);
-    context.lineTo(end[0] + 5 * deltaDir[0], end[1] + 5 * deltaDir[1]);
+    context.moveTo(start[0], start[1]);
+    context.lineTo(end[0], end[1]);
     context.strokeStyle = "black";
     context.stroke();
     // context.reset();
 
+    // context.lineWidth = 7;
+    // context.beginPath();
+    // context.moveTo(
+    //   this.canvas.width * deltaDir[1],
+    //   this.canvas.height * deltaDir[0]
+    // );
+    // context.lineTo(this.canvas.width, this.canvas.height);
+    // context.strokeStyle = "white";
+    // context.stroke();
+    // context.lineWidth = 5;
+    // context.beginPath();
+    // context.moveTo(
+    //   this.canvas.width * deltaDir[1],
+    //   this.canvas.height * deltaDir[0]
+    // );
+    // context.lineTo(this.canvas.width, this.canvas.height);
+    // context.strokeStyle = "black";
+    // context.stroke();
+
     console.log("start", start, "end", end, "deltaDir", deltaDir);
 
-    const TICK_SEMI_HEIGHT =
-      Math.min(this.canvas.width, this.canvas.height) / 10;
-    const FONT_SIZE_PX = Math.floor(
-      Math.min(this.canvas.width, this.canvas.height) / 10
-    );
-    const FONT_STRING = `bold ${FONT_SIZE_PX}px serif`;
+    const tickInterval = 50;
 
-    const LAST_TICK_MARGIN = 50;
-    const tickInterval = 100;
-    for (
-      let coord: [number, number] = [start[0], start[1]];
-      coord[0] < end[0] - LAST_TICK_MARGIN ||
-      coord[1] < end[1] - LAST_TICK_MARGIN;
-      coord[0] += deltaDir[0] * tickInterval,
-        coord[1] += deltaDir[1] * tickInterval
-    ) {
-      console.log(
-        "start",
-        start,
-        "end",
-        end,
-        "deltaDir",
-        deltaDir,
-        "coord",
-        coord
+    {
+      const TICK_SEMI_HEIGHT =
+        Math.min(this.canvas.width, this.canvas.height) / 5;
+      const FONT_SIZE_PX = Math.floor(
+        Math.min(this.canvas.width, this.canvas.height) / 5
       );
+      const FONT_STRING = `bold ${FONT_SIZE_PX}px serif`;
+      const LAST_TICK_MARGIN = Math.round(tickInterval / 2);
+      for (
+        let coord: [number, number] = [start[0], start[1]];
+        coord[0] < end[0] - LAST_TICK_MARGIN ||
+        coord[1] < end[1] - LAST_TICK_MARGIN;
+        coord[0] += deltaDir[0] * tickInterval,
+          coord[1] += deltaDir[1] * tickInterval
+      ) {
+        // console.log(
+        //   "start",
+        //   start,
+        //   "end",
+        //   end,
+        //   "deltaDir",
+        //   deltaDir,
+        //   "coord",
+        //   coord
+        // );
+        this.drawTickAtPxOffset(
+          context,
+          resolutionDescriptor,
+          coord,
+          start,
+          end,
+          deltaDir,
+          tickInterval,
+          mapBoxPixelCoordinates,
+          visibleMapBoxExtentPixel,
+          fraction1,
+          TICK_SEMI_HEIGHT,
+          FONT_SIZE_PX,
+          FONT_STRING
+        );
+      }
       this.drawTickAtPxOffset(
         context,
         resolutionDescriptor,
-        coord,
+        end,
         start,
         end,
         deltaDir,
@@ -316,21 +346,53 @@ class RulerControl extends Control {
         FONT_STRING
       );
     }
-    this.drawTickAtPxOffset(
-      context,
-      resolutionDescriptor,
-      end,
-      start,
-      end,
-      deltaDir,
-      tickInterval,
-      mapBoxPixelCoordinates,
-      visibleMapBoxExtentPixel,
-      fraction1,
-      TICK_SEMI_HEIGHT,
-      FONT_SIZE_PX,
-      FONT_STRING
-    );
+    // Actually, if false, allows drawing smaller grid, currently disabled
+    if (tickInterval < 0) {
+      const TICK_SEMI_HEIGHT =
+        Math.min(this.canvas.width, this.canvas.height) / 10;
+      const FONT_SIZE_PX = Math.floor(
+        Math.min(this.canvas.width, this.canvas.height) / 10
+      );
+      const FONT_STRING = `bold ${FONT_SIZE_PX}px serif`;
+
+      const LAST_TICK_MARGIN = Math.round(tickInterval / 2);
+      for (
+        let coord: [number, number] = [
+          start[0] + (tickInterval / 2) * deltaDir[0],
+          start[1] + (tickInterval / 2) * deltaDir[1],
+        ];
+        coord[0] < end[0] - LAST_TICK_MARGIN ||
+        coord[1] < end[1] - LAST_TICK_MARGIN;
+        coord[0] += deltaDir[0] * tickInterval,
+          coord[1] += deltaDir[1] * tickInterval
+      ) {
+        // console.log(
+        //   "start",
+        //   start,
+        //   "end",
+        //   end,
+        //   "deltaDir",
+        //   deltaDir,
+        //   "coord",
+        //   coord
+        // );
+        this.drawTickAtPxOffset(
+          context,
+          resolutionDescriptor,
+          coord,
+          start,
+          end,
+          deltaDir,
+          tickInterval,
+          mapBoxPixelCoordinates,
+          visibleMapBoxExtentPixel,
+          fraction1,
+          TICK_SEMI_HEIGHT,
+          FONT_SIZE_PX,
+          FONT_STRING
+        );
+      }
+    }
   }
 
   protected drawTickAtPxOffset(
@@ -535,8 +597,16 @@ class RulerControl extends Control {
       const mt = context.measureText(SIString);
       this.drawRotatedText(
         SIString,
-        Math.round(coord[0] - (TICK_SEMI_HEIGHT + 5) * deltaDir[1]),
-        Math.round(coord[1] - (TICK_SEMI_HEIGHT + 5) * deltaDir[0]),
+        Math.round(
+          coord[0] +
+            (FONT_SIZE_PX / 3) * deltaDir[0] -
+            (TICK_SEMI_HEIGHT + 5) * deltaDir[1]
+        ),
+        Math.round(
+          coord[1] +
+          (FONT_SIZE_PX / 3) * deltaDir[1] -
+            (TICK_SEMI_HEIGHT + 5) * deltaDir[0]
+        ),
         context,
         angleDeg,
         FONT_STRING,
