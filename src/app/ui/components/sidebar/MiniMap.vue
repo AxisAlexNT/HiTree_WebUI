@@ -31,25 +31,30 @@ onMounted(() => {
     console.log("minimapElement value", miniMap.value);
     const mapManager = props.mapManager;
     if (mapManager) {
-      const map = mapManager.getMap();
-      const minimap = new OverviewMap({
-        collapsed: false,
-        collapsible: false,
-        rotateWithView: false,
-        target: minimapElement,
-        className: "ol-overviewmap",
-        view: new View({
-          maxZoom: 1,
-          center: map.getView().getCenter(),
-          enableRotation: false,
-          projection: map.getView().getProjection(),
-          showFullExtent: true,
-        }),
-        layers: [mapManager.viewAndLayersManager.layersHolder.hicDataLayers[0]],
-      });
-      map.addControl(minimap);
-      // minimap.setMap(map);
-      mapManager.minimap = minimap;
+      console.log("MinMap rendering is disabled in MiniMap.vue");
+      if (mapManager === undefined) {
+        const map = mapManager.getMap();
+        const minimap = new OverviewMap({
+          collapsed: false,
+          collapsible: false,
+          rotateWithView: false,
+          target: minimapElement,
+          className: "ol-overviewmap",
+          view: new View({
+            maxZoom: 1,
+            center: map.getView().getCenter(),
+            enableRotation: false,
+            projection: map.getView().getProjection(),
+            showFullExtent: true,
+          }),
+          layers: [
+            mapManager.viewAndLayersManager.layersHolder.hicDataLayers[0],
+          ],
+        });
+        map.addControl(minimap);
+        // minimap.setMap(map);
+        mapManager.minimap = minimap;
+      }
     } else {
       console.log("No map manager to set minimap target");
     }
