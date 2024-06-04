@@ -1,12 +1,12 @@
 <template>
   <aside class="sidebar">
     <div id="upper-block">
-      <div id="minimap">
+      <!-- <div id="minimap">
         <MiniMap
           :map-manager="props.mapManager"
           v-if="props.mapManager"
         ></MiniMap>
-      </div>
+      </div> -->
 
       <div id="layers-block" v-if="props.mapManager">
         <!-- Instantiate layer components here using v-for -->
@@ -244,6 +244,27 @@ function getEventManager(): CommonEventManager | undefined {
   flex: none;
   order: 1;
   flex-grow: 0;
+}
+
+#saved-visual-settings {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0px;
+  gap: 8px;
+
+  height: fit-content;
+
+  background: #ffffff;
+
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.075);
+
+  height: 50%;
+  max-height: 350px;
+  /* overflow-y: scroll; */
+  overflow-x: hidden;
+  width: 100%;
+  padding-top: 15px;
+  padding-right: 20px;
 }
 
 #saved-locations {
