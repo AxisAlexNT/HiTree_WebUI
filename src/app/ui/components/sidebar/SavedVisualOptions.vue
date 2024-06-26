@@ -1,3 +1,24 @@
+<!--
+ Copyright (c) 2021-2024 Aleksandr Serdiukov, Anton Zamyatin, Aleksandr Sinitsyn, Vitalii Dravgelis, Zakhar Lobanov, Nikita Zheleznov and Computer Technologies Laboratory ITMO University team.
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of
+ this software and associated documentation files (the "Software"), to deal in
+ the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ the Software, and to permit persons to whom the Software is furnished to do so,
+ subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ -->
+
 <template>
   <p class="w-100 m-0"><b>Visualization presets:</b></p>
   <div
@@ -36,7 +57,7 @@
       />
     </button>
   </div>
-  <div class="saved-locations-div">
+  <div class="saved-visualization-options-div">
     <div v-for="[id, opt] of savedOptions" :key="id">
       <SavedVisualOptionsElement
         v-if="opt"
@@ -61,10 +82,17 @@ import { useVisualizationOptionsStore } from "@/app/stores/visualizationOptionsS
 import { storeToRefs } from "pinia";
 import { toast } from "vue-sonner";
 import { useStyleStore } from "@/app/stores/styleStore";
+import { ColorTranslator } from "colortranslator";
+import { onMounted } from "vue";
 const visualizationOptionsStore = useVisualizationOptionsStore();
 const { preLogBase, applyCoolerWeights, postLogBase, colormap } = storeToRefs(
   visualizationOptionsStore
 );
+import defaultOptions from "@/app/core/visualization/colormap/default_options.json";
+
+onMounted(() => {
+  importJSONResults(defaultOptions);
+});
 
 const stylesStore = useStyleStore();
 const { mapBackgroundColor } = storeToRefs(stylesStore);
@@ -80,7 +108,7 @@ const savedOptions: Ref<
       option_id: number;
       name: string;
       options: VisualizationOptions;
-      backgroundColor: string;
+      backgroundColor: ColorTranslator;
     }
   >
 > = ref(new Map());
@@ -95,7 +123,7 @@ function saveOptions() {
       option_id: optionsCount.value,
       name: `Preset ${optionsCount.value}`,
       options: visualizationOptionsStore.asVisualizationOptions(),
-      backgroundColor: mapBackgroundColor.value,
+      backgroundColor: mapBackgroundColor.value as ColorTranslator,
     });
     optionsCount.value += 1;
   }
@@ -123,7 +151,7 @@ function exportOptions() {
   const values: {
     option_id: number;
     options: VisualizationOptions;
-    backgroundColor: string;
+    backgroundColor: ColorTranslator;
     name: string;
   }[] = [];
 
@@ -166,6 +194,110 @@ function exportOptions() {
   a.dispatchEvent(e);
 }
 
+function importJSONResults(jsonPreResult: Record<string, unknown>) {
+  // Compatibility with old saved visualization presets:
+  if (
+    jsonPreResult.data.savedVisualizationPresets &&
+    jsonPreResult.data.savedVisualizationPresets.length > 0
+  ) {
+    jsonPreResult.data.savedVisualizationPresets.forEach(
+      (sl: Record<string, unknown>) => {
+        if (sl.backgroundColor) {
+          sl.backgroundColor = new ColorTranslator(
+            sl.backgroundColor as string
+          );
+        }
+        if (sl.options) {
+          const opt = sl.options as {
+            colormap?: Record<string, unknown>;
+          };
+          if (opt.colormap) {
+            opt.colormap.startColorRGBA = new ColorTranslator(
+              opt.colormap.startColorRGBAString as string
+            );
+            opt.colormap.endColorRGBA = new ColorTranslator(
+              opt.colormap.endColorRGBAString as string
+            );
+          }
+        }
+      }
+    );
+  }
+  if (
+    jsonPreResult.data.savedLocations &&
+    jsonPreResult.data.savedLocations.length > 0
+  ) {
+    jsonPreResult.data.savedLocations.forEach((sl: Record<string, unknown>) => {
+      if (sl.backgroundColor) {
+        sl.backgroundColor = new ColorTranslator(sl.backgroundColor as string);
+      }
+      if (sl.options) {
+        const opt = sl.options as {
+          colormap?: Record<string, unknown>;
+        };
+        if (opt.colormap) {
+          opt.colormap.startColorRGBA = new ColorTranslator(
+            opt.colormap.startColorRGBAString as string
+          );
+          opt.colormap.endColorRGBA = new ColorTranslator(
+            opt.colormap.endColorRGBAString as string
+          );
+        }
+      }
+    });
+  }
+
+  const jsonResult = jsonPreResult as {
+    exportType: "visualizationOptions";
+    data: {
+      filename: string;
+      savedLocations: {
+        option_id: number;
+        options: VisualizationOptions;
+        backgroundColor?: string | ColorTranslator;
+        name?: string;
+      }[];
+      savedVisualizationPresets: {
+        option_id: number;
+        options: VisualizationOptions;
+        backgroundColor?: string | ColorTranslator;
+        name?: string;
+      }[];
+    };
+  };
+  // console.log(jsonResult);
+  // if (props.mapManager?.getOptions().filename !== jsonResult.data.filename) {
+  //   toast.message("Warning! You are importing presets saved for another file");
+  // }
+  (
+    jsonResult.data.savedVisualizationPresets ?? jsonResult.data.savedLocations
+  ).forEach((option) => {
+    const newId = 1 + optionsCount.value;
+    let backgroundColor: ColorTranslator = new ColorTranslator(
+      "rgba(255,255,255,255)",
+      { legacyCSS: true }
+    );
+    if (option.backgroundColor) {
+      const b = option.backgroundColor;
+      if (b) {
+        if (b instanceof ColorTranslator) {
+          backgroundColor = option.backgroundColor as ColorTranslator;
+        } else {
+          backgroundColor = new ColorTranslator(option.backgroundColor);
+        }
+      }
+    }
+    const newOption = {
+      option_id: newId,
+      options: option.options,
+      backgroundColor: backgroundColor,
+      name: option.name ?? `Imported preset ${newId}`,
+    };
+    savedOptions.value.set(newOption.option_id, newOption);
+    optionsCount.value += 1;
+  });
+}
+
 function importOptionsFromFile() {
   try {
     if (importFileBtn.value) {
@@ -180,48 +312,10 @@ function importOptionsFromFile() {
             if (!evt.target || !evt.target.result) {
               return;
             }
-            const jsonResult = JSON.parse(evt.target.result as string) as {
-              exportType: "visualizationOptions";
-              data: {
-                filename: string;
-                savedLocations: {
-                  option_id: number;
-                  options: VisualizationOptions;
-                  backgroundColor?: string;
-                  name?: string;
-                }[];
-                savedVisualizationPresets: {
-                  option_id: number;
-                  options: VisualizationOptions;
-                  backgroundColor?: string;
-                  name?: string;
-                }[];
-              };
-            };
-            // console.log(jsonResult);
-            if (
-              props.mapManager?.getOptions().filename !==
-              jsonResult.data.filename
-            ) {
-              toast.message(
-                "Warning! You are importing presets saved for another file"
-              );
-            }
-            (
-              jsonResult.data.savedVisualizationPresets ??
-              jsonResult.data.savedLocations
-            ).forEach((option) => {
-              const newId = 1 + optionsCount.value;
-              const newOption = {
-                option_id: newId,
-                options: option.options,
-                backgroundColor:
-                  option.backgroundColor ?? "rgba(255,255,255,255)",
-                name: option.name ?? `Imported preset ${newId}`,
-              };
-              savedOptions.value.set(newOption.option_id, newOption);
-              optionsCount.value += 1;
-            });
+            const jsonPreResult = JSON.parse(evt.target.result as string);
+
+            importJSONResults(jsonPreResult);
+
             toast.success("Visualziation presets loaded");
           } catch (e) {
             toast.error("Cannot import visualization options: " + e);
@@ -282,7 +376,7 @@ function importOptionsFromFile() {
   margin-left: 10px;
 }
 
-.saved-locations-div {
+.saved-visualization-options-div {
   /* Auto layout */
   display: flex;
   flex-direction: column;
@@ -293,12 +387,12 @@ function importOptionsFromFile() {
   order: 2;
   flex-grow: 0;
 
-  height: 50%;
-  max-height: 250px;
+  height: 90%;
+  max-height: 200px;
   overflow-y: scroll;
   overflow-x: hidden;
   width: 100%;
-  padding-top: 15px;
+  /* padding-top: 15px; */
   padding-right: 20px;
 }
 </style>

@@ -1,12 +1,33 @@
+<!--
+ Copyright (c) 2021-2024 Aleksandr Serdiukov, Anton Zamyatin, Aleksandr Sinitsyn, Vitalii Dravgelis, Zakhar Lobanov, Nikita Zheleznov and Computer Technologies Laboratory ITMO University team.
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of
+ this software and associated documentation files (the "Software"), to deal in
+ the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ the Software, and to permit persons to whom the Software is furnished to do so,
+ subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ -->
+
 <template>
   <aside class="sidebar">
     <div id="upper-block">
-      <div id="minimap">
+      <!-- <div id="minimap">
         <MiniMap
           :map-manager="props.mapManager"
           v-if="props.mapManager"
         ></MiniMap>
-      </div>
+      </div> -->
 
       <div id="layers-block" v-if="props.mapManager">
         <!-- Instantiate layer components here using v-for -->
@@ -52,7 +73,6 @@ import { ContactMapManager } from "@/app/core/mapmanagers/ContactMapManager";
 import LayerComponent from "@/app/ui/components/sidebar/LayerComponent.vue";
 import SavedLocations from "@/app/ui/components/sidebar/SavedLocations.vue";
 import { ref, watch, type Ref } from "vue";
-import ContrastSelector from "./ContrastSelector.vue";
 import { CommonEventManager } from "@/app/core/mapmanagers/CommonEventManager";
 import { BorderStyle } from "@/app/core/tracks/Track2DSymmetric";
 import Style from "ol/style/Style";
@@ -64,6 +84,7 @@ import { useStyleStore } from "@/app/stores/styleStore";
 import VisualziationSettingsEditor from "./VisualziationSettingsEditor.vue";
 import SavedVisualOptions from "./SavedVisualOptions.vue";
 import { storeToRefs } from "pinia";
+import { ColorTranslator } from "colortranslator";
 
 const stylesStore = useStyleStore();
 
@@ -82,7 +103,7 @@ watch(
   () => {
     backgroundColorStyle.value = new Style({
       stroke: new Stroke({
-        color: mapBackgroundColor.value,
+        color: mapBackgroundColor.value.RGBA,
       }),
     });
   }
@@ -115,13 +136,13 @@ const layers: Ref<LayerDescriptor[]> = ref([
   new LayerDescriptor("Background", () => backgroundColorStyle.value),
 ]);
 
-function onColorChanged(layerName: string, newColor: string) {
+function onColorChanged(layerName: string, newColor: ColorTranslator) {
   switch (layerName) {
     case "Contigs":
-      getEventManager()?.onContigBorderColorChanged(newColor);
+      getEventManager()?.onContigBorderColorChanged(newColor.RGBA);
       break;
     case "Scaffolds":
-      getEventManager()?.onScanffoldBorderColorChanged(newColor);
+      getEventManager()?.onScanffoldBorderColorChanged(newColor.RGBA);
       break;
     case "Background":
       stylesStore.setMapBackground(newColor);
@@ -244,6 +265,27 @@ function getEventManager(): CommonEventManager | undefined {
   flex: none;
   order: 1;
   flex-grow: 0;
+}
+
+#saved-visual-settings {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0px;
+  gap: 8px;
+
+  height: fit-content;
+
+  background: #ffffff;
+
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.075);
+
+  height: 50%;
+  max-height: 350px;
+  /* overflow-y: scroll; */
+  overflow-x: hidden;
+  width: 100%;
+  padding-top: 15px;
+  padding-right: 20px;
 }
 
 #saved-locations {

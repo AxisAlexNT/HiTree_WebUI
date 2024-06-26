@@ -1,3 +1,24 @@
+/*
+ Copyright (c) 2021-2024 Aleksandr Serdiukov, Anton Zamyatin, Aleksandr Sinitsyn, Vitalii Dravgelis and Computer Technologies Laboratory ITMO University team.
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of
+ this software and associated documentation files (the "Software"), to deal in
+ the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ the Software, and to permit persons to whom the Software is furnished to do so,
+ subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 import { Map, View } from "ol";
 import { ZoomSlider, ScaleLine, OverviewMap } from "ol/control";
 import { DoubleClickZoom, DragPan } from "ol/interaction";
@@ -12,6 +33,7 @@ import type { ContigDescriptor } from "../domain/ContigDescriptor";
 import { CommonEventManager } from "./CommonEventManager";
 import { CurrentSignalRangeResponse } from "../net/api/response";
 import { VisualizationManager } from "./VisualizationManager";
+import { Ref } from "vue";
 
 class ContactMapManager {
   public readonly map: Map;
@@ -23,6 +45,7 @@ class ContactMapManager {
   public sizeObserver?: ResizeObserver;
   public readonly toastHandlers: (() => void)[] = [];
   public readonly visualizationManager: VisualizationManager;
+  public minimap: OverviewMap | null;
 
   constructor(
     protected readonly options: {
@@ -33,6 +56,7 @@ class ContactMapManager {
       readonly contigBorderColor: string;
       readonly mapTargetSelector: string;
       readonly networkManager: NetworkManager;
+      readonly minimapTarget: Ref<HTMLElement | null>;
     }
   ) {
     const contigDescriptors: ContigDescriptor[] =
@@ -59,6 +83,8 @@ class ContactMapManager {
       layers: [],
       interactions: [],
     });
+
+    this.minimap = null;
   }
 
   public initializeMap(): void {
@@ -121,6 +147,15 @@ class ContactMapManager {
 
   public getMap(): Map {
     return this.map;
+  }
+
+  public getMiniMap(): OverviewMap {
+    const minimap = this.minimap;
+    if (minimap) {
+      return minimap;
+    } else {
+      throw Error("Minimap is not yet initialized?");
+    }
   }
 
   public getView(): View {

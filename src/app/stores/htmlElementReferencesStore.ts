@@ -19,13 +19,18 @@
  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Extent } from "ol/interaction";
-import type { Options } from "ol/interaction/Extent";
+import { defineStore } from "pinia";
+import { ref, Ref } from "vue";
 
-class ContactMapSelectionInteraction extends Extent {
-  public constructor(opt_options?: Options) {
-    super(opt_options);
+export const usehtmlElementReferencesStore = defineStore(
+  "htmlElementReferencesStore",
+  () => {
+    const mapTarget: Ref<HTMLElement | null> = ref(null);
+    const miniMapTarget: Ref<HTMLElement | null> = ref(null);
+
+    return {
+      mapTarget,
+      miniMapTarget,
+    };
   }
-}
-
-export { ContactMapSelectionInteraction };
+);

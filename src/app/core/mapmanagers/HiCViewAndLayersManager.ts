@@ -1,3 +1,24 @@
+/*
+ Copyright (c) 2021-2024 Aleksandr Serdiukov, Anton Zamyatin, Aleksandr Sinitsyn, Vitalii Dravgelis and Computer Technologies Laboratory ITMO University team.
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of
+ this software and associated documentation files (the "Software"), to deal in
+ the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ the Software, and to permit persons to whom the Software is furnished to do so,
+ subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 import bounds from "binary-search-bounds";
 import { Extent, Select } from "ol/interaction";
 import { Projection } from "ol/proj";
@@ -30,6 +51,8 @@ import { pointerMove, shiftKeyOnly, singleClick } from "ol/events/condition";
 import type { ContigDescriptor } from "../domain/ContigDescriptor";
 import { CurrentSignalRangeResponse } from "../net/api/response";
 import { SplitRulesInteraction } from "../interactions/SplitRulesInteraction";
+import { OverviewMap } from "ol/control";
+import { RulerControl } from "../controls/RulerControl";
 
 interface LayerResolutionBorders {
   minResolutionInclusive: number;
@@ -90,7 +113,7 @@ class HiCViewAndLayersManager {
   public readonly resolutions: number[] = [];
   public readonly resolutionToPixelResolution: Map<number, number> = new Map();
   public readonly pixelProjection: Projection;
-  protected readonly imageSizes: number[] = [];
+  public readonly imageSizes: number[] = [];
   public readonly layerProjections: Array<Projection> = [];
   protected readonly imageSizeScaled: number[] = [];
   // protected readonly hicDataLayers: Layer[] = [];
@@ -593,6 +616,31 @@ class HiCViewAndLayersManager {
         layers: this.layersHolder.hicDataLayers,
       })
     );
+    const rulerH = new RulerControl({
+      // position: "top",
+      direction: "horizontal",
+      mapManager: this.mapManager,
+      target: "horizontal-igv-track-div",
+    });
+    const rulerV = new RulerControl({
+      // position: "top",
+      direction: "vertical",
+      mapManager: this.mapManager,
+      target: "vertical-igv-track-div",
+    });
+    try {
+      const map = this.mapManager.getMap();
+      map.addControl(rulerH);
+      map.addControl(rulerV);
+      map.on("moveend", (event) => {
+        rulerH.render(event);
+      });
+      map.on("moveend", (event) => {
+        rulerV.render(event);
+      });
+    } catch (e: unknown) {
+      console.log("Error while adding rulers", e);
+    }
   }
 
   public initializeMapInteractions(): void {
@@ -928,6 +976,7 @@ class HiCViewAndLayersManager {
 
 export {
   HiCViewAndLayersManager,
+  type LayerResolutionDescriptor,
   type LayerResolutionBorders,
   type LayersHolder,
   type CurrentHiCViewState,

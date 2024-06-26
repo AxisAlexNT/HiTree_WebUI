@@ -22,8 +22,8 @@
 <template>
   <div
     class="modal fade in"
-    id="loadAGPModal"
-    ref="loadAGPModal"
+    id="fileSelectorModal"
+    ref="fileSelectorModal"
     tabindex="-1"
     data-keyboard="false"
     data-backdrop="static"
@@ -31,7 +31,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Select AGP file</h5>
+          <h5 class="modal-title">{{ props.title ?? "Select file" }}</h5>
           <button
             type="button"
             class="btn-close"
@@ -39,8 +39,11 @@
           ></button>
         </div>
         <div class="modal-body">
-          <div class="d-flex align-items-center" v-if="errorMessage">
-            Error: {{ errorMessage }}
+          <div
+            class="d-flex align-items-center"
+            v-if="props.errorMessage || errorMessage"
+          >
+            Error: {{ props.errorMessage ?? errorMessage }}
           </div>
           <div class="d-flex align-items-center" v-if="loading">
             <strong>Loading...</strong>
@@ -49,9 +52,11 @@
           <div>
             <select
               class="form-select form-select-lg mb-3"
-              v-model="selectedAGPFilename"
+              v-model="selectedFilename"
             >
-              <option selected>Select AGP file from the list below...</option>
+              <option selected>
+                Select {{ props.fileType ?? "a" }} file from the list below...
+              </option>
               <option
                 v-for="(filename, idx) in filenames"
                 :key="idx"
@@ -109,7 +114,7 @@
                   class="btn btn-primary"
                   @click="onSelectClicked"
                 >
-                  Load AGP
+                  Load
                 </button>
               </div>
             </div>
@@ -121,10 +126,9 @@
 </template>
 
 <script setup lang="ts">
-import { type Ref, ref, onMounted } from "vue";
+import { type Ref, ref, onMounted, onUnmounted } from "vue";
 import { Modal } from "bootstrap";
 import type { NetworkManager } from "@/app/core/net/NetworkManager.js";
-import { LoadAGPRequest } from "@/app/core/net/api/request";
 import path from "path-browserify";
 import { FileTreeNode, extensionToDataType } from "../ComponentCommon";
 import Tree from "primevue/tree";
@@ -132,6 +136,7 @@ import Tree from "primevue/tree";
 interface FinalTreeNode {
   isLeaf: boolean;
   originalPath: string;
+  originalIndex: number;
 }
 
 interface RecursiveStringRecord {
@@ -139,15 +144,19 @@ interface RecursiveStringRecord {
 }
 
 const emit = defineEmits<{
-  (e: "selected", agpFilename: string): void;
+  (e: "selected", Filename: string): void;
   (e: "dismissed"): void;
 }>();
 
 const props = defineProps<{
   networkManager: NetworkManager;
+  fileNamePredicate?: (name: string) => boolean;
+  title?: string;
+  fileType?: string;
+  errorMessage?: unknown;
 }>();
 
-const selectedAGPFilename: Ref<string | null> = ref(null);
+const selectedFilename: Ref<string | null> = ref(null);
 const filenames: Ref<string[] | null> = ref(null);
 const loading: Ref<boolean> = ref(true);
 const errorMessage: Ref<unknown | null> = ref(null);
@@ -155,7 +164,7 @@ const modal: Ref<Modal | null> = ref(null);
 
 const fileTree: Ref<FileTreeNode | null> = ref(null);
 
-const loadAGPModal = ref<HTMLElement | null>(null);
+const fileSelectorModal = ref<HTMLElement | null>(null);
 
 const expandedKeys: Ref<Record<string, boolean>> = ref({});
 
@@ -171,14 +180,15 @@ function recursiveRecordToFileTree(
       const ftn = r as unknown as FinalTreeNode;
       if (ftn && ftn.isLeaf === true) {
         const originalPath = path.parse(ftn.originalPath);
-        console.log("Original path: ", originalPath);
-        console.log("Original path Format: ", path.format(originalPath));
+        // console.log("Original path: ", originalPath);
+        // console.log("Original path Format: ", path.format(originalPath));
         return {
-          nodeName: originalPath.name,
+          nodeName: `${originalPath.name}${originalPath.ext}`,
           dataType: extensionToDataType(originalPath.ext),
           nodeType: "file",
           children: [],
           nodePath: path.format(originalPath),
+          originalIndex: ftn.originalIndex,
         };
       }
     }
@@ -229,6 +239,7 @@ interface PrimeVueFileTreeNode {
   data: unknown;
   icon: string;
   children: PrimeVueFileTreeNode[];
+  originalIndex?: number;
 }
 
 function fileTreeToPrimeVueTree(t: FileTreeNode): PrimeVueFileTreeNode {
@@ -238,22 +249,28 @@ function fileTreeToPrimeVueTree(t: FileTreeNode): PrimeVueFileTreeNode {
     label: t.nodeName,
     icon: getIconForNode(t),
     children: t.children.map(fileTreeToPrimeVueTree),
+    originalIndex: t.originalIndex,
   } as PrimeVueFileTreeNode;
 }
 
 const primeVueTree: Ref<PrimeVueFileTreeNode | null> = ref(null);
 
-function getAGPFilenamesList(): void {
+function getFilenamesList(): void {
   props.networkManager.requestManager
-    .listAGPFiles()
-    .then((lst) => {
+    .listFiles()
+    .then((fileList) => {
+      const lst = props.fileNamePredicate
+        ? fileList.filter(props.fileNamePredicate)
+        : fileList;
+
       filenames.value = lst;
+
       loading.value = false;
       const np = lst.map((s) =>
         path.normalize(s).replaceAll("\\", "/").replaceAll(path.sep, "/")
       );
       const tree: RecursiveStringRecord = {};
-      np.forEach((p) => {
+      np.forEach((p, idx) => {
         const parts = p.split("/");
 
         /*
@@ -287,28 +304,29 @@ function getAGPFilenamesList(): void {
           }
         });
 
-        console.log("parts", parts, "preparedHierarchy", preparedHierarchy);
+        // console.log("parts", parts, "preparedHierarchy", preparedHierarchy);
 
         preparedHierarchy[parts[parts.length - 1]] = {
           isLeaf: true,
           originalPath: p,
+          originalIndex: idx,
         } as FinalTreeNode;
       });
       const ft = recursiveRecordToFileTree(tree, undefined, undefined);
       fileTree.value = ft;
       const pvt = fileTreeToPrimeVueTree(ft);
       primeVueTree.value = pvt;
-      console.log("Path separator:", path.sep);
-      console.log("Raw:");
-      console.log(lst);
-      console.log("Normalized:");
-      console.log(np);
-      console.log("Tree:");
-      console.log(tree);
-      console.log("FileTree:");
-      console.log(ft);
-      console.log("PrimeVueFileTree:");
-      console.log(pvt);
+      // console.log("Path separator:", path.sep);
+      // console.log("Raw:");
+      // console.log(lst);
+      // console.log("Normalized:");
+      // console.log(np);
+      // console.log("Tree:");
+      // console.log(tree);
+      // console.log("FileTree:");
+      // console.log(ft);
+      // console.log("PrimeVueFileTree:");
+      // console.log(pvt);
     })
     .catch((e) => {
       errorMessage.value = e;
@@ -326,7 +344,7 @@ function resetState(): void {
     errorMessage.value = null;
     loading.value = false;
     filenames.value = null;
-    selectedAGPFilename.value = null;
+    selectedFilename.value = null;
   }
 }
 
@@ -336,22 +354,13 @@ function onDismissClicked(): void {
 }
 
 function onSelectClicked(): void {
-  const selectedAGPFilenameString = selectedAGPFilename.value;
-  if (!selectedAGPFilenameString) {
-    //onDismissClicked();
-    // throw new Error("Selected AGP filename was null?");
-    errorMessage.value = "Please, select AGP file";
+  const selectedFilenameString = selectedFilename.value;
+  if (!selectedFilenameString) {
+    errorMessage.value = "Please, select file";
     return;
   }
-  props.networkManager.requestManager
-    .loadAGP(new LoadAGPRequest({ agpFilename: selectedAGPFilenameString }))
-    .then(() => {
-      emit("selected", selectedAGPFilenameString);
-      resetState();
-    })
-    .catch((e) => {
-      errorMessage.value = e;
-    });
+  emit("selected", selectedFilenameString);
+  // resetState();
 }
 
 onMounted(() => {
@@ -360,20 +369,35 @@ onMounted(() => {
     fns.length = 0;
   }
   loading.value = true;
-  modal.value = new Modal(loadAGPModal.value ?? "loadAGPModal", {
+  modal.value = new Modal(fileSelectorModal.value ?? "fileSelectorModal", {
     backdrop: "static",
     keyboard: false,
   });
   modal.value.show();
-  getAGPFilenamesList();
+  getFilenamesList();
 });
 
-function onNodeSelect(evt: unknown) {
-  console.log(evt);
+onUnmounted(() => {
+  resetState();
+});
+
+function onNodeSelect(evt: { originalIndex?: number; key?: string }) {
+  // console.log(evt);
+  const idx = evt.originalIndex;
+  const key = evt.key;
+  if (idx) {
+    const fn = filenames.value;
+    if (fn) {
+      selectedFilename.value = fn[idx];
+    }
+  } else if (key) {
+    expandedKeys.value[key] = true;
+  }
 }
 
 function onNodeUnselect(evt: unknown) {
-  console.log(evt);
+  // console.log(evt);
+  selectedFilename.value = null;
 }
 
 function expandAll() {

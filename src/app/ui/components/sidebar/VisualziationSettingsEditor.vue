@@ -1,3 +1,24 @@
+<!--
+ Copyright (c) 2021-2024 Aleksandr Serdiukov, Anton Zamyatin, Aleksandr Sinitsyn, Vitalii Dravgelis, Zakhar Lobanov, Nikita Zheleznov and Computer Technologies Laboratory ITMO University team.
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of
+ this software and associated documentation files (the "Software"), to deal in
+ the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ the Software, and to permit persons to whom the Software is furnished to do so,
+ subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ -->
+
 <template>
   <div class="d-flex align-items-center" v-if="errorMessage">
     Error: {{ errorMessage }}
@@ -20,7 +41,7 @@
             <ColorPickerRectangle
               :position="'left'"
               :getDefaultColor="fromColorFn"
-              @onColorChanged="(nc: string) => (fromColor = nc)"
+              @onColorChanged="(nc: ColorTranslator) => (fromColor = nc)"
             >
             </ColorPickerRectangle>
           </li>
@@ -41,7 +62,7 @@
             <ColorPickerRectangle
               :position="'left'"
               :getDefaultColor="toColorFn"
-              @onColorChanged="(nc: string) => (toColor = nc)"
+              @onColorChanged="(nc: ColorTranslator) => (toColor = nc)"
             >
             </ColorPickerRectangle>
           </li>
@@ -70,6 +91,7 @@ import { toast } from "vue-sonner";
 import { useVisualizationOptionsStore } from "@/app/stores/visualizationOptionsStore";
 import { storeToRefs } from "pinia";
 import SimpleLinearGradient from "@/app/core/visualization/colormap/SimpleLinearGradient";
+import { ColorTranslator } from "colortranslator";
 const visualizationOptionsStore = useVisualizationOptionsStore();
 const { preLogBase, applyCoolerWeights, postLogBase, colormap } = storeToRefs(
   visualizationOptionsStore
@@ -83,35 +105,47 @@ const props = defineProps<{
 
 const signalMin: Ref<number> = ref(0);
 const signalMax: Ref<number> = ref(1);
-const fromColor = ref("rgba(0,255,0,0)");
-const toColor = ref("rgba(0,96,0,1)");
+const fromColor: Ref<ColorTranslator> = ref(
+  new ColorTranslator("rgba(0,255,0,0.1)", { legacyCSS: true })
+) as Ref<ColorTranslator>;
+const toColor = ref(
+  new ColorTranslator("rgba(0,96,0,1.0)", { legacyCSS: true })
+) as Ref<ColorTranslator>;
 const lowerBound: Ref<number> = ref(signalMin.value);
 const upperBound: Ref<number> = ref(signalMax.value);
 
-const fromColorFn = ref(() => fromColor.value);
-const toColorFn = ref(() => toColor.value);
+const fromColorFn: Ref<() => ColorTranslator> = ref(
+  () => fromColor.value
+) as Ref<() => ColorTranslator>;
+const toColorFn: Ref<() => ColorTranslator> = ref(() => toColor.value) as Ref<
+  () => ColorTranslator
+>;
 
 const gradstyle = ref({
   width: "98%",
   height: "2rem",
   margin: "1%",
   "background-image":
-    "linear-gradient(to right," + fromColor.value + " , " + toColor.value + ")",
+    "linear-gradient(to right," +
+    fromColor.value.RGBA +
+    " , " +
+    toColor.value.RGBA +
+    ")",
 });
 
 watch(
   () => {
     if (colormap.value instanceof SimpleLinearGradient) {
       const cmap = colormap.value as SimpleLinearGradient;
-      return [cmap.startColorRGBAString, cmap.endColorRGBAString];
+      return [cmap.startColorRGBA, cmap.endColorRGBA];
     }
   },
   () => {
     if (colormap.value instanceof SimpleLinearGradient) {
       // console.log("Colormap type changed and simple linear gradient, was: ", fromColor.value, toColor.value);
       const cmap = colormap.value as SimpleLinearGradient;
-      fromColor.value = cmap.startColorRGBAString;
-      toColor.value = cmap.endColorRGBAString;
+      fromColor.value = cmap.startColorRGBA;
+      toColor.value = cmap.endColorRGBA;
       fromColorFn.value = () => fromColor.value;
       toColorFn.value = () => toColor.value;
       // console.log("Now: ", fromColor.value, toColor.value);
@@ -171,8 +205,8 @@ function updateFromStore() {
     switch (true) {
       case cmap instanceof SimpleLinearGradient: {
         const grad = cmap as SimpleLinearGradient;
-        fromColor.value = grad.startColorRGBAString;
-        toColor.value = grad.endColorRGBAString;
+        fromColor.value = grad.startColorRGBA;
+        toColor.value = grad.endColorRGBA;
         console.log("Updated: ", fromColor.value, toColor.value);
         break;
       }

@@ -1,3 +1,24 @@
+<!--
+ Copyright (c) 2021-2024 Aleksandr Serdiukov, Anton Zamyatin, Aleksandr Sinitsyn, Vitalii Dravgelis, Zakhar Lobanov, Nikita Zheleznov and Computer Technologies Laboratory ITMO University team.
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of
+ this software and associated documentation files (the "Software"), to deal in
+ the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ the Software, and to permit persons to whom the Software is furnished to do so,
+ subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ -->
+
 <template>
   <div class="layer-record">
     <span class="layer-name">{{ layerName }}</span>
@@ -32,8 +53,10 @@ import { type Ref, ref } from "vue";
 import { BorderStyle } from "@/app/core/tracks/Track2DSymmetric";
 import ColorPickerRectangle from "./ColorPickerRectangle.vue";
 import Style from "ol/style/Style";
-import { Color, asString } from "ol/color";
+import { Color } from "ol/color";
 import { toast } from "vue-sonner";
+import { ColorTranslator } from "colortranslator";
+import { ColorLike } from "ol/colorlike";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const props = defineProps<{
@@ -41,17 +64,23 @@ const props = defineProps<{
   getDefaultColor?: () => Style | undefined;
 }>();
 
-function getBaseColor() {
+function getBaseColor(): ColorTranslator {
   if (props.getDefaultColor) {
-    const color = props.getDefaultColor()?.getStroke()?.getColor() as Color;
+    const olColorString = props
+      .getDefaultColor()
+      ?.getStroke()
+      ?.getColor() as ColorLike as string;
+
+    const color = new ColorTranslator(olColorString, { legacyCSS: true });
     if (color) {
-      return asString(color);
+      return color;
     }
   }
+  return new ColorTranslator("rgb(127, 192, 224)", { legacyCSS: true });
 }
 
 const emit = defineEmits<{
-  (e: "onColorChanged", layerName: string, newColor: string): void;
+  (e: "onColorChanged", layerName: string, newColor: ColorTranslator): void;
   (
     e: "onBorderStyleChanged",
     layerName: string,
@@ -59,7 +88,7 @@ const emit = defineEmits<{
   ): void;
 }>();
 
-const currentColor: Ref<string> = ref("#ffaaff");
+const currentColor = ref(new ColorTranslator("#ffaaff", { legacyCSS: true }));
 
 const bordersStyle: Ref<number> = ref(0);
 const visible: Ref<boolean> = ref(true);
@@ -72,7 +101,7 @@ function updateVisibility() {
     visible.value ? bordersStyle.value : BorderStyle.NONE
   );
 }
-function updateBackgroundColor(newColor: string) {
+function updateBackgroundColor(newColor: ColorTranslator) {
   currentColor.value = newColor;
   emit("onColorChanged", props.layerName as string, newColor);
 }

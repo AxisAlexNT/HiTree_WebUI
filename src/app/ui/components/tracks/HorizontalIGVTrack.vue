@@ -1,50 +1,29 @@
+<!--
+ Copyright (c) 2021-2024 Aleksandr Serdiukov, Anton Zamyatin, Aleksandr Sinitsyn, Vitalii Dravgelis, Zakhar Lobanov, Nikita Zheleznov and Computer Technologies Laboratory ITMO University team.
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of
+ this software and associated documentation files (the "Software"), to deal in
+ the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ the Software, and to permit persons to whom the Software is furnished to do so,
+ subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ -->
+
 <template>
   <div id="horizontal-igv-track-div"></div>
 </template>
 
-<script setup lang="ts">
-// eslint-disable-next-line @typescript-eslint/triple-slash-reference
-///<reference path="../../../../../node_modules/igv/dist/igv.esm.js" />
-import igv from "igv";
-import { onMounted } from "vue";
-
-const igvOptions = {
-  genome: "hg38",
-  locus: "chr8:127,736,588-127,739,371",
-  tracks: [
-    {
-      name: "HG00103",
-      url: "https://s3.amazonaws.com/1000genomes/data/HG00103/alignment/HG00103.alt_bwamem_GRCh38DH.20150718.GBR.low_coverage.cram",
-      indexURL:
-        "https://s3.amazonaws.com/1000genomes/data/HG00103/alignment/HG00103.alt_bwamem_GRCh38DH.20150718.GBR.low_coverage.cram.crai",
-      format: "cram",
-    },
-  ],
-};
-
-// watch(
-//   () => document.getElementById("horizontal-igv-track-div"),
-//   (newDiv) => {
-//     console.log("New div is", newDiv);
-//     if (newDiv) {
-//       igv.createBrowser(newDiv, igvOptions).then(function () {
-//         console.log("Created Horizontal IGV browser");
-//       });
-//     }
-//   }
-// );
-
-onMounted(() => {
-  const newDiv = document.getElementById("horizontal-igv-track-div");
-
-  if (false && newDiv) {
-    console.log("New div is", newDiv);
-    // igv.createBrowser(newDiv, igvOptions).then(function () {
-    //  console.log("Created Horizontal IGV browser");
-    // });
-  }
-});
-</script>
+<script setup lang="ts"></script>
 
 <style scoped>
 #horizontal-igv-track-div {
