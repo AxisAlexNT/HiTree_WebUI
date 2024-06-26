@@ -4,6 +4,7 @@
   "private": true,
   "author": "Aleksandr Serdiukov, Anton Zamyatin and CT Lab ITMO University team",
   "main": "dist/electron/electron/main/main.js",
+  "license":"MIT",
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check build-only && tsc",
